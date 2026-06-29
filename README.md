@@ -39,6 +39,8 @@ The daily cycle command runs Cheko weak-area seeding, daily receipt generation,
 route map generation, and a stage-only night evolution plan. The night evolution
 command does not directly mutate live skills or learning rules.
 
+For scheduled nightly runs, see `ruankao-agent/docs/AUTOMATION.md`.
+
 ## What Is Not Committed
 
 The local `resources/` folder contains exam PDFs and generated study materials. It is ignored

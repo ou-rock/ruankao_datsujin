@@ -543,3 +543,31 @@ each artifact, but the loop itself needs a single scheduled-task entry point.
 - `./run-daily-cycle.command 2026-06-29`
 - `python3 -m pytest -q`
 - Script follows the same root layout as `start-workbench.command`.
+
+## 2026-06-29 Round 016 - launchd Template For Nightly Automation
+
+### Learner Friction
+
+Round 015 created one daily-cycle script, but there was still no concrete local
+scheduled-task template. The learner would have to remember how to wire macOS
+automation by hand.
+
+### Change
+
+- Added `automation/launchd/com.pedan.ruankao.daily-cycle.plist`.
+- Added `docs/AUTOMATION.md` with manual install and unload commands.
+- Added `ruankao-agent/logs/` to `.gitignore`.
+- Linked automation docs from README.
+- Did not install or load the LaunchAgent automatically.
+
+### Learning Rule Captured
+
+Automation should be inspectable before it is active. Nightly evolution is
+powerful enough that the schedule must be explicit and reversible.
+
+### Validation
+
+- launchd template is stored in version control.
+- Automation docs include manual install and unload commands.
+- `plutil -lint automation/launchd/com.pedan.ruankao.daily-cycle.plist`
+- `python3 -m pytest -q`
