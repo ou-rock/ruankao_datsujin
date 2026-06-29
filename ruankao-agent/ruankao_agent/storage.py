@@ -15,6 +15,9 @@ from .domain import (
 )
 
 
+SCHEMA_VERSION = "5"
+
+
 def _dump_enum_values(values: Sequence[object]) -> str:
     return json.dumps([getattr(value, "value", value) for value in values], ensure_ascii=False)
 
@@ -158,6 +161,12 @@ class RuankaoStore:
                 created_on TEXT NOT NULL DEFAULT (date('now'))
             );
 
+            CREATE TABLE IF NOT EXISTS schema_meta (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL,
+                updated_on TEXT NOT NULL DEFAULT (date('now'))
+            );
+
             CREATE INDEX IF NOT EXISTS idx_raw_records_source ON raw_records(source);
             CREATE INDEX IF NOT EXISTS idx_memory_cards_type ON memory_cards(card_type);
             CREATE INDEX IF NOT EXISTS idx_memory_cards_next_due ON memory_cards(next_due);
@@ -169,6 +178,7 @@ class RuankaoStore:
             """
         )
         self._ensure_column("raw_records", "promotion_status", "TEXT NOT NULL DEFAULT 'raw'")
+        self._set_schema_meta("schema_version", SCHEMA_VERSION)
         self._conn.commit()
 
     def _ensure_column(self, table: str, column: str, definition: str) -> None:
@@ -178,6 +188,22 @@ class RuankaoStore:
         }
         if column not in existing:
             self._conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
+
+    def _set_schema_meta(self, key: str, value: str) -> None:
+        self._conn.execute(
+            """
+            INSERT INTO schema_meta (key, value, updated_on)
+            VALUES (?, ?, date('now'))
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_on = excluded.updated_on
+            """,
+            (key, value),
+        )
+
+    def schema_version(self) -> str:
+        row = self._conn.execute(
+            "SELECT value FROM schema_meta WHERE key = 'schema_version'"
+        ).fetchone()
+        return str(row["value"]) if row else "unknown"
 
     def add_raw_record(
         self,

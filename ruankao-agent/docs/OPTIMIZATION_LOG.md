@@ -571,3 +571,35 @@ powerful enough that the schedule must be explicit and reversible.
 - Automation docs include manual install and unload commands.
 - `plutil -lint automation/launchd/com.pedan.ruankao.daily-cycle.plist`
 - `python3 -m pytest -q`
+
+## 2026-06-29 Round 017 - SQLite Schema Version Stamp
+
+### Learner Friction
+
+The SQLite store has evolved quickly: review logs, practice sessions, receipts,
+route maps, and risk signals all depend on schema shape. Without a version stamp,
+future migrations and nightly evolution cannot know what structure they are
+reading.
+
+### Change
+
+- Added `SCHEMA_VERSION`.
+- Added `schema_meta` SQLite table.
+- Added `RuankaoStore.schema_version()`.
+- Wrote the current schema version during `initialize()`.
+- Added `schema_version` to daily receipt JSON and HTML.
+
+### Learning Rule Captured
+
+A system that evolves with the learner needs to know its own structural version.
+Memory should include not only study data, but also the shape of the store that
+holds it.
+
+### Validation
+
+- `python3 -m pytest tests/test_storage_and_memory.py -q`
+- `python3 -m pytest tests/test_daily_receipt.py -q`
+- `python3 -m pytest -q`
+- Tests assert:
+  - schema version is written and survives reopen;
+  - daily receipts include a non-unknown schema version.

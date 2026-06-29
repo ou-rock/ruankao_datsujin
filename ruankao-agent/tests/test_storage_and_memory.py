@@ -1,7 +1,7 @@
 from datetime import date
 
 from ruankao_agent.domain import CardType, ExamFront, PrincipleRelationType, SourceIdentity
-from ruankao_agent.storage import RuankaoStore
+from ruankao_agent.storage import SCHEMA_VERSION, RuankaoStore
 
 
 def test_store_preserves_raw_records_and_memory_cards(tmp_path) -> None:
@@ -35,6 +35,18 @@ def test_store_preserves_raw_records_and_memory_cards(tmp_path) -> None:
     assert cards[0].id == card_id
     assert cards[0].card_type == CardType.PRINCIPLE
     assert cards[0].source_record_id == raw_id
+
+
+def test_store_records_schema_version(tmp_path) -> None:
+    db_path = tmp_path / "ruankao.db"
+    store = RuankaoStore(db_path)
+    store.initialize()
+
+    reopened = RuankaoStore(db_path)
+    reopened.initialize()
+
+    assert store.schema_version() == SCHEMA_VERSION
+    assert reopened.schema_version() == SCHEMA_VERSION
 
 
 def test_store_preserves_all_source_identities_and_promotion_status(tmp_path) -> None:

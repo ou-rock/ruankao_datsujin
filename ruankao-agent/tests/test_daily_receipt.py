@@ -52,6 +52,7 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
 
     payload = json.loads(result.json_path.read_text(encoding="utf-8"))
     assert payload["as_of"] == "2026-06-29"
+    assert payload["schema_version"] != "unknown"
     assert payload["metrics"]["raw_records"] == 2
     assert payload["metrics"]["memory_cards"] == 5
     assert payload["metrics"]["due_cards"] == 4
@@ -70,6 +71,7 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
 
     html = result.html_path.read_text(encoding="utf-8")
     assert "日结回执 2026-06-29" in html
+    assert "Schema" in html
     assert "Cheko 到期" in html
     assert "质量属性场景" in html
     assert "错题归因完成" in html

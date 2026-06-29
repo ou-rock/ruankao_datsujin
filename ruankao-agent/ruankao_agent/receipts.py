@@ -34,6 +34,7 @@ def write_daily_receipt(root: Path | str, *, as_of: date | None = None) -> Daily
     day = as_of or date.today()
     store = RuankaoStore(root_path / "data" / "ruankao.db")
     store.initialize()
+    schema_version = store.schema_version()
 
     records = store.list_raw_records()
     cards = store.list_memory_cards()
@@ -57,6 +58,7 @@ def write_daily_receipt(root: Path | str, *, as_of: date | None = None) -> Daily
         phase=snapshot.phase_name,
         countdown=snapshot.countdown,
         risk=snapshot.risk_text,
+        schema_version=schema_version,
         reserve_days_consumed=snapshot.reserve_days_consumed,
         review_backlog_ratio=snapshot.dashboard.review_backlog_ratio,
         records=records,
@@ -209,6 +211,7 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
         {_metric("阶段", payload["phase"])}
         {_metric("倒计时", payload["countdown"])}
         {_metric("风险", payload["risk"])}
+        {_metric("Schema", payload["schema_version"])}
         {_metric("复习积压", f'{float(payload["review_backlog_ratio"]):.0%}')}
         {_metric("到期卡片", metrics["due_cards"])}
         {_metric("Cheko 到期", metrics["cheko_due_cards"])}
@@ -275,6 +278,7 @@ def _receipt_payload(
     phase: str,
     countdown: str,
     risk: str,
+    schema_version: str,
     reserve_days_consumed: int,
     review_backlog_ratio: float,
     records: list[RawRecord],
@@ -295,6 +299,7 @@ def _receipt_payload(
         "phase": phase,
         "countdown": countdown,
         "risk": risk,
+        "schema_version": schema_version,
         "reserve_days_consumed": reserve_days_consumed,
         "review_backlog_ratio": review_backlog_ratio,
         "metrics": {
