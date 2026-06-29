@@ -4,7 +4,13 @@ import json
 import subprocess
 import sys
 
-from ruankao_agent.learning import DEFAULT_CHEKO_SNAPSHOT, ensure_learning_resources, render_cheko_sync
+from ruankao_agent.learning import (
+    DEFAULT_CHEKO_SNAPSHOT,
+    ensure_learning_resources,
+    render_cheko_sync,
+    render_today,
+    today_tasks,
+)
 
 
 def test_learning_resources_generate_html_study_desk(tmp_path) -> None:
@@ -17,6 +23,7 @@ def test_learning_resources_generate_html_study_desk(tmp_path) -> None:
     reference = learning / "reference" / "quality-attributes-tactics.html"
     seed = learning / "notebooklm-seed.html"
     cheko = learning / "cheko-sync.html"
+    today = learning / "today.html"
     snapshot = learning / "data" / "cheko-snapshot.json"
 
     assert index.exists()
@@ -24,15 +31,18 @@ def test_learning_resources_generate_html_study_desk(tmp_path) -> None:
     assert reference.exists()
     assert seed.exists()
     assert cheko.exists()
+    assert today.exists()
     assert snapshot.exists()
     assert "软考达人学习台" in index.read_text(encoding="utf-8")
     assert "芝士架构同步信号" in index.read_text(encoding="utf-8")
+    assert "今日三任务" in index.read_text(encoding="utf-8")
     assert "系统架构设计" in index.read_text(encoding="utf-8")
     assert "场景先于方案" in lesson.read_text(encoding="utf-8")
     assert "四大质量属性" in reference.read_text(encoding="utf-8")
     assert "NotebookLM" in seed.read_text(encoding="utf-8")
     assert "正确率" in cheko.read_text(encoding="utf-8")
     assert "69.4" in cheko.read_text(encoding="utf-8")
+    assert "只做这三件事" in today.read_text(encoding="utf-8")
     assert json.loads(snapshot.read_text(encoding="utf-8"))["wrong"] == 194
 
 
@@ -95,6 +105,32 @@ def test_cheko_sync_renders_learning_signal_not_account_identity() -> None:
     assert "不保存账号、头像、邮箱" in html
     assert "nav_avatar" not in html
     assert "cookie" not in html.lower()
+
+
+def test_today_tasks_are_derived_from_cheko_weak_areas() -> None:
+    tasks = today_tasks(DEFAULT_CHEKO_SNAPSHOT)
+
+    assert len(tasks) == 3
+    assert tasks[0].title == "系统架构设计错题回炉"
+    assert "164" in tasks[0].why
+    assert "质量属性" in tasks[0].action
+    assert tasks[1].title == "软件工程对比卡"
+    assert "82" in tasks[1].why
+    assert tasks[2].title == "论文最低触达"
+    assert "300 字以内摘要" in tasks[2].action
+    assert "表达卡" in tasks[2].output
+
+
+def test_today_page_is_one_screen_action_plan() -> None:
+    html = render_today(DEFAULT_CHEKO_SNAPSHOT)
+
+    assert "今日三任务" in html
+    assert "Task 1" in html
+    assert "Task 2" in html
+    assert "Task 3" in html
+    assert "系统架构设计错题回炉" in html
+    assert "论文最低触达" in html
+    assert "如果今天只能做一件事" in html
 
 
 def test_cli_learning_generates_learning_desk(tmp_path) -> None:

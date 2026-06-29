@@ -50,3 +50,35 @@ to guide the next action, yet the local system ignored it.
 - Convert weak areas into actual memory cards and due review queues.
 - Add a daily "one screen" learner view: score risk, today's 3 tasks, and one essay action.
 - Add BrowserAct extraction receipts under `docs/` without storing private page content.
+
+## 2026-06-29 Round 002 - Today Three Tasks
+
+### Learner Friction
+
+After Round 001, the learning desk could show real Cheko practice signals, but
+the learner still had to decide what to do. A tired learner does not need another
+dashboard; they need one narrow next action list.
+
+### Change
+
+- Added `learning/today.html`.
+- Added `today_tasks()` derived from the Cheko snapshot.
+- Added a "今日三任务" entry point to the learning desk and Cheko sync page.
+- Converted the largest weak areas into:
+  - Task 1: 系统架构设计错题回炉
+  - Task 2: 软件工程对比卡
+  - Task 3: 论文最低触达
+
+### Learning Rule Captured
+
+If the learner can only do one thing, do the largest wrong-answer pool first.
+If essay practice is still 0 / 4, produce reusable text instead of only reading
+examples.
+
+### Validation
+
+- Unit tests assert:
+  - `today.html` is generated;
+  - the learning desk links to 今日三任务;
+  - the three tasks derive from Cheko weak areas;
+  - the essay task is triggered by the 0 / 4 essay signal.
