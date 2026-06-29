@@ -131,7 +131,39 @@ def test_review_updates_retrieval_and_next_due_date(tmp_path) -> None:
 
     store.record_review(card_id=card_id, reviewed_on=date(2026, 6, 29), grade=4)
     card = store.get_memory_card(card_id)
+    logs = store.list_review_logs(card_id)
 
     assert card.review_count == 1
     assert card.retrieval_strength > 1.0
     assert card.next_due > date(2026, 6, 29)
+    assert len(logs) == 1
+    assert logs[0].card_id == card_id
+    assert logs[0].reviewed_on == date(2026, 6, 29)
+    assert logs[0].grade == 4
+    assert logs[0].retrieval_strength == card.retrieval_strength
+    assert logs[0].next_due == card.next_due
+
+
+def test_review_logs_preserve_each_review_attempt(tmp_path) -> None:
+    db_path = tmp_path / "ruankao.db"
+    store = RuankaoStore(db_path)
+    store.initialize()
+
+    card_id = store.add_memory_card(
+        card_type=CardType.CONCEPT,
+        title="敏感点",
+        prompt="什么是敏感点？",
+        answer="影响某个质量属性响应的架构决策点。",
+    )
+
+    store.record_review(card_id=card_id, reviewed_on=date(2026, 6, 29), grade=1)
+    store.record_review(card_id=card_id, reviewed_on=date(2026, 6, 30), grade=5)
+
+    reopened = RuankaoStore(db_path)
+    reopened.initialize()
+    logs = reopened.list_review_logs(card_id)
+    all_logs = reopened.list_review_logs()
+
+    assert [log.grade for log in logs] == [1, 5]
+    assert [log.reviewed_on for log in logs] == [date(2026, 6, 29), date(2026, 6, 30)]
+    assert len(all_logs) == 2

@@ -54,6 +54,17 @@ class MemoryCard:
 
 
 @dataclass(frozen=True, slots=True)
+class ReviewLog:
+    id: int
+    card_id: int
+    reviewed_on: date
+    grade: int
+    retrieval_strength: float
+    next_due: date
+    created_on: date | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class PrincipleRelation:
     id: int
     from_card_id: int
@@ -110,10 +121,22 @@ class RuankaoStore:
                 created_on TEXT NOT NULL DEFAULT (date('now'))
             );
 
+            CREATE TABLE IF NOT EXISTS review_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                card_id INTEGER NOT NULL REFERENCES memory_cards(id) ON DELETE CASCADE,
+                reviewed_on TEXT NOT NULL,
+                grade INTEGER NOT NULL,
+                retrieval_strength REAL NOT NULL,
+                next_due TEXT NOT NULL,
+                created_on TEXT NOT NULL DEFAULT (date('now'))
+            );
+
             CREATE INDEX IF NOT EXISTS idx_raw_records_source ON raw_records(source);
             CREATE INDEX IF NOT EXISTS idx_memory_cards_type ON memory_cards(card_type);
             CREATE INDEX IF NOT EXISTS idx_memory_cards_next_due ON memory_cards(next_due);
             CREATE INDEX IF NOT EXISTS idx_principle_relations_from ON principle_relations(from_card_id);
+            CREATE INDEX IF NOT EXISTS idx_review_logs_card ON review_logs(card_id);
+            CREATE INDEX IF NOT EXISTS idx_review_logs_reviewed_on ON review_logs(reviewed_on);
             """
         )
         self._ensure_column("raw_records", "promotion_status", "TEXT NOT NULL DEFAULT 'raw'")
@@ -322,7 +345,54 @@ class RuankaoStore:
                 card_id,
             ),
         )
+        self._conn.execute(
+            """
+            INSERT INTO review_logs (
+                card_id, reviewed_on, grade, retrieval_strength, next_due
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                card_id,
+                reviewed_on.isoformat(),
+                quality,
+                retrieval_strength,
+                next_due.isoformat(),
+            ),
+        )
         self._conn.commit()
+
+    def list_review_logs(self, card_id: int | None = None) -> list[ReviewLog]:
+        if card_id is None:
+            rows = self._conn.execute(
+                """
+                SELECT id, card_id, reviewed_on, grade, retrieval_strength, next_due, created_on
+                FROM review_logs
+                ORDER BY id
+                """
+            ).fetchall()
+        else:
+            rows = self._conn.execute(
+                """
+                SELECT id, card_id, reviewed_on, grade, retrieval_strength, next_due, created_on
+                FROM review_logs
+                WHERE card_id = ?
+                ORDER BY id
+                """,
+                (card_id,),
+            ).fetchall()
+        return [
+            ReviewLog(
+                id=row["id"],
+                card_id=row["card_id"],
+                reviewed_on=date.fromisoformat(row["reviewed_on"]),
+                grade=row["grade"],
+                retrieval_strength=row["retrieval_strength"],
+                next_due=date.fromisoformat(row["next_due"]),
+                created_on=date.fromisoformat(row["created_on"]) if row["created_on"] else None,
+            )
+            for row in rows
+        ]
 
     def count_due_cards(self, as_of: date) -> int:
         row = self._conn.execute(

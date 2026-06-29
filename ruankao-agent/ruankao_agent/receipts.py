@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Iterable
 
 from .loop import build_daily_loop_snapshot, status_line
-from .storage import MemoryCard, RawRecord, RuankaoStore
+from .storage import MemoryCard, RawRecord, ReviewLog, RuankaoStore
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,6 +36,8 @@ def write_daily_receipt(root: Path | str, *, as_of: date | None = None) -> Daily
 
     records = store.list_raw_records()
     cards = store.list_memory_cards()
+    review_logs = store.list_review_logs()
+    reviews_today = [log for log in review_logs if log.reviewed_on == day]
     due_cards = [card for card in cards if card.next_due is not None and card.next_due <= day]
     cheko_cards = [card for card in cards if card.title.startswith("Cheko")]
     cheko_due_cards = [card for card in cheko_cards if card.next_due is not None and card.next_due <= day]
@@ -55,6 +57,8 @@ def write_daily_receipt(root: Path | str, *, as_of: date | None = None) -> Daily
         review_backlog_ratio=snapshot.dashboard.review_backlog_ratio,
         records=records,
         cards=cards,
+        review_logs=review_logs,
+        reviews_today=reviews_today,
         due_cards=due_cards,
         cheko_cards=cheko_cards,
         cheko_due_cards=cheko_due_cards,
@@ -83,11 +87,13 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
     front_counts = payload["front_counts"]
     recent_records = payload["recent_records"]
     recent_cards = payload["recent_cards"]
+    recent_reviews = payload["recent_reviews"]
     assert isinstance(source_counts, dict)
     assert isinstance(card_type_counts, dict)
     assert isinstance(front_counts, dict)
     assert isinstance(recent_records, list)
     assert isinstance(recent_cards, list)
+    assert isinstance(recent_reviews, list)
 
     return f"""<!doctype html>
 <html lang="zh-CN">
@@ -200,6 +206,7 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
       <div class="grid">
         {_metric("原始材料", metrics["raw_records"])}
         {_metric("记忆卡", metrics["memory_cards"])}
+        {_metric("今日复习", metrics["reviews_today"])}
         {_metric("Cheko 卡", metrics["cheko_cards"])}
         {_metric("冗余消耗", payload["reserve_days_consumed"])}
       </div>
@@ -224,6 +231,10 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
       <h2>最近卡片</h2>
       <div class="list">{_recent_cards(recent_cards)}</div>
     </section>
+    <section>
+      <h2>最近复习</h2>
+      <div class="list">{_recent_reviews(recent_reviews)}</div>
+    </section>
   </main>
 </body>
 </html>
@@ -241,6 +252,8 @@ def _receipt_payload(
     review_backlog_ratio: float,
     records: list[RawRecord],
     cards: list[MemoryCard],
+    review_logs: list[ReviewLog],
+    reviews_today: list[ReviewLog],
     due_cards: list[MemoryCard],
     cheko_cards: list[MemoryCard],
     cheko_due_cards: list[MemoryCard],
@@ -257,6 +270,8 @@ def _receipt_payload(
         "metrics": {
             "raw_records": len(records),
             "memory_cards": len(cards),
+            "review_logs": len(review_logs),
+            "reviews_today": len(reviews_today),
             "due_cards": len(due_cards),
             "cheko_cards": len(cheko_cards),
             "cheko_due_cards": len(cheko_due_cards),
@@ -284,6 +299,17 @@ def _receipt_payload(
                 "review_count": card.review_count,
             }
             for card in cards[-8:]
+        ],
+        "recent_reviews": [
+            {
+                "id": log.id,
+                "card_id": log.card_id,
+                "reviewed_on": log.reviewed_on.isoformat(),
+                "grade": log.grade,
+                "retrieval_strength": log.retrieval_strength,
+                "next_due": log.next_due.isoformat(),
+            }
+            for log in review_logs[-8:]
         ],
     }
 
@@ -331,6 +357,21 @@ def _recent_cards(cards: list[object]) -> str:
             f"""<div class="item">
   <strong>#{escape(str(item["id"]))} {escape(str(item["title"]))}</strong>
   <div class="meta">type={escape(str(item["card_type"]))} | fronts={escape(", ".join(str(front) for front in item["fronts"]))} | due={escape(str(item["next_due"]))} | reviews={escape(str(item["review_count"]))}</div>
+</div>"""
+        )
+    return "".join(items)
+
+
+def _recent_reviews(reviews: list[object]) -> str:
+    if not reviews:
+        return '<div class="item">暂无复习记录</div>'
+    items = []
+    for item in reviews:
+        assert isinstance(item, dict)
+        items.append(
+            f"""<div class="item">
+  <strong>review #{escape(str(item["id"]))} card #{escape(str(item["card_id"]))}</strong>
+  <div class="meta">date={escape(str(item["reviewed_on"]))} | grade={escape(str(item["grade"]))} | strength={escape(str(item["retrieval_strength"]))} | next={escape(str(item["next_due"]))}</div>
 </div>"""
         )
     return "".join(items)

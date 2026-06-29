@@ -22,7 +22,7 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
         topics=("系统架构设计",),
         fronts=(ExamFront.CHOICE, ExamFront.CASE),
     )
-    store.add_memory_card(
+    card_id = store.add_memory_card(
         card_type=CardType.CONCEPT,
         title="质量属性场景",
         prompt="六要素是什么？",
@@ -30,6 +30,7 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
         fronts=(ExamFront.CHOICE, ExamFront.CASE),
         next_due=date(2026, 6, 29),
     )
+    store.record_review(card_id=card_id, reviewed_on=date(2026, 6, 29), grade=4)
     seed_cheko_cards(root, next_due=date(2026, 6, 29))
 
     result = write_daily_receipt(root, as_of=date(2026, 6, 29))
@@ -42,8 +43,10 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
     assert payload["as_of"] == "2026-06-29"
     assert payload["metrics"]["raw_records"] == 2
     assert payload["metrics"]["memory_cards"] == 5
-    assert payload["metrics"]["due_cards"] == 5
+    assert payload["metrics"]["due_cards"] == 4
     assert payload["metrics"]["cheko_cards"] == 4
+    assert payload["metrics"]["review_logs"] == 1
+    assert payload["metrics"]["reviews_today"] == 1
     assert payload["source_counts"] == {"mein": 1, "uns": 1}
     assert payload["front_counts"]["choice"] == 4
     assert payload["front_counts"]["essay"] == 1
@@ -53,6 +56,8 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
     assert "Cheko 到期" in html
     assert "质量属性场景" in html
     assert "错题归因完成" in html
+    assert "最近复习" in html
+    assert "grade=4" in html
 
 
 def test_cli_daily_receipt_prints_hook_friendly_paths(tmp_path) -> None:

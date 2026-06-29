@@ -188,3 +188,40 @@ cards instead of guessing from scattered files.
   - counts cover raw records, memory cards, due cards, Cheko cards, sources, and fronts;
   - the CLI prints hook-friendly paths and status;
   - the workbench can write and serve the daily HTML receipt.
+
+## 2026-06-29 Round 006 - Immutable Review History
+
+### Learner Friction
+
+The memory system updated a card after review, but it did not preserve each
+review attempt. That makes it impossible to later detect patterns such as
+"always failing the same concept", "improves after two exposures", or "essay
+expression cards decay faster than choice concepts".
+
+### Change
+
+- Added a `review_logs` SQLite table.
+- Added `ReviewLog` and `RuankaoStore.list_review_logs()`.
+- Updated `record_review()` to keep the current card scheduling behavior while
+  appending an immutable review log.
+- Extended daily receipts with:
+  - total review logs;
+  - today's review count;
+  - recent review attempts.
+
+### Learning Rule Captured
+
+A spaced-repetition system needs review history, not only current state. The
+current card state answers "what is next"; review history answers "how memory is
+actually changing".
+
+### Validation
+
+- `python3 -m pytest tests/test_storage_and_memory.py -q`
+- `python3 -m pytest tests/test_daily_receipt.py -q`
+- `python3 -m pytest -q`
+- `python3 -m ruankao_agent.cli init --root /tmp/ruankao-review-log-<id> --as-of 2026-06-29`
+- Tests assert:
+  - each review writes a durable log row;
+  - multiple attempts survive reopening the SQLite database;
+  - daily receipts include review log metrics and recent review grades.
