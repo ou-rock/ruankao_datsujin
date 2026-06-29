@@ -19,6 +19,7 @@ from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
 from .memory import MemoryDiagnostic, diagnose_memory
 from .receipts import daily_receipt_html_path, write_daily_receipt
+from .route_map import route_map_html_path, write_route_map
 from .storage import MemoryCard, RuankaoStore
 from .vault import initialize_vault, write_principle_note
 
@@ -170,6 +171,10 @@ class WorkbenchApp:
         evolution_date = _optional_date(_one(form, "as_of")) or self.today
         return write_night_evolution_plan(self.root, as_of=evolution_date)
 
+    def write_route_map(self, form: Mapping[str, list[str]]):
+        route_date = _optional_date(_one(form, "as_of")) or self.today
+        return write_route_map(self.root, as_of=route_date)
+
     def render_home(self, message: str = "") -> str:
         self.initialize()
         store = self.store()
@@ -197,6 +202,12 @@ class WorkbenchApp:
         evolution_link = (
             f'<a class="button secondary" href="/reports/nightly/{escape(self.today.isoformat())}.html">打开夜间草案</a>'
             if evolution_path.exists()
+            else ""
+        )
+        route_path = route_map_html_path(self.root, self.today)
+        route_link = (
+            f'<a class="button secondary" href="/reports/routes/{escape(self.today.isoformat())}.html">打开三题型覆盖图</a>'
+            if route_path.exists()
             else ""
         )
 
@@ -501,7 +512,11 @@ class WorkbenchApp:
               <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
               <button type="submit">生成夜间进化草案</button>
             </form>
-            <div class="footer-actions">{receipt_link}{evolution_link}</div>
+            <form method="post" action="/routes/map" style="margin-top:10px;">
+              <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
+              <button type="submit">生成三题型覆盖图</button>
+            </form>
+            <div class="footer-actions">{receipt_link}{evolution_link}{route_link}</div>
           </div>
         </div>
       </section>
@@ -799,6 +814,10 @@ def _handler_for(app: WorkbenchApp):
                         f"/?message=night-evolution-{result.as_of.isoformat()}"
                         f"-actions-{result.action_count}-staged"
                     )
+                    return
+                if self.path == "/routes/map":
+                    result = app.write_route_map(form)
+                    self._redirect(f"/?message=route-map-{result.as_of.isoformat()}-written")
                     return
             except Exception as exc:  # pragma: no cover - exercised by real browser use.
                 self.send_error(HTTPStatus.BAD_REQUEST, str(exc))

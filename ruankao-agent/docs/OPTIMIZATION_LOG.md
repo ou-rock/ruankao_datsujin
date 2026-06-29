@@ -329,3 +329,42 @@ every day.
 - README exposes both daily operations.
 - `python3 -m pytest -q`
 - `rg -n "ruankao-daily-close|ruankao-night-evolve|night-evolve|daily-receipt|cheko-seed-cards" .codex/commands README.md ruankao-agent/docs/OPTIMIZATION_LOG.md`
+
+## 2026-06-29 Round 010 - Three-Front Route Coverage Map
+
+### Learner Friction
+
+The workbench tracked cards and diagnostics, but it still did not answer a
+campaign-level question: are choice, case, and essay all being covered, or is one
+front silently starving?
+
+### Change
+
+- Added `ruankao_agent.route_map.write_route_map()`.
+- Generated JSON and HTML under `reports/routes/<date>.*`.
+- Added CLI command:
+  - `python3 -m ruankao_agent.cli route-map --root <root> --as-of <YYYY-MM-DD>`
+- Added a workbench action that posts to `/routes/map`.
+- Each front now reports:
+  - total cards;
+  - due cards;
+  - weak cards;
+  - untested cards;
+  - a route status and next action.
+
+### Learning Rule Captured
+
+The exam has three fronts. The system should keep all three visible, because a
+learner can feel busy while still starving case practice or essay expression.
+
+### Validation
+
+- `python3 -m pytest tests/test_route_map.py -q`
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- `python3 -m ruankao_agent.cli route-map --root /tmp/ruankao-route-map-<id> --as-of 2026-06-29`
+- Tests assert:
+  - route maps summarize choice, case, and essay coverage;
+  - weak cards turn the affected route red;
+  - the CLI prints report paths;
+  - the workbench can generate and serve the route coverage HTML.
