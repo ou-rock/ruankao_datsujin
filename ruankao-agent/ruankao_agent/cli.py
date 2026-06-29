@@ -9,6 +9,7 @@ from typing import Sequence
 from .cheko import seed_cheko_cards
 from .dashboard import render_dashboard
 from .evolution import write_night_evolution_plan
+from .export_state import write_state_export
 from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
 from .notebooklm import DEFAULT_NOTEBOOK_SOURCE
@@ -293,6 +294,17 @@ def cmd_seed_principles(root: Path, *, next_due: date | None = None) -> int:
     return 0
 
 
+def cmd_export_state(root: Path, *, as_of: date | None = None) -> int:
+    result = write_state_export(root, as_of=as_of)
+    print(
+        f"json={result.json_path} "
+        f"raw={result.raw_records} "
+        f"cards={result.memory_cards} "
+        f"practice={result.practice_sessions}"
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ruankao-agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -341,6 +353,10 @@ def build_parser() -> argparse.ArgumentParser:
     principles_parser.add_argument("--root", required=True, type=Path)
     principles_parser.add_argument("--next-due")
 
+    export_parser = subparsers.add_parser("export-state")
+    export_parser.add_argument("--root", required=True, type=Path)
+    export_parser.add_argument("--as-of")
+
     return parser
 
 
@@ -378,6 +394,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_raw_vault_sync(args.root, overwrite=args.overwrite)
     if args.command == "seed-principles":
         return cmd_seed_principles(args.root, next_due=_parse_date(args.next_due))
+    if args.command == "export-state":
+        return cmd_export_state(args.root, as_of=_parse_date(args.as_of))
     raise AssertionError(f"Unsupported command: {args.command}")
 
 

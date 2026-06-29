@@ -836,6 +836,30 @@ constraint, and feedback; learning improves when the graph becomes explicit.
   - repeated seeding skips existing relations;
   - Cheko seed output remains unchanged.
 
+## 2026-06-29 Round 025 - Architect Review Command
+
+### Learner Friction
+
+The architect-thinking skill seed existed, but the learner still needed an easy
+Codex entry point to apply it to an answer, design, or essay paragraph.
+
+### Change
+
+- Added `.codex/commands/ruankao-architect-review.md`.
+- Linked the command from README.
+- The command points Codex to the local `architect-thinking/SKILL.md` and asks it
+  to apply the Core Seven review shape.
+
+### Learning Rule Captured
+
+A principle kernel becomes useful when it is applied repeatedly to real answers.
+The review command makes that application path explicit.
+
+### Validation
+
+- Command doc points at the local skill file.
+- README lists the command with the other daily operations.
+
 ## 2026-06-29 Round 026 - Practice Score Ratios In Reports
 
 ### Learner Friction
@@ -865,26 +889,34 @@ track both.
   - daily receipt shows a 70% practice score ratio for 7/10;
   - route map shows a 75% front score ratio for 3/4.
 
-## 2026-06-29 Round 025 - Architect Review Command
+## 2026-06-29 Round 027 - Local State JSON Export
 
 ### Learner Friction
 
-The architect-thinking skill seed existed, but the learner still needed an easy
-Codex entry point to apply it to an answer, design, or essay paragraph.
+The SQLite store now carries raw notes, memory cards, reviews, practice logs,
+and principle relations. That is enough local state that the learner needs a
+single backup and audit artifact outside the live database.
 
 ### Change
 
-- Added `.codex/commands/ruankao-architect-review.md`.
-- Linked the command from README.
-- The command points Codex to the local `architect-thinking/SKILL.md` and asks it
-  to apply the Core Seven review shape.
+- Added `export_state.py` to write `exports/state-YYYY-MM-DD.json`.
+- Export includes schema version, metrics, raw records, memory cards, review
+  logs, practice sessions, and principle relations.
+- Added `ruankao-agent export-state --root ... --as-of ...`.
+- Added a workbench button plus `/exports/...` JSON serving.
+- Ignored `ruankao-agent/exports/` so personal backups are not committed.
 
 ### Learning Rule Captured
 
-A principle kernel becomes useful when it is applied repeatedly to real answers.
-The review command makes that application path explicit.
+Memory is strategic only if it is portable. A local-first learner agent needs a
+recoverable state snapshot, not just a live database.
 
 ### Validation
 
-- Command doc points at the local skill file.
-- README lists the command with the other daily operations.
+- `python3 -m pytest tests/test_export_state.py -q`
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- Tests assert:
+  - the export captures all current store tables;
+  - the CLI prints a hook-friendly export path;
+  - the workbench can create and serve the JSON snapshot.

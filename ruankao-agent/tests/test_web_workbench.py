@@ -8,6 +8,7 @@ from ruankao_agent.storage import RuankaoStore
 from ruankao_agent.web import (
     WorkbenchApp,
     WorkbenchConfig,
+    _export_relative_path,
     _learning_relative_path,
     _report_relative_path,
     _vault_relative_path,
@@ -29,6 +30,7 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert "生成日结回执" in html
     assert "生成夜间进化草案" in html
     assert "生成三题型覆盖图" in html
+    assert "导出本地状态 JSON" in html
     assert "练习记录" in html
     assert "三源录入" in html
     assert "记忆卡" in html
@@ -37,6 +39,7 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert 'action="/daily/receipt"' in html
     assert 'action="/night/evolve"' in html
     assert 'action="/routes/map"' in html
+    assert 'action="/state/export"' in html
     assert 'action="/cheko/cards"' in html
     assert 'action="/practice"' in html
     assert 'action="/vault/sync"' in html
@@ -209,6 +212,28 @@ def test_workbench_can_write_and_serve_route_map(tmp_path) -> None:
     assert 'href="/reports/routes/2026-06-29.html"' in home
 
 
+def test_workbench_can_export_and_serve_local_state(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+    app.initialize()
+    app.add_memory_card(
+        parse_qs(
+            "card_type=concept&title=质量属性场景&prompt=六要素是什么"
+            "&answer=刺激源、刺激、环境、制品、响应、响应度量"
+            "&fronts=case"
+        )
+    )
+
+    result = app.write_state_export(parse_qs("as_of=2026-06-29"))
+    payload = app.render_export_file("state-2026-06-29.json")
+    home = app.render_home()
+
+    assert result.as_of == date(2026, 6, 29)
+    assert '"memory_cards": 1' in payload
+    assert "质量属性场景" in payload
+    assert 'href="/exports/state-2026-06-29.json"' in home
+
+
 def test_workbench_can_sync_memory_cards_to_vault(tmp_path) -> None:
     root = tmp_path / "demo"
     app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
@@ -298,6 +323,13 @@ def test_report_request_paths_are_decoded_before_file_lookup() -> None:
     assert (
         _report_relative_path("/reports/daily/%E6%97%A5%E7%BB%93.html")
         == "daily/日结.html"
+    )
+
+
+def test_export_request_paths_are_decoded_before_file_lookup() -> None:
+    assert (
+        _export_relative_path("/exports/state-%E6%97%A5%E7%BB%93.json")
+        == "state-日结.json"
     )
 
 

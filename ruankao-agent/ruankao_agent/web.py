@@ -15,6 +15,7 @@ from .cheko import ChekoSeedResult, seed_cheko_cards as seed_cheko_memory_cards
 from .dashboard import render_dashboard
 from .domain import CardType, ExamFront, PrincipleRelationType, SourceIdentity
 from .evolution import night_evolution_html_path, write_night_evolution_plan
+from .export_state import state_export_path, write_state_export as write_local_state_export
 from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
 from .memory import MemoryDiagnostic, diagnose_memory
@@ -58,6 +59,10 @@ class WorkbenchApp:
     @property
     def reports_path(self) -> Path:
         return self.root / "reports"
+
+    @property
+    def exports_path(self) -> Path:
+        return self.root / "exports"
 
     @property
     def today(self) -> date:
@@ -196,6 +201,10 @@ class WorkbenchApp:
         route_date = _optional_date(_one(form, "as_of")) or self.today
         return write_route_map(self.root, as_of=route_date)
 
+    def write_state_export(self, form: Mapping[str, list[str]]):
+        export_date = _optional_date(_one(form, "as_of")) or self.today
+        return write_local_state_export(self.root, as_of=export_date)
+
     def sync_memory_cards_to_vault(self, form: Mapping[str, list[str]]):
         store = self.store()
         store.initialize()
@@ -250,6 +259,12 @@ class WorkbenchApp:
         route_link = (
             f'<a class="button secondary" href="/reports/routes/{escape(self.today.isoformat())}.html">打开三题型覆盖图</a>'
             if route_path.exists()
+            else ""
+        )
+        export_path = state_export_path(self.root, self.today)
+        export_link = (
+            f'<a class="button secondary" href="/exports/state-{escape(self.today.isoformat())}.json">打开本地状态导出</a>'
+            if export_path.exists()
             else ""
         )
 
@@ -561,7 +576,11 @@ class WorkbenchApp:
               <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
               <button type="submit">生成三题型覆盖图</button>
             </form>
-            <div class="footer-actions">{receipt_link}{evolution_link}{route_link}</div>
+            <form method="post" action="/state/export" style="margin-top:10px;">
+              <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
+              <button type="submit">导出本地状态 JSON</button>
+            </form>
+            <div class="footer-actions">{receipt_link}{evolution_link}{route_link}{export_link}</div>
           </div>
         </div>
       </section>
@@ -769,6 +788,7 @@ class WorkbenchApp:
           <a class="button secondary" href="/learning/">打开学习台</a>
           <a class="button secondary" href="/dashboard.html">打开静态 HTML 总图</a>
           <a class="button secondary" href="/api/status">查看状态 JSON</a>
+          {export_link}
         </div>
         <form method="post" action="/vault/sync" style="margin-top:10px;">
           <button type="submit">同步记忆卡到 Obsidian</button>
@@ -796,6 +816,10 @@ class WorkbenchApp:
         target = self._safe_report_file(relative)
         return target.read_text(encoding="utf-8")
 
+    def render_export_file(self, relative: str) -> str:
+        target = self._safe_export_file(relative)
+        return target.read_text(encoding="utf-8")
+
     def _safe_learning_file(self, relative: str) -> Path:
         learning_root = self.learning_path.resolve()
         target = (learning_root / relative).resolve()
@@ -809,6 +833,15 @@ class WorkbenchApp:
         reports_root = self.reports_path.resolve()
         target = (reports_root / relative).resolve()
         if reports_root not in target.parents and target != reports_root:
+            raise PermissionError(relative)
+        if not target.exists() or not target.is_file():
+            raise FileNotFoundError(relative)
+        return target
+
+    def _safe_export_file(self, relative: str) -> Path:
+        exports_root = self.exports_path.resolve()
+        target = (exports_root / relative).resolve()
+        if exports_root not in target.parents and target != exports_root:
             raise PermissionError(relative)
         if not target.exists() or not target.is_file():
             raise FileNotFoundError(relative)
@@ -873,6 +906,9 @@ def _handler_for(app: WorkbenchApp):
             if parsed.path.startswith("/reports/"):
                 self._send_report_file(_report_relative_path(parsed.path))
                 return
+            if parsed.path.startswith("/exports/"):
+                self._send_export_file(_export_relative_path(parsed.path))
+                return
             if parsed.path.startswith("/vault/"):
                 self._send_vault_file(_vault_relative_path(parsed.path))
                 return
@@ -922,6 +958,10 @@ def _handler_for(app: WorkbenchApp):
                 if self.path == "/routes/map":
                     result = app.write_route_map(form)
                     self._redirect(f"/?message=route-map-{result.as_of.isoformat()}-written")
+                    return
+                if self.path == "/state/export":
+                    result = app.write_state_export(form)
+                    self._redirect(f"/?message=state-export-{result.as_of.isoformat()}-written")
                     return
                 if self.path == "/vault/sync":
                     result = app.sync_memory_cards_to_vault(form)
@@ -988,6 +1028,14 @@ def _handler_for(app: WorkbenchApp):
             except FileNotFoundError:
                 self.send_error(HTTPStatus.NOT_FOUND, "Not found")
 
+        def _send_export_file(self, relative: str) -> None:
+            try:
+                self._send_text(app.render_export_file(relative), "application/json; charset=utf-8")
+            except PermissionError:
+                self.send_error(HTTPStatus.FORBIDDEN, "Forbidden")
+            except FileNotFoundError:
+                self.send_error(HTTPStatus.NOT_FOUND, "Not found")
+
         def _redirect(self, location: str) -> None:
             self.send_response(HTTPStatus.SEE_OTHER)
             self.send_header("Location", location)
@@ -1013,6 +1061,10 @@ def _learning_relative_path(request_path: str) -> str:
 
 def _report_relative_path(request_path: str) -> str:
     return unquote(request_path.removeprefix("/reports/"))
+
+
+def _export_relative_path(request_path: str) -> str:
+    return unquote(request_path.removeprefix("/exports/"))
 
 
 def _optional_int(value: str) -> int | None:
