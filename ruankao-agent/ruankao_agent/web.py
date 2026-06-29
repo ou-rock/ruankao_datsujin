@@ -21,7 +21,7 @@ from .memory import MemoryDiagnostic, diagnose_memory
 from .receipts import daily_receipt_html_path, write_daily_receipt
 from .route_map import route_map_html_path, write_route_map
 from .storage import MemoryCard, PracticeSession, RuankaoStore
-from .vault import initialize_vault, write_principle_note
+from .vault import initialize_vault, sync_memory_cards_to_vault, write_principle_note
 
 
 @dataclass(frozen=True, slots=True)
@@ -190,6 +190,16 @@ class WorkbenchApp:
     def write_route_map(self, form: Mapping[str, list[str]]):
         route_date = _optional_date(_one(form, "as_of")) or self.today
         return write_route_map(self.root, as_of=route_date)
+
+    def sync_memory_cards_to_vault(self, form: Mapping[str, list[str]]):
+        store = self.store()
+        store.initialize()
+        overwrite = _one(form, "overwrite") == "1"
+        return sync_memory_cards_to_vault(
+            self.vault_path,
+            store.list_memory_cards(),
+            overwrite=overwrite,
+        )
 
     def render_home(self, message: str = "") -> str:
         self.initialize()
@@ -745,6 +755,9 @@ class WorkbenchApp:
           <a class="button secondary" href="/dashboard.html">打开静态 HTML 总图</a>
           <a class="button secondary" href="/api/status">查看状态 JSON</a>
         </div>
+        <form method="post" action="/vault/sync" style="margin-top:10px;">
+          <button type="submit">同步记忆卡到 Obsidian</button>
+        </form>
       </section>
     </div>
   </main>
@@ -891,6 +904,13 @@ def _handler_for(app: WorkbenchApp):
                 if self.path == "/routes/map":
                     result = app.write_route_map(form)
                     self._redirect(f"/?message=route-map-{result.as_of.isoformat()}-written")
+                    return
+                if self.path == "/vault/sync":
+                    result = app.sync_memory_cards_to_vault(form)
+                    self._redirect(
+                        f"/?message=vault-sync-written-{len(result.written_paths)}"
+                        f"-skipped-{len(result.skipped_paths)}"
+                    )
                     return
             except Exception as exc:  # pragma: no cover - exercised by real browser use.
                 self.send_error(HTTPStatus.BAD_REQUEST, str(exc))

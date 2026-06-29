@@ -39,6 +39,7 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert 'action="/routes/map"' in html
     assert 'action="/cheko/cards"' in html
     assert 'action="/practice"' in html
+    assert 'action="/vault/sync"' in html
     assert 'action="/records"' in html
     assert 'action="/cards"' in html
     assert 'action="/relations"' in html
@@ -205,6 +206,26 @@ def test_workbench_can_write_and_serve_route_map(tmp_path) -> None:
     assert "选择题" in html
     assert "论文题" in html
     assert 'href="/reports/routes/2026-06-29.html"' in home
+
+
+def test_workbench_can_sync_memory_cards_to_vault(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+    app.initialize()
+    app.add_memory_card(
+        parse_qs(
+            "card_type=concept&title=质量属性场景&prompt=六要素是什么"
+            "&answer=刺激源、刺激、环境、制品、响应、响应度量"
+            "&fronts=choice&fronts=case"
+        )
+    )
+
+    result = app.sync_memory_cards_to_vault(parse_qs(""))
+
+    note = root / "vault" / "10-memory-war-room" / "concepts" / "质量属性场景.md"
+    assert len(result.written_paths) == 1
+    assert note.exists()
+    assert "type: memory-card" in note.read_text(encoding="utf-8")
 
 
 def test_workbench_status_json_exposes_current_route(tmp_path) -> None:

@@ -1,8 +1,9 @@
 from datetime import date
 
 from ruankao_agent.dashboard import DashboardSnapshot, render_dashboard
-from ruankao_agent.domain import Campaign, RiskStatus
-from ruankao_agent.vault import initialize_vault, write_principle_note
+from ruankao_agent.domain import Campaign, CardType, ExamFront, RiskStatus
+from ruankao_agent.storage import RuankaoStore
+from ruankao_agent.vault import initialize_vault, sync_memory_cards_to_vault, write_principle_note
 
 
 def test_initialize_vault_creates_expected_obsidian_structure(tmp_path) -> None:
@@ -41,6 +42,34 @@ def test_principle_note_uses_obsidian_links(tmp_path) -> None:
     assert "[[技术先行]]" in text
     assert "type: principle" in text
     assert "场景先于方案" in text
+
+
+def test_sync_memory_cards_to_vault_writes_generated_obsidian_notes(tmp_path) -> None:
+    root = tmp_path / "demo"
+    vault = initialize_vault(root / "vault")
+    store = RuankaoStore(root / "data" / "ruankao.db")
+    store.initialize()
+    store.add_memory_card(
+        card_type=CardType.CONCEPT,
+        title="质量属性场景",
+        prompt="六要素是什么？",
+        answer="刺激源、刺激、环境、制品、响应、响应度量。",
+        fronts=(ExamFront.CHOICE, ExamFront.CASE),
+        next_due=date(2026, 6, 29),
+    )
+
+    first = sync_memory_cards_to_vault(vault, store.list_memory_cards())
+    second = sync_memory_cards_to_vault(vault, store.list_memory_cards())
+
+    note = vault / "10-memory-war-room" / "concepts" / "质量属性场景.md"
+    assert len(first.written_paths) == 1
+    assert len(second.skipped_paths) == 1
+    assert note.exists()
+    text = note.read_text(encoding="utf-8")
+    assert "type: memory-card" in text
+    assert "card_type: concept" in text
+    assert "choice" in text
+    assert "刺激源、刺激、环境" in text
 
 
 def test_dashboard_renders_total_map() -> None:

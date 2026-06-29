@@ -603,3 +603,38 @@ holds it.
 - Tests assert:
   - schema version is written and survives reopen;
   - daily receipts include a non-unknown schema version.
+
+## 2026-06-29 Round 018 - Memory Cards To Obsidian Vault
+
+### Learner Friction
+
+The Memory War Room existed in SQLite and the vault had directories, but ordinary
+memory cards were not yet visible as Obsidian notes. That made the knowledge
+network harder to browse and manually refine.
+
+### Change
+
+- Added `sync_memory_cards_to_vault()`.
+- Added generated markdown notes under the existing `10-memory-war-room` card
+  type directories.
+- Added CLI command:
+  - `python3 -m ruankao_agent.cli vault-sync --root <root>`
+- Added workbench action that posts to `/vault/sync`.
+- Default behavior is non-destructive: existing notes are skipped unless
+  overwrite is explicitly requested.
+
+### Learning Rule Captured
+
+SQLite remains the scheduling fact source, but Obsidian should expose the memory
+network for browsing, linking, and manual improvement.
+
+### Validation
+
+- `python3 -m pytest tests/test_vault_and_dashboard.py -q`
+- `python3 -m pytest tests/test_cli.py -q`
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- Tests assert:
+  - memory cards become markdown notes in the right type directory;
+  - repeated sync skips existing notes by default;
+  - CLI and workbench sync paths work.

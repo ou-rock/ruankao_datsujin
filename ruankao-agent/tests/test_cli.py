@@ -196,3 +196,43 @@ def test_cli_status_reflects_practice_front_gaps_after_practice_starts(tmp_path)
 
     assert recovered_result.returncode == 0, recovered_result.stderr
     assert "green" in recovered_result.stdout.lower()
+
+
+def test_cli_vault_sync_exports_memory_cards(tmp_path) -> None:
+    root = tmp_path / "demo"
+    subprocess.run(
+        [sys.executable, "-m", "ruankao_agent.cli", "init", "--root", str(root), "--as-of", "2026-06-29"],
+        cwd=".",
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    store = RuankaoStore(root / "data" / "ruankao.db")
+    store.initialize()
+    store.add_memory_card(
+        card_type=CardType.CONCEPT,
+        title="质量属性场景",
+        prompt="六要素是什么？",
+        answer="刺激源、刺激、环境、制品、响应、响应度量。",
+        fronts=(ExamFront.CHOICE, ExamFront.CASE),
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ruankao_agent.cli",
+            "vault-sync",
+            "--root",
+            str(root),
+        ],
+        cwd=".",
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "written=1" in result.stdout
+    assert (root / "vault" / "10-memory-war-room" / "concepts" / "质量属性场景.md").exists()

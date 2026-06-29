@@ -14,6 +14,7 @@ from .loop import build_daily_loop_snapshot, status_line
 from .notebooklm import DEFAULT_NOTEBOOK_SOURCE
 from .receipts import write_daily_receipt
 from .route_map import write_route_map
+from .vault import sync_memory_cards_to_vault
 from .web import serve_workbench
 
 
@@ -255,6 +256,18 @@ def cmd_route_map(root: Path, *, as_of: date | None = None) -> int:
     return 0
 
 
+def cmd_vault_sync(root: Path, *, overwrite: bool = False) -> int:
+    store = _open_store(root)
+    cards = store.list_memory_cards() if store is not None else []
+    result = sync_memory_cards_to_vault(root / "vault", cards, overwrite=overwrite)
+    print(
+        f"written={len(result.written_paths)} "
+        f"skipped={len(result.skipped_paths)} "
+        f"vault={root / 'vault'}"
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ruankao-agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -291,6 +304,10 @@ def build_parser() -> argparse.ArgumentParser:
     route_parser.add_argument("--root", required=True, type=Path)
     route_parser.add_argument("--as-of")
 
+    vault_parser = subparsers.add_parser("vault-sync")
+    vault_parser.add_argument("--root", required=True, type=Path)
+    vault_parser.add_argument("--overwrite", action="store_true")
+
     return parser
 
 
@@ -322,6 +339,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_night_evolve(args.root, as_of=_parse_date(args.as_of))
     if args.command == "route-map":
         return cmd_route_map(args.root, as_of=_parse_date(args.as_of))
+    if args.command == "vault-sync":
+        return cmd_vault_sync(args.root, overwrite=args.overwrite)
     raise AssertionError(f"Unsupported command: {args.command}")
 
 
