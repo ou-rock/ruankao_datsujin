@@ -439,3 +439,39 @@ not healthy yet.
   - route maps include practice counts and latest practice date;
   - weak-card routes remain red;
   - rendered HTML shows practice metrics.
+
+## 2026-06-29 Round 013 - Risk Reads Practice Coverage
+
+### Learner Friction
+
+Practice sessions were stored, but the main status line still treated case and
+essay gaps as healthy because loop signals used placeholder values. That could
+make the dashboard green while the learner only practiced choice questions.
+
+### Change
+
+- Extended `build_daily_loop_snapshot()` with `practice_sessions`.
+- Computed:
+  - fronts absent in the last 7 days;
+  - days since latest case practice;
+  - days since latest essay practice;
+  - completed essay practice count.
+- Passed practice sessions from CLI/dashboard and workbench snapshots.
+- Preserved old empty-database behavior: if no practice sessions exist yet, the
+  system does not punish the learner for unknown history.
+
+### Learning Rule Captured
+
+Risk should be evidence-based. Once practice tracking begins, the system should
+use real practice coverage instead of optimistic defaults.
+
+### Validation
+
+- `python3 -m pytest tests/test_cli.py -q`
+- `python3 -m pytest tests/test_campaign_and_risk.py -q`
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- Tests assert:
+  - fresh init can still start green;
+  - once practice tracking starts, choice-only practice makes missing case/essay red;
+  - touching all three fronts can recover the status to green.

@@ -3,7 +3,7 @@ import sys
 
 from datetime import date
 
-from ruankao_agent.domain import CardType
+from ruankao_agent.domain import CardType, ExamFront
 from ruankao_agent.storage import RuankaoStore
 
 
@@ -123,3 +123,76 @@ def test_cli_status_and_dashboard_reflect_persisted_store_state(tmp_path) -> Non
     assert "Review backlog" in html
     assert "100%" in html
     assert ">red<" in html
+
+
+def test_cli_status_reflects_practice_front_gaps_after_practice_starts(tmp_path) -> None:
+    root = tmp_path / "demo"
+    subprocess.run(
+        [sys.executable, "-m", "ruankao_agent.cli", "init", "--root", str(root), "--as-of", "2026-06-29"],
+        cwd=".",
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    store = RuankaoStore(root / "data" / "ruankao.db")
+    store.initialize()
+    store.add_practice_session(
+        front=ExamFront.CHOICE,
+        topic="选择题 10 道",
+        summary="只做了选择题。",
+        created_on=date(2026, 6, 29),
+    )
+
+    status_result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ruankao_agent.cli",
+            "status",
+            "--root",
+            str(root),
+            "--as-of",
+            "2026-06-29",
+        ],
+        cwd=".",
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert status_result.returncode == 0, status_result.stderr
+    assert "red" in status_result.stdout.lower()
+
+    store.add_practice_session(
+        front=ExamFront.CASE,
+        topic="案例题质量属性",
+        summary="补了一题案例。",
+        created_on=date(2026, 6, 29),
+    )
+    store.add_practice_session(
+        front=ExamFront.ESSAY,
+        topic="论文背景段",
+        summary="补了一段论文。",
+        created_on=date(2026, 6, 29),
+    )
+
+    recovered_result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ruankao_agent.cli",
+            "status",
+            "--root",
+            str(root),
+            "--as-of",
+            "2026-06-29",
+        ],
+        cwd=".",
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert recovered_result.returncode == 0, recovered_result.stderr
+    assert "green" in recovered_result.stdout.lower()

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 from .dashboard import DashboardSnapshot
 from .notebooklm import DEFAULT_NOTEBOOK_SOURCE
@@ -50,30 +50,36 @@ def _evaluate_risk(signals: Any) -> Any:
     return _risk_status_green()
 
 
-def _build_signals(as_of: date, campaign: Any, review_backlog_ratio: float) -> Any:
+def _build_signals(
+    as_of: date,
+    campaign: Any,
+    review_backlog_ratio: float,
+    practice_sessions: Sequence[Any] = (),
+) -> Any:
     domain_module = _load_domain()
     days_remaining = campaign.days_remaining(as_of)
+    practice_signal = _practice_signal(as_of, practice_sessions)
     if domain_module is not None and hasattr(domain_module, "DailySignals"):
         daily_signals = getattr(domain_module, "DailySignals")
         return daily_signals(
             consecutive_missed_minimum_days=0,
-            absent_fronts_this_week=(),
+            absent_fronts_this_week=practice_signal["absent_fronts_this_week"],
             review_backlog_ratio=review_backlog_ratio,
-            days_since_essay=0,
-            days_since_case=0,
+            days_since_essay=practice_signal["days_since_essay"],
+            days_since_case=practice_signal["days_since_case"],
             reserve_days_consumed=campaign.reserve_days_consumed(as_of),
             days_to_exam=days_remaining,
-            completed_essay_count=0,
+            completed_essay_count=practice_signal["completed_essay_count"],
         )
     return _FallbackSignals(
         consecutive_missed_minimum_days=0,
-        absent_fronts_this_week=(),
+        absent_fronts_this_week=practice_signal["absent_fronts_this_week"],
         review_backlog_ratio=review_backlog_ratio,
-        days_since_essay=0,
-        days_since_case=0,
+        days_since_essay=practice_signal["days_since_essay"],
+        days_since_case=practice_signal["days_since_case"],
         reserve_days_consumed=campaign.reserve_days_consumed(as_of),
         days_to_exam=days_remaining,
-        completed_essay_count=0,
+        completed_essay_count=practice_signal["completed_essay_count"],
     )
 
 
@@ -83,11 +89,17 @@ def build_daily_loop_snapshot(
     notebook_source_name: str = DEFAULT_NOTEBOOK_SOURCE.title,
     due_cards: int = 0,
     review_backlog_ratio: float = 0.0,
+    practice_sessions: Sequence[Any] = (),
     campaign: Any | None = None,
 ) -> DailyLoopSnapshot:
     current_date = as_of or date.today()
     current_campaign = campaign or _campaign_default()
-    signals = _build_signals(current_date, current_campaign, review_backlog_ratio)
+    signals = _build_signals(
+        current_date,
+        current_campaign,
+        review_backlog_ratio,
+        practice_sessions,
+    )
     risk = _evaluate_risk(signals)
     dashboard = DashboardSnapshot(
         campaign=current_campaign,
@@ -111,6 +123,48 @@ def build_daily_loop_snapshot(
         reserve_days_consumed=reserve_days_consumed,
         notebook_source_name=notebook_source_name,
     )
+
+
+def _practice_signal(as_of: date, practice_sessions: Sequence[Any]) -> dict[str, Any]:
+    sessions = [
+        session
+        for session in practice_sessions
+        if getattr(session, "created_on", None) is not None
+    ]
+    if not sessions:
+        return {
+            "absent_fronts_this_week": (),
+            "days_since_essay": 0,
+            "days_since_case": 0,
+            "completed_essay_count": 0,
+        }
+
+    front_dates: dict[str, list[date]] = {"choice": [], "case": [], "essay": []}
+    for session in sessions:
+        front = getattr(getattr(session, "front", ""), "value", getattr(session, "front", ""))
+        created_on = getattr(session, "created_on")
+        if front in front_dates and isinstance(created_on, date):
+            front_dates[front].append(created_on)
+
+    week_start = as_of - timedelta(days=6)
+    recent_fronts = {
+        front
+        for front, dates in front_dates.items()
+        if any(week_start <= day <= as_of for day in dates)
+    }
+    absent_fronts = tuple(front for front in ("choice", "case", "essay") if front not in recent_fronts)
+    return {
+        "absent_fronts_this_week": absent_fronts,
+        "days_since_essay": _days_since_latest(as_of, front_dates["essay"]),
+        "days_since_case": _days_since_latest(as_of, front_dates["case"]),
+        "completed_essay_count": len(front_dates["essay"]),
+    }
+
+
+def _days_since_latest(as_of: date, dates: list[date]) -> int:
+    if not dates:
+        return 999
+    return max(0, (as_of - max(dates)).days)
 
 
 def status_line(snapshot: DailyLoopSnapshot) -> str:

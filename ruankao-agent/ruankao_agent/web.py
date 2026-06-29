@@ -88,6 +88,7 @@ class WorkbenchApp:
             as_of=self.today,
             due_cards=store.count_due_cards(self.today),
             review_backlog_ratio=store.review_backlog_ratio(self.today),
+            practice_sessions=store.list_practice_sessions(),
         )
 
     def write_dashboard(self) -> Path:

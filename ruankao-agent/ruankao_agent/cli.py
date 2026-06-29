@@ -158,10 +158,18 @@ def _dashboard_snapshot(root: Path, *, as_of: date | None = None):
             due_cards = store.count_due_cards(effective_date)
         if hasattr(store, "review_backlog_ratio"):
             backlog = store.review_backlog_ratio(effective_date)
+        practice_sessions = (
+            store.list_practice_sessions()
+            if hasattr(store, "list_practice_sessions")
+            else ()
+        )
+    else:
+        practice_sessions = ()
     return build_daily_loop_snapshot(
         as_of=as_of,
         due_cards=due_cards,
         review_backlog_ratio=backlog,
+        practice_sessions=practice_sessions,
     )
 
 
