@@ -35,6 +35,8 @@ def test_route_map_summarizes_choice_case_and_essay_fronts(tmp_path) -> None:
         front=ExamFront.ESSAY,
         topic="项目背景段",
         source="自写",
+        score=3,
+        max_score=4,
         summary="写了项目背景段。",
         mistakes="项目规模不够具体。",
         created_on=date(2026, 6, 29),
@@ -52,6 +54,7 @@ def test_route_map_summarizes_choice_case_and_essay_fronts(tmp_path) -> None:
     assert by_front["essay"]["untested_cards"] == 1
     assert by_front["essay"]["practice_sessions"] == 1
     assert by_front["essay"]["practice_today"] == 1
+    assert by_front["essay"]["average_score_ratio"] == 0.75
     assert by_front["essay"]["last_practice_on"] == "2026-06-29"
 
     html = result.html_path.read_text(encoding="utf-8")
@@ -60,6 +63,7 @@ def test_route_map_summarizes_choice_case_and_essay_fronts(tmp_path) -> None:
     assert "案例题" in html
     assert "论文题" in html
     assert "今日练习" in html
+    assert "75%" in html
 
 
 def test_cli_route_map_prints_report_paths(tmp_path) -> None:

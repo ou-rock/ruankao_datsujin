@@ -206,6 +206,7 @@ def _front_route(
         "untested_cards": len(untested),
         "practice_sessions": len(route_practice),
         "practice_today": len(practice_today),
+        "average_score_ratio": _average_score_ratio(route_practice),
         "last_practice_on": last_practice.isoformat() if last_practice else None,
         "focus_titles": focus_titles,
     }
@@ -250,6 +251,7 @@ def _route_cards(routes: list[object]) -> str:
     {_metric("未测", route["untested_cards"])}
     {_metric("练习", route["practice_sessions"])}
     {_metric("今日练习", route["practice_today"])}
+    {_metric("均分率", _ratio_text(route["average_score_ratio"]))}
   </div>
   <div class="meta">last_practice={escape(str(route["last_practice_on"]))} | focus={escape(focus)}</div>
 </section>"""
@@ -262,3 +264,20 @@ def _metric(label: str, value: object) -> str:
         f'<div class="metric"><span>{escape(label)}</span>'
         f"<strong>{escape(str(value))}</strong></div>"
     )
+
+
+def _average_score_ratio(sessions: list[PracticeSession]) -> float | None:
+    ratios = [
+        float(session.score) / float(session.max_score)
+        for session in sessions
+        if session.score is not None and session.max_score not in (None, 0)
+    ]
+    if not ratios:
+        return None
+    return round(sum(ratios) / len(ratios), 4)
+
+
+def _ratio_text(value: object) -> str:
+    if value is None:
+        return "none"
+    return f"{float(value):.0%}"

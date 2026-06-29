@@ -224,6 +224,7 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
         {_metric("记忆卡", metrics["memory_cards"])}
         {_metric("今日复习", metrics["reviews_today"])}
         {_metric("今日练习", metrics["practice_today"])}
+        {_metric("练习得分率", _ratio_text(metrics["practice_score_ratio"]))}
         {_metric("薄弱卡", metrics["weak_memory_cards"])}
         {_metric("Cheko 卡", metrics["cheko_cards"])}
         {_metric("冗余消耗", payload["reserve_days_consumed"])}
@@ -309,6 +310,7 @@ def _receipt_payload(
             "reviews_today": len(reviews_today),
             "practice_sessions": len(practice_sessions),
             "practice_today": len(practice_today),
+            "practice_score_ratio": _average_practice_score_ratio(practice_sessions),
             "weak_memory_cards": sum(
                 1 for diagnostic in diagnostics if diagnostic.status in {"leech", "unstable"}
             ),
@@ -490,3 +492,20 @@ def _score_text(score: object, max_score: object) -> str:
     if max_score is None:
         return str(score)
     return f"{score}/{max_score}"
+
+
+def _average_practice_score_ratio(sessions: list[PracticeSession]) -> float | None:
+    ratios = [
+        float(session.score) / float(session.max_score)
+        for session in sessions
+        if session.score is not None and session.max_score not in (None, 0)
+    ]
+    if not ratios:
+        return None
+    return round(sum(ratios) / len(ratios), 4)
+
+
+def _ratio_text(value: object) -> str:
+    if value is None:
+        return "none"
+    return f"{float(value):.0%}"

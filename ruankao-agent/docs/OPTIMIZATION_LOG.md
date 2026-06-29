@@ -836,6 +836,35 @@ constraint, and feedback; learning improves when the graph becomes explicit.
   - repeated seeding skips existing relations;
   - Cheko seed output remains unchanged.
 
+## 2026-06-29 Round 026 - Practice Score Ratios In Reports
+
+### Learner Friction
+
+Practice sessions stored score and max score, but daily receipts and route maps
+did not summarize score quality. The learner could see that practice happened,
+but not how well it went.
+
+### Change
+
+- Added per-front `average_score_ratio` to route maps.
+- Added overall `practice_score_ratio` to daily receipts.
+- Ratios only use sessions with both `score` and positive `max_score`.
+- HTML renders ratios as percentages and shows `none` when no valid score exists.
+
+### Learning Rule Captured
+
+Practice volume and practice quality are different signals. The system should
+track both.
+
+### Validation
+
+- `python3 -m pytest tests/test_daily_receipt.py -q`
+- `python3 -m pytest tests/test_route_map.py -q`
+- `python3 -m pytest -q`
+- Tests assert:
+  - daily receipt shows a 70% practice score ratio for 7/10;
+  - route map shows a 75% front score ratio for 3/4.
+
 ## 2026-06-29 Round 025 - Architect Review Command
 
 ### Learner Friction
