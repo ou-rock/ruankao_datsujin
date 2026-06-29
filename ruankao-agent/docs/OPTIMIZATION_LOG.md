@@ -407,3 +407,35 @@ exam practice: score, duration, topic, source, and mistakes.
   - daily receipts include practice metrics and recent practice;
   - the workbench writes and renders practice sessions;
   - night evolution warns when no practice session was recorded.
+
+## 2026-06-29 Round 012 - Route Map Reads Practice Ledger
+
+### Learner Friction
+
+Round 010 made the three-front route map visible, and Round 011 added practice
+sessions. Those two facts were still disconnected: the route map could say a
+front had cards, but not whether it had real practice.
+
+### Change
+
+- Extended route maps with per-front:
+  - practice session count;
+  - today's practice count;
+  - latest practice date.
+- Updated route status rules so a front with cards but no practice is yellow.
+- Kept weak memory cards as red because repair still takes priority over adding
+  more raw practice.
+
+### Learning Rule Captured
+
+Coverage means both memory and use. A route with cards but no real exercises is
+not healthy yet.
+
+### Validation
+
+- `python3 -m pytest tests/test_route_map.py -q`
+- `python3 -m pytest -q`
+- Tests assert:
+  - route maps include practice counts and latest practice date;
+  - weak-card routes remain red;
+  - rendered HTML shows practice metrics.

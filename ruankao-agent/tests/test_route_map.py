@@ -31,6 +31,14 @@ def test_route_map_summarizes_choice_case_and_essay_fronts(tmp_path) -> None:
     )
     store.record_review(weak, reviewed_on=date(2026, 6, 27), grade=1)
     store.record_review(weak, reviewed_on=date(2026, 6, 28), grade=2)
+    store.add_practice_session(
+        front=ExamFront.ESSAY,
+        topic="项目背景段",
+        source="自写",
+        summary="写了项目背景段。",
+        mistakes="项目规模不够具体。",
+        created_on=date(2026, 6, 29),
+    )
 
     result = write_route_map(root, as_of=date(2026, 6, 29))
 
@@ -42,12 +50,16 @@ def test_route_map_summarizes_choice_case_and_essay_fronts(tmp_path) -> None:
     assert by_front["case"]["focus_titles"] == ["敏感点 vs 权衡点"]
     assert by_front["essay"]["total_cards"] == 1
     assert by_front["essay"]["untested_cards"] == 1
+    assert by_front["essay"]["practice_sessions"] == 1
+    assert by_front["essay"]["practice_today"] == 1
+    assert by_front["essay"]["last_practice_on"] == "2026-06-29"
 
     html = result.html_path.read_text(encoding="utf-8")
     assert "三题型覆盖图 2026-06-29" in html
     assert "选择题" in html
     assert "案例题" in html
     assert "论文题" in html
+    assert "今日练习" in html
 
 
 def test_cli_route_map_prints_report_paths(tmp_path) -> None:
