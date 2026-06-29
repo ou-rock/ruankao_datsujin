@@ -16,6 +16,7 @@ from .dashboard import render_dashboard
 from .domain import CardType, ExamFront, PrincipleRelationType, SourceIdentity
 from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
+from .memory import MemoryDiagnostic, diagnose_memory
 from .receipts import daily_receipt_html_path, write_daily_receipt
 from .storage import MemoryCard, RuankaoStore
 from .vault import initialize_vault, write_principle_note
@@ -169,8 +170,13 @@ class WorkbenchApp:
         store = self.store()
         records = store.list_raw_records()
         cards = store.list_memory_cards()
+        review_logs = store.list_review_logs()
         snapshot = self.snapshot()
         due_cards = [card for card in cards if card.next_due is not None and card.next_due <= self.today]
+        diagnostics = diagnose_memory(cards, review_logs, as_of=self.today)
+        active_diagnostics = [
+            diagnostic for diagnostic in diagnostics if diagnostic.status != "stable"
+        ][:5]
         cheko_cards = [card for card in cards if card.title.startswith("Cheko")]
         cheko_due_cards = [
             card for card in cheko_cards if card.next_due is not None and card.next_due <= self.today
@@ -474,6 +480,8 @@ class WorkbenchApp:
               <div class="item">选择题保持概念密度，案例题保持论证手感，论文题保持素材活性。</div>
               <div class="item">每次学习至少沉淀一条 Mein / Du / Uns。</div>
             </div>
+            <h3 style="margin-top:14px;">记忆诊断</h3>
+            {_diagnostic_list(active_diagnostics)}
             <form method="post" action="/daily/receipt" style="margin-top:10px;">
               <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
               <button type="submit">生成日结回执</button>
@@ -910,6 +918,21 @@ def _card_list(cards: list[MemoryCard], *, with_review: bool, today: date) -> st
   <div class="meta">fronts={escape(",".join(front.value for front in card.fronts) or "none")} | due={escape(card.next_due.isoformat() if card.next_due else "none")} | reviews={card.review_count}</div>
   <div class="meta">{escape(card.prompt[:140])}</div>
   {review_form}
+</div>"""
+        )
+    return '<div class="list">' + "".join(items) + "</div>"
+
+
+def _diagnostic_list(diagnostics: list[MemoryDiagnostic]) -> str:
+    if not diagnostics:
+        return '<div class="empty">暂无薄弱诊断。先完成今日复习。</div>'
+    items = []
+    for diagnostic in diagnostics:
+        items.append(
+            f"""<div class="item">
+  <div class="item-title"><span>#{diagnostic.card_id} {escape(diagnostic.title)}</span><span>{escape(diagnostic.status)}</span></div>
+  <div class="meta">{escape(diagnostic.action)}</div>
+  <div class="meta">low={diagnostic.low_grade_reviews} | last={escape(str(diagnostic.last_grade))} | avg={escape(str(diagnostic.average_grade))}</div>
 </div>"""
         )
     return '<div class="list">' + "".join(items) + "</div>"

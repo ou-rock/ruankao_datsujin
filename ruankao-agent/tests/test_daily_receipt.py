@@ -47,6 +47,8 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
     assert payload["metrics"]["cheko_cards"] == 4
     assert payload["metrics"]["review_logs"] == 1
     assert payload["metrics"]["reviews_today"] == 1
+    assert payload["metrics"]["weak_memory_cards"] == 0
+    assert payload["memory_diagnostics"][0]["status"] == "due"
     assert payload["source_counts"] == {"mein": 1, "uns": 1}
     assert payload["front_counts"]["choice"] == 4
     assert payload["front_counts"]["essay"] == 1
@@ -56,8 +58,33 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
     assert "Cheko 到期" in html
     assert "质量属性场景" in html
     assert "错题归因完成" in html
+    assert "记忆诊断" in html
     assert "最近复习" in html
     assert "grade=4" in html
+
+
+def test_daily_receipt_marks_repeated_low_grade_card_as_leech(tmp_path) -> None:
+    root = tmp_path / "demo"
+    store = RuankaoStore(root / "data" / "ruankao.db")
+    store.initialize()
+    card_id = store.add_memory_card(
+        card_type=CardType.COMPARISON,
+        title="敏感点 vs 权衡点",
+        prompt="二者边界？",
+        answer="敏感点影响一个质量属性，权衡点影响多个质量属性。",
+        fronts=(ExamFront.CHOICE, ExamFront.CASE),
+        next_due=date(2026, 6, 29),
+    )
+    store.record_review(card_id=card_id, reviewed_on=date(2026, 6, 27), grade=1)
+    store.record_review(card_id=card_id, reviewed_on=date(2026, 6, 28), grade=2)
+
+    result = write_daily_receipt(root, as_of=date(2026, 6, 29))
+
+    payload = json.loads(result.json_path.read_text(encoding="utf-8"))
+    assert payload["metrics"]["weak_memory_cards"] == 1
+    assert payload["memory_diagnostics"][0]["status"] == "leech"
+    assert payload["memory_diagnostics"][0]["title"] == "敏感点 vs 权衡点"
+    assert "拆成更小卡片" in result.html_path.read_text(encoding="utf-8")
 
 
 def test_cli_daily_receipt_prints_hook_friendly_paths(tmp_path) -> None:

@@ -24,6 +24,7 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert "今日闭环" in html
     assert "学习信号" in html
     assert "把 Cheko 弱点入队" in html
+    assert "记忆诊断" in html
     assert "生成日结回执" in html
     assert "三源录入" in html
     assert "记忆卡" in html
@@ -99,6 +100,27 @@ def test_workbench_can_seed_cheko_cards_from_learning_signal_action(tmp_path) ->
         "Cheko论文最低触达",
     }
     assert "Cheko 记忆卡" in app.render_home()
+
+
+def test_workbench_home_surfaces_memory_diagnostics(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+    app.initialize()
+    card_id = app.add_memory_card(
+        parse_qs(
+            "card_type=comparison&title=敏感点 vs 权衡点&prompt=二者边界"
+            "&answer=敏感点影响一个属性，权衡点影响多个属性"
+            "&fronts=choice&fronts=case&next_due=2026-06-29"
+        )
+    )
+    app.record_review(parse_qs(f"card_id={card_id}&reviewed_on=2026-06-27&grade=1"))
+    app.record_review(parse_qs(f"card_id={card_id}&reviewed_on=2026-06-28&grade=2"))
+
+    html = app.render_home()
+
+    assert "敏感点 vs 权衡点" in html
+    assert "leech" in html
+    assert "拆成更小卡片" in html
 
 
 def test_workbench_can_write_and_serve_daily_receipt(tmp_path) -> None:

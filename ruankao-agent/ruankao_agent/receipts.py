@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Iterable
 
 from .loop import build_daily_loop_snapshot, status_line
+from .memory import MemoryDiagnostic, diagnose_memory
 from .storage import MemoryCard, RawRecord, ReviewLog, RuankaoStore
 
 
@@ -41,6 +42,7 @@ def write_daily_receipt(root: Path | str, *, as_of: date | None = None) -> Daily
     due_cards = [card for card in cards if card.next_due is not None and card.next_due <= day]
     cheko_cards = [card for card in cards if card.title.startswith("Cheko")]
     cheko_due_cards = [card for card in cheko_cards if card.next_due is not None and card.next_due <= day]
+    diagnostics = diagnose_memory(cards, review_logs, as_of=day)
 
     snapshot = build_daily_loop_snapshot(
         as_of=day,
@@ -59,6 +61,7 @@ def write_daily_receipt(root: Path | str, *, as_of: date | None = None) -> Daily
         cards=cards,
         review_logs=review_logs,
         reviews_today=reviews_today,
+        diagnostics=list(diagnostics),
         due_cards=due_cards,
         cheko_cards=cheko_cards,
         cheko_due_cards=cheko_due_cards,
@@ -88,12 +91,14 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
     recent_records = payload["recent_records"]
     recent_cards = payload["recent_cards"]
     recent_reviews = payload["recent_reviews"]
+    memory_diagnostics = payload["memory_diagnostics"]
     assert isinstance(source_counts, dict)
     assert isinstance(card_type_counts, dict)
     assert isinstance(front_counts, dict)
     assert isinstance(recent_records, list)
     assert isinstance(recent_cards, list)
     assert isinstance(recent_reviews, list)
+    assert isinstance(memory_diagnostics, list)
 
     return f"""<!doctype html>
 <html lang="zh-CN">
@@ -207,6 +212,7 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
         {_metric("原始材料", metrics["raw_records"])}
         {_metric("记忆卡", metrics["memory_cards"])}
         {_metric("今日复习", metrics["reviews_today"])}
+        {_metric("薄弱卡", metrics["weak_memory_cards"])}
         {_metric("Cheko 卡", metrics["cheko_cards"])}
         {_metric("冗余消耗", payload["reserve_days_consumed"])}
       </div>
@@ -222,6 +228,10 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
     <section>
       <h2>题型覆盖</h2>
       <div class="grid">{_count_cards(front_counts)}</div>
+    </section>
+    <section>
+      <h2>记忆诊断</h2>
+      <div class="list">{_memory_diagnostics(memory_diagnostics)}</div>
     </section>
     <section>
       <h2>最近材料</h2>
@@ -254,6 +264,7 @@ def _receipt_payload(
     cards: list[MemoryCard],
     review_logs: list[ReviewLog],
     reviews_today: list[ReviewLog],
+    diagnostics: list[MemoryDiagnostic],
     due_cards: list[MemoryCard],
     cheko_cards: list[MemoryCard],
     cheko_due_cards: list[MemoryCard],
@@ -272,6 +283,9 @@ def _receipt_payload(
             "memory_cards": len(cards),
             "review_logs": len(review_logs),
             "reviews_today": len(reviews_today),
+            "weak_memory_cards": sum(
+                1 for diagnostic in diagnostics if diagnostic.status in {"leech", "unstable"}
+            ),
             "due_cards": len(due_cards),
             "cheko_cards": len(cheko_cards),
             "cheko_due_cards": len(cheko_due_cards),
@@ -279,6 +293,23 @@ def _receipt_payload(
         "source_counts": _count(record.source.value for record in records),
         "card_type_counts": _count(card.card_type.value for card in cards),
         "front_counts": _count(front.value for card in cards for front in card.fronts),
+        "memory_diagnostics": [
+            {
+                "card_id": diagnostic.card_id,
+                "title": diagnostic.title,
+                "card_type": diagnostic.card_type,
+                "fronts": list(diagnostic.fronts),
+                "status": diagnostic.status,
+                "action": diagnostic.action,
+                "total_reviews": diagnostic.total_reviews,
+                "low_grade_reviews": diagnostic.low_grade_reviews,
+                "last_grade": diagnostic.last_grade,
+                "average_grade": diagnostic.average_grade,
+                "next_due": diagnostic.next_due.isoformat() if diagnostic.next_due else None,
+            }
+            for diagnostic in diagnostics
+            if diagnostic.status != "stable"
+        ][:8],
         "recent_records": [
             {
                 "id": record.id,
@@ -342,6 +373,22 @@ def _recent_records(records: list[object]) -> str:
   <strong>#{escape(str(item["id"]))} {escape(str(item["source"]))}</strong>
   <div>{escape(str(item["summary"]))}</div>
   <div class="meta">status={escape(str(item["promotion_status"]))} | topics={escape(", ".join(str(topic) for topic in item["topics"]))}</div>
+</div>"""
+        )
+    return "".join(items)
+
+
+def _memory_diagnostics(diagnostics: list[object]) -> str:
+    if not diagnostics:
+        return '<div class="item">暂无薄弱诊断。继续保持复习节奏。</div>'
+    items = []
+    for item in diagnostics:
+        assert isinstance(item, dict)
+        items.append(
+            f"""<div class="item">
+  <strong>#{escape(str(item["card_id"]))} {escape(str(item["title"]))}</strong>
+  <div>{escape(str(item["action"]))}</div>
+  <div class="meta">status={escape(str(item["status"]))} | type={escape(str(item["card_type"]))} | low={escape(str(item["low_grade_reviews"]))} | last={escape(str(item["last_grade"]))} | avg={escape(str(item["average_grade"]))}</div>
 </div>"""
         )
     return "".join(items)

@@ -225,3 +225,40 @@ actually changing".
   - each review writes a durable log row;
   - multiple attempts survive reopening the SQLite database;
   - daily receipts include review log metrics and recent review grades.
+
+## 2026-06-29 Round 007 - Memory Diagnostics From Review History
+
+### Learner Friction
+
+Review history is useful only if it turns into action. After Round 006, the
+system could store attempts, but it still could not tell the learner which cards
+were stable, untested, due, unstable, or repeatedly failing.
+
+### Change
+
+- Added `MemoryDiagnostic` and `diagnose_memory()` to `memory.py`.
+- Classified cards as:
+  - `leech`: repeated low-grade reviews;
+  - `unstable`: latest review is low-grade;
+  - `due`: scheduled for review now;
+  - `untested`: no retrieval attempt yet;
+  - `stable`: reviewed and not urgent.
+- Extended daily receipts with weak-memory counts and top memory diagnostics.
+- Added the same active diagnostics to the workbench home page.
+
+### Learning Rule Captured
+
+Memory supervision must not stop at logging grades. The system should transform
+review history into the next repair action: split the card, add a mistake cause,
+review today, or schedule first retrieval.
+
+### Validation
+
+- `python3 -m pytest tests/test_memory_diagnostics.py -q`
+- `python3 -m pytest tests/test_daily_receipt.py -q`
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- Tests assert:
+  - diagnostics rank leech, unstable, due, untested, and stable cards in action order;
+  - daily receipts mark repeated low-grade cards as `leech`;
+  - the workbench surfaces weak-card diagnostics and repair actions.
