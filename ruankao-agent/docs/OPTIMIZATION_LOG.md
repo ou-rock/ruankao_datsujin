@@ -799,3 +799,39 @@ demands it.
   - seven core principles become principle cards;
   - repeated seeding skips existing titles;
   - CLI seeding creates all seven cards.
+
+## 2026-06-29 Round 024 - Core Principle Relation Seed
+
+### Learner Friction
+
+The seven architecture principles were seeded as cards, but still behaved like a
+list. The learner explicitly wanted principles to support, constrain, conflict,
+and link as a logic network.
+
+### Change
+
+- Added `CORE_ARCHITECTURE_RELATIONS`.
+- Seeded initial principle links such as:
+  - 场景先于方案 supports 质量属性可度量
+  - 质量属性可度量 supports 风险驱动验证
+  - 取舍必须显式 constrains 简单可演进优先
+  - 风险驱动验证 supports 证据闭环沉淀
+- Updated `seed_core_principles()` to create missing relations after cards exist.
+- Added relation duplicate protection.
+- Updated CLI output with relation counts.
+
+### Learning Rule Captured
+
+Architecture principles are not a checklist. They form a graph of support,
+constraint, and feedback; learning improves when the graph becomes explicit.
+
+### Validation
+
+- `python3 -m pytest tests/test_principles.py -q`
+- `python3 -m pytest tests/test_cheko.py -q`
+- `./run-daily-cycle.command 2026-06-29`
+- `python3 -m pytest -q`
+- Tests assert:
+  - first seeding creates all principle relations;
+  - repeated seeding skips existing relations;
+  - Cheko seed output remains unchanged.

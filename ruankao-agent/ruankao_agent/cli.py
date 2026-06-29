@@ -286,7 +286,9 @@ def cmd_seed_principles(root: Path, *, next_due: date | None = None) -> int:
     print(
         f"raw={result.raw_record_id} "
         f"created={len(result.created_card_ids)} "
-        f"skipped={len(result.skipped_titles)}"
+        f"skipped={len(result.skipped_titles)} "
+        f"relations={len(result.created_relation_ids)} "
+        f"relation_skipped={len(result.skipped_relations)}"
     )
     return 0
 

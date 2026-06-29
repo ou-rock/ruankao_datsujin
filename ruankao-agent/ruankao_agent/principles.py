@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
-from .domain import CardType, ExamFront, SourceIdentity
+from .domain import CardType, ExamFront, PrincipleRelationType, SourceIdentity
 from .storage import RuankaoStore
 
 
@@ -16,10 +16,20 @@ class CorePrinciple:
 
 
 @dataclass(frozen=True, slots=True)
+class CorePrincipleRelation:
+    from_title: str
+    to_title: str
+    relation: PrincipleRelationType
+    rationale: str
+
+
+@dataclass(frozen=True, slots=True)
 class PrincipleSeedResult:
     raw_record_id: int
     created_card_ids: tuple[int, ...]
     skipped_titles: tuple[str, ...]
+    created_relation_ids: tuple[int, ...] = ()
+    skipped_relations: tuple[str, ...] = ()
 
 
 CORE_ARCHITECTURE_PRINCIPLES = (
@@ -60,6 +70,45 @@ CORE_ARCHITECTURE_PRINCIPLES = (
     ),
 )
 
+CORE_ARCHITECTURE_RELATIONS = (
+    CorePrincipleRelation(
+        "场景先于方案",
+        "质量属性可度量",
+        PrincipleRelationType.SUPPORTS,
+        "场景清楚后，质量属性才能被具体度量。",
+    ),
+    CorePrincipleRelation(
+        "质量属性可度量",
+        "风险驱动验证",
+        PrincipleRelationType.SUPPORTS,
+        "可度量目标决定验证指标和优先级。",
+    ),
+    CorePrincipleRelation(
+        "取舍必须显式",
+        "简单可演进优先",
+        PrincipleRelationType.CONSTRAINS,
+        "简单方案也必须说明牺牲与边界，不能以简单掩盖取舍。",
+    ),
+    CorePrincipleRelation(
+        "边界与职责先行",
+        "简单可演进优先",
+        PrincipleRelationType.SUPPORTS,
+        "边界清楚会降低不必要复杂度，并保留演进空间。",
+    ),
+    CorePrincipleRelation(
+        "风险驱动验证",
+        "证据闭环沉淀",
+        PrincipleRelationType.SUPPORTS,
+        "验证结果必须沉淀为证据、错因、卡片或原则更新。",
+    ),
+    CorePrincipleRelation(
+        "证据闭环沉淀",
+        "取舍必须显式",
+        PrincipleRelationType.SUPPORTS,
+        "沉淀的练习和证据会反过来校准取舍判断。",
+    ),
+)
+
 
 def seed_core_principles(root: Path | str, *, next_due: date | None = None) -> PrincipleSeedResult:
     root_path = Path(root)
@@ -94,10 +143,37 @@ def seed_core_principles(root: Path | str, *, next_due: date | None = None) -> P
         )
         existing_titles.add(principle.title)
 
+    cards_by_title = {card.title: card.id for card in store.list_memory_cards()}
+    created_relations: list[int] = []
+    skipped_relations: list[str] = []
+    for relation in CORE_ARCHITECTURE_RELATIONS:
+        from_card_id = cards_by_title.get(relation.from_title)
+        to_card_id = cards_by_title.get(relation.to_title)
+        if from_card_id is None or to_card_id is None:
+            skipped_relations.append(f"{relation.from_title}->{relation.to_title}")
+            continue
+        existing = store.list_principle_relations(from_card_id)
+        if any(
+            item.to_card_id == to_card_id and item.relation == relation.relation
+            for item in existing
+        ):
+            skipped_relations.append(f"{relation.from_title}->{relation.to_title}")
+            continue
+        created_relations.append(
+            store.add_principle_relation(
+                from_card_id=from_card_id,
+                to_card_id=to_card_id,
+                relation=relation.relation,
+                rationale=relation.rationale,
+            )
+        )
+
     return PrincipleSeedResult(
         raw_record_id=raw_record_id,
         created_card_ids=tuple(created),
         skipped_titles=tuple(skipped),
+        created_relation_ids=tuple(created_relations),
+        skipped_relations=tuple(skipped_relations),
     )
 
 
