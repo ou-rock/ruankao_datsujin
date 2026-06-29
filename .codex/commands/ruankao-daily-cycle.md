@@ -15,4 +15,5 @@ cd /Users/pedan/Documents/ruankao
 ```
 
 该操作会依次运行 Cheko 入队、核心原则入队、日结回执、三题型覆盖图、
-stage-only 夜间进化草案、记忆卡 Obsidian 同步和三源材料 Obsidian 同步。
+stage-only 夜间进化草案、记忆卡 Obsidian 同步、三源材料 Obsidian 同步，
+以及本地状态 JSON 导出。

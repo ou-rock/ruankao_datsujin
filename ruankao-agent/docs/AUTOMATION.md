@@ -22,9 +22,13 @@ cd /Users/pedan/Documents/ruankao
 The cycle runs:
 
 - Cheko weak-area seeding.
+- Core principle seeding.
 - Daily receipt generation.
 - Three-front route map generation.
 - Stage-only night evolution plan generation.
+- Memory-card Obsidian sync.
+- Raw Mein/Du/Uns Obsidian sync.
+- Local state JSON export under `ruankao-agent/exports/`.
 
 ## launchd Template
 

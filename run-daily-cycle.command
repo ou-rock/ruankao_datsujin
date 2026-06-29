@@ -32,3 +32,7 @@ python3 -m ruankao_agent.cli vault-sync \
 
 python3 -m ruankao_agent.cli raw-vault-sync \
   --root "$AGENT_ROOT"
+
+python3 -m ruankao_agent.cli export-state \
+  --root "$AGENT_ROOT" \
+  --as-of "$DAY"

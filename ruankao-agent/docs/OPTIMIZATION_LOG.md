@@ -920,3 +920,32 @@ recoverable state snapshot, not just a live database.
   - the export captures all current store tables;
   - the CLI prints a hook-friendly export path;
   - the workbench can create and serve the JSON snapshot.
+
+## 2026-06-29 Round 028 - Daily Cycle Includes State Export
+
+### Learner Friction
+
+The state export existed, but it was still a manual action. A learner who relies
+on nightly evolution should not need to remember one more backup command at the
+end of the day.
+
+### Change
+
+- Added `export-state` to `run-daily-cycle.command`.
+- Updated README, `/ruankao-daily-cycle`, and automation docs.
+- Added a script-level test that guards the daily closure command list and keeps
+  export after raw vault sync.
+
+### Learning Rule Captured
+
+Backups should ride the loop. The best memory snapshot is the one created
+automatically after the day's capture, review, route map, vault sync, and
+night-evolution staging.
+
+### Validation
+
+- `python3 -m pytest tests/test_daily_cycle_script.py -q`
+- `./run-daily-cycle.command 2026-06-29`
+- `python3 -m pytest -q`
+- Tests assert `export-state` is part of the daily cycle and runs after raw
+  vault sync.
