@@ -1,0 +1,103 @@
+{
+  "captured_on": "2026-06-29",
+  "source": "browser-act chrome-direct logged-in cheko.cc",
+  "answered": 634,
+  "wrong": 194,
+  "accuracy": 69.4,
+  "estimated_score": 43.75,
+  "rank": 1331,
+  "rank_total": 4923,
+  "percentile": 73.0,
+  "essay_power_remaining": 15,
+  "essay_power_total": 15,
+  "essay_past_exam_score": "2013-2026 论文真题最近得分均为 0 / 4",
+  "collections_state": "暂无收藏",
+  "practice_logs": [
+    {
+      "topic": "企业信息化",
+      "created_at": "2025-11-08 13:30:03",
+      "state": "继续练习"
+    },
+    {
+      "topic": "软件工程",
+      "created_at": "2025-11-03 23:15:12",
+      "state": "查看回顾"
+    },
+    {
+      "topic": "系统架构设计",
+      "created_at": "2025-11-03 23:14:15",
+      "state": "继续练习"
+    }
+  ],
+  "weak_areas": [
+    {
+      "title": "系统架构设计",
+      "done": 164,
+      "total": 164,
+      "tier": "不看必挂",
+      "next_action": "先做质量属性、架构风格、ATAM 三块错因归类。"
+    },
+    {
+      "title": "软件工程",
+      "done": 82,
+      "total": 82,
+      "tier": "不看必挂",
+      "next_action": "把开发方法、测试、维护、质量管理做成对比卡。"
+    },
+    {
+      "title": "系统分析与设计",
+      "done": 65,
+      "total": 65,
+      "tier": "不看必挂",
+      "next_action": "用 DFD、ERD、UML 填空题训练上下文推理。"
+    },
+    {
+      "title": "数据库系统",
+      "done": 34,
+      "total": 34,
+      "tier": "不看必挂",
+      "next_action": "补读写分离、分库分表、事务一致性和恢复策略。"
+    },
+    {
+      "title": "企业信息化战略",
+      "done": 32,
+      "total": 32,
+      "tier": "非重点",
+      "next_action": "只做错题回炉，沉淀术语和场景表达。"
+    },
+    {
+      "title": "计算机网络",
+      "done": 25,
+      "total": 25,
+      "tier": "不看必挂",
+      "next_action": "补协议、网络安全和性能相关概念边界。"
+    },
+    {
+      "title": "操作系统",
+      "done": 25,
+      "total": 25,
+      "tier": "不看必挂",
+      "next_action": "补进程、存储、调度和可靠性基础。"
+    }
+  ],
+  "courses": [
+    {
+      "title": "系统架构设计师综合题知识",
+      "lessons": 11,
+      "duration": "2小时20分钟5秒",
+      "role": "选择题基本盘"
+    },
+    {
+      "title": "系统架构设计师案例知识",
+      "lessons": 5,
+      "duration": "1小时27分钟5秒",
+      "role": "案例题得分框架"
+    },
+    {
+      "title": "系统架构设计师论文知识",
+      "lessons": 6,
+      "duration": "2小时32分钟58秒",
+      "role": "论文题表达训练"
+    }
+  ]
+}

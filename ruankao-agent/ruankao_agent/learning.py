@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import json
+from dataclasses import asdict, dataclass
 from html import escape
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
 
 NOTEBOOKLM_SOURCE = "System Architecture Designer Exam Questions and Analysis"
@@ -35,6 +36,50 @@ class ReferencePage:
     fronts: tuple[str, ...]
     drill: str
     cards: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class ChekoWeakArea:
+    title: str
+    done: int
+    total: int
+    tier: str
+    next_action: str
+
+
+@dataclass(frozen=True, slots=True)
+class ChekoPracticeLog:
+    topic: str
+    created_at: str
+    state: str
+
+
+@dataclass(frozen=True, slots=True)
+class ChekoCourse:
+    title: str
+    lessons: int
+    duration: str
+    role: str
+
+
+@dataclass(frozen=True, slots=True)
+class ChekoSnapshot:
+    captured_on: str
+    source: str
+    answered: int
+    wrong: int
+    accuracy: float
+    estimated_score: float
+    rank: int
+    rank_total: int
+    percentile: float
+    essay_power_remaining: int
+    essay_power_total: int
+    essay_past_exam_score: str
+    collections_state: str
+    practice_logs: tuple[ChekoPracticeLog, ...]
+    weak_areas: tuple[ChekoWeakArea, ...]
+    courses: tuple[ChekoCourse, ...]
 
 
 LEARNING_COLUMNS = (
@@ -228,14 +273,53 @@ REFERENCE_PAGES = (
 )
 
 
+DEFAULT_CHEKO_SNAPSHOT = ChekoSnapshot(
+    captured_on="2026-06-29",
+    source="browser-act chrome-direct logged-in cheko.cc",
+    answered=634,
+    wrong=194,
+    accuracy=69.4,
+    estimated_score=43.75,
+    rank=1331,
+    rank_total=4923,
+    percentile=73.0,
+    essay_power_remaining=15,
+    essay_power_total=15,
+    essay_past_exam_score="2013-2026 论文真题最近得分均为 0 / 4",
+    collections_state="暂无收藏",
+    practice_logs=(
+        ChekoPracticeLog("企业信息化", "2025-11-08 13:30:03", "继续练习"),
+        ChekoPracticeLog("软件工程", "2025-11-03 23:15:12", "查看回顾"),
+        ChekoPracticeLog("系统架构设计", "2025-11-03 23:14:15", "继续练习"),
+    ),
+    weak_areas=(
+        ChekoWeakArea("系统架构设计", 164, 164, "不看必挂", "先做质量属性、架构风格、ATAM 三块错因归类。"),
+        ChekoWeakArea("软件工程", 82, 82, "不看必挂", "把开发方法、测试、维护、质量管理做成对比卡。"),
+        ChekoWeakArea("系统分析与设计", 65, 65, "不看必挂", "用 DFD、ERD、UML 填空题训练上下文推理。"),
+        ChekoWeakArea("数据库系统", 34, 34, "不看必挂", "补读写分离、分库分表、事务一致性和恢复策略。"),
+        ChekoWeakArea("企业信息化战略", 32, 32, "非重点", "只做错题回炉，沉淀术语和场景表达。"),
+        ChekoWeakArea("计算机网络", 25, 25, "不看必挂", "补协议、网络安全和性能相关概念边界。"),
+        ChekoWeakArea("操作系统", 25, 25, "不看必挂", "补进程、存储、调度和可靠性基础。"),
+    ),
+    courses=(
+        ChekoCourse("系统架构设计师综合题知识", 11, "2小时20分钟5秒", "选择题基本盘"),
+        ChekoCourse("系统架构设计师案例知识", 5, "1小时27分钟5秒", "案例题得分框架"),
+        ChekoCourse("系统架构设计师论文知识", 6, "2小时32分钟58秒", "论文题表达训练"),
+    ),
+)
+
+
 def ensure_learning_resources(root: Path | str, *, overwrite: bool = False) -> Path:
     base = Path(root) / "learning"
     lessons = base / "lessons"
     reference = base / "reference"
-    for directory in (base, lessons, reference):
+    data = base / "data"
+    for directory in (base, lessons, reference, data):
         directory.mkdir(parents=True, exist_ok=True)
 
-    _write_resource(base / "index.html", render_learning_index(), overwrite=overwrite)
+    cheko_snapshot = _ensure_cheko_snapshot(data / "cheko-snapshot.json", overwrite=overwrite)
+
+    _write_resource(base / "index.html", render_learning_index(cheko_snapshot), overwrite=overwrite)
     _write_resource(
         lessons / "0001-scene-before-solution.html",
         render_scene_before_solution_lesson(),
@@ -244,10 +328,11 @@ def ensure_learning_resources(root: Path | str, *, overwrite: bool = False) -> P
     for page in REFERENCE_PAGES:
         _write_resource(reference / page.filename, render_reference_page(page), overwrite=overwrite)
     _write_resource(base / "notebooklm-seed.html", render_notebooklm_seed(), overwrite=overwrite)
+    _write_resource(base / "cheko-sync.html", render_cheko_sync(cheko_snapshot), overwrite=overwrite)
     return base
 
 
-def render_learning_index() -> str:
+def render_learning_index(cheko_snapshot: ChekoSnapshot = DEFAULT_CHEKO_SNAPSHOT) -> str:
     return _page(
         title="软考达人学习台",
         body=f"""
@@ -261,6 +346,7 @@ def render_learning_index() -> str:
     <a class="button secondary" href="/">回工作台</a>
   </div>
 </header>
+{_cheko_panel(cheko_snapshot)}
 <section>
   <h2>四个栏目</h2>
   <div class="grid">
@@ -423,6 +509,46 @@ def render_notebooklm_seed() -> str:
     )
 
 
+def render_cheko_sync(snapshot: ChekoSnapshot = DEFAULT_CHEKO_SNAPSHOT) -> str:
+    return _page(
+        title="芝士架构同步信号",
+        body=f"""
+<header class="hero">
+  <p class="eyebrow">Cheko Sync</p>
+  <h1>芝士架构同步信号</h1>
+  <p class="lead">这页只保存学习信号，不保存账号、头像、邮箱或任何登录凭据。它把芝士架构里的练习状态翻译成学习台的下一步行动。</p>
+  <div class="actions">
+    <a class="button" href="/learning/">回学习台</a>
+    <a class="button secondary" href="https://www.cheko.cc/statistic">打开芝士架构统计</a>
+  </div>
+</header>
+{_cheko_panel(snapshot)}
+<section>
+  <h2>同步规则</h2>
+  <ol>
+    <li>正确率低于 75% 时，今日学习优先错因回炉，而不是继续开新知识。</li>
+    <li>估分低于 45 时，选择题要保护基本盘，同时每周必须触达案例和论文。</li>
+    <li>错题池大于 50 的知识点，必须拆成概念卡、对比卡、场景卡三类复习。</li>
+    <li>论文真题 0 / 4 时，不能只看范文，必须开始写摘要、背景段和回应子题目的技术段。</li>
+    <li>芝士架构论文助手会消耗算力，自动提交前必须单独确认。</li>
+  </ol>
+</section>
+<section>
+  <h2>课程映射</h2>
+  <div class="grid">
+    {_cards((course.title, f"{course.role}；{course.lessons} 节；{course.duration}") for course in snapshot.courses)}
+  </div>
+</section>
+<section>
+  <h2>练习日志</h2>
+  <div class="grid">
+    {_cards((log.topic, f"{log.created_at}；{log.state}") for log in snapshot.practice_logs)}
+  </div>
+</section>
+""",
+    )
+
+
 def _page(title: str, body: str) -> str:
     return f"""<!doctype html>
 <html lang="zh-CN">
@@ -508,6 +634,29 @@ def _page(title: str, body: str) -> str:
     }}
     .panel p {{ margin: 0 0 8px; }}
     .panel p:last-child {{ margin-bottom: 0; }}
+    .metric-grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }}
+    .metric {{
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--band);
+      padding: 12px;
+      min-height: 78px;
+    }}
+    .metric span {{
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }}
+    .metric strong {{
+      display: block;
+      font-size: 20px;
+      line-height: 1.25;
+    }}
     .strong {{
       font-weight: 700;
       color: #12312e;
@@ -615,6 +764,83 @@ def _reference_card(page: ReferencePage) -> str:
   <p>{escape(page.purpose)}</p>
   <p class="meta">{escape(fronts)}</p>
 </div>"""
+
+
+def _cheko_panel(snapshot: ChekoSnapshot) -> str:
+    top_areas = snapshot.weak_areas[:5]
+    return f"""
+<section>
+  <h2>芝士架构同步信号</h2>
+  <div class="metric-grid">
+    <div class="metric"><span>总答题</span><strong>{snapshot.answered}</strong></div>
+    <div class="metric"><span>错题数</span><strong>{snapshot.wrong}</strong></div>
+    <div class="metric"><span>正确率</span><strong>{snapshot.accuracy:.1f}%</strong></div>
+    <div class="metric"><span>预估分</span><strong>{snapshot.estimated_score:.2f}</strong></div>
+    <div class="metric"><span>排名</span><strong>{snapshot.rank} / {snapshot.rank_total}</strong></div>
+    <div class="metric"><span>超过学习者</span><strong>{snapshot.percentile:.1f}%</strong></div>
+  </div>
+  <div class="panel" style="margin-top:10px;">
+    <p><strong>学习者视角诊断：</strong>当前不是缺资料，而是错题池已经足够大，需要先把系统架构设计、软件工程、系统分析与设计变成复习卡和题型训练。</p>
+    <p><strong>论文信号：</strong>{escape(snapshot.essay_past_exam_score)}；论文助手算力 {snapshot.essay_power_remaining} / {snapshot.essay_power_total}。</p>
+    <p><a href="/learning/cheko-sync.html">查看完整同步规则</a></p>
+  </div>
+  <div class="timeline" style="margin-top:10px;">
+    {"".join(_weak_area_row(area) for area in top_areas)}
+  </div>
+</section>
+"""
+
+
+def _weak_area_row(area: ChekoWeakArea) -> str:
+    return f"""<div class="day">
+  <div class="day-index">{area.total} 题</div>
+  <div>
+    <h3>{escape(area.title)}</h3>
+    <p><strong>{escape(area.tier)}</strong>；刷题进度 {area.done} / {area.total}</p>
+    <p class="meta">{escape(area.next_action)}</p>
+  </div>
+</div>"""
+
+
+def _ensure_cheko_snapshot(path: Path, *, overwrite: bool) -> ChekoSnapshot:
+    if path.exists() and not overwrite:
+        return _load_cheko_snapshot(path)
+    snapshot = DEFAULT_CHEKO_SNAPSHOT
+    path.write_text(
+        json.dumps(_cheko_snapshot_to_dict(snapshot), ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return snapshot
+
+
+def _load_cheko_snapshot(path: Path) -> ChekoSnapshot:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return _cheko_snapshot_from_dict(payload)
+
+
+def _cheko_snapshot_to_dict(snapshot: ChekoSnapshot) -> dict[str, Any]:
+    return asdict(snapshot)
+
+
+def _cheko_snapshot_from_dict(payload: dict[str, Any]) -> ChekoSnapshot:
+    return ChekoSnapshot(
+        captured_on=payload["captured_on"],
+        source=payload["source"],
+        answered=int(payload["answered"]),
+        wrong=int(payload["wrong"]),
+        accuracy=float(payload["accuracy"]),
+        estimated_score=float(payload["estimated_score"]),
+        rank=int(payload["rank"]),
+        rank_total=int(payload["rank_total"]),
+        percentile=float(payload["percentile"]),
+        essay_power_remaining=int(payload["essay_power_remaining"]),
+        essay_power_total=int(payload["essay_power_total"]),
+        essay_past_exam_score=payload["essay_past_exam_score"],
+        collections_state=payload["collections_state"],
+        practice_logs=tuple(ChekoPracticeLog(**item) for item in payload["practice_logs"]),
+        weak_areas=tuple(ChekoWeakArea(**item) for item in payload["weak_areas"]),
+        courses=tuple(ChekoCourse(**item) for item in payload["courses"]),
+    )
 
 
 def _write_resource(path: Path, html: str, *, overwrite: bool) -> None:
