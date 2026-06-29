@@ -15,6 +15,7 @@ class DailyLoopSnapshot:
     phase_name: str
     countdown: str
     risk_text: str
+    risk_reasons: tuple[str, ...]
     reserve_days_consumed: int
     notebook_source_name: str
 
@@ -101,6 +102,7 @@ def build_daily_loop_snapshot(
         practice_sessions,
     )
     risk = _evaluate_risk(signals)
+    risk_reasons = _risk_reasons(signals)
     dashboard = DashboardSnapshot(
         campaign=current_campaign,
         as_of=current_date,
@@ -120,6 +122,7 @@ def build_daily_loop_snapshot(
         phase_name=phase_name,
         countdown=countdown,
         risk_text=risk_text,
+        risk_reasons=risk_reasons,
         reserve_days_consumed=reserve_days_consumed,
         notebook_source_name=notebook_source_name,
     )
@@ -165,6 +168,46 @@ def _days_since_latest(as_of: date, dates: list[date]) -> int:
     if not dates:
         return 999
     return max(0, (as_of - max(dates)).days)
+
+
+def _risk_reasons(signals: Any) -> tuple[str, ...]:
+    reasons: list[str] = []
+    absent_front_count = len(getattr(signals, "absent_fronts_this_week", ()))
+    backlog = float(getattr(signals, "review_backlog_ratio", 0.0))
+    missed_days = int(getattr(signals, "consecutive_missed_minimum_days", 0))
+    days_since_essay = int(getattr(signals, "days_since_essay", 0))
+    days_since_case = int(getattr(signals, "days_since_case", 0))
+    reserve_days = int(getattr(signals, "reserve_days_consumed", 0))
+    days_to_exam = int(getattr(signals, "days_to_exam", 9999))
+    essay_count = int(getattr(signals, "completed_essay_count", 0))
+
+    if missed_days >= 4:
+        reasons.append("连续 4 天以上未完成最小闭环")
+    elif missed_days >= 2:
+        reasons.append("连续 2 天以上未完成最小闭环")
+    if absent_front_count >= 2:
+        reasons.append("本周缺席 2 个以上题型")
+    elif absent_front_count >= 1:
+        reasons.append("本周有题型缺席")
+    if backlog > 0.40:
+        reasons.append("复习积压超过 40%")
+    elif backlog > 0.20:
+        reasons.append("复习积压超过 20%")
+    if days_since_essay > 14:
+        reasons.append("论文超过 14 天未触达")
+    elif days_since_essay > 7:
+        reasons.append("论文超过 7 天未触达")
+    if days_since_case > 10:
+        reasons.append("案例超过 10 天未触达")
+    elif days_since_case > 5:
+        reasons.append("案例超过 5 天未触达")
+    if reserve_days >= 7:
+        reasons.append("冗余消耗达到 7 天")
+    elif reserve_days >= 3:
+        reasons.append("冗余消耗达到 3 天")
+    if days_to_exam <= 30 and essay_count < 2:
+        reasons.append("考前 30 天内完整论文少于 2 篇")
+    return tuple(reasons) if reasons else ("当前风险信号正常",)
 
 
 def status_line(snapshot: DailyLoopSnapshot) -> str:

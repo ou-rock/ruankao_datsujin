@@ -475,3 +475,38 @@ use real practice coverage instead of optimistic defaults.
   - fresh init can still start green;
   - once practice tracking starts, choice-only practice makes missing case/essay red;
   - touching all three fronts can recover the status to green.
+
+## 2026-06-29 Round 014 - Explainable Risk Reasons
+
+### Learner Friction
+
+The dashboard could turn red, yellow, or green, but it did not explain why.
+Without reasons, risk becomes a warning light instead of a coachable signal.
+
+### Change
+
+- Added `risk_reasons` to `DailyLoopSnapshot`.
+- Derived reasons from the same signals used by risk evaluation:
+  - missed minimum loop;
+  - absent exam fronts;
+  - review backlog;
+  - case/essay staleness;
+  - reserve consumption;
+  - late essay-count risk.
+- Added risk reasons to workbench home.
+- Added risk reasons to `/api/status`.
+
+### Learning Rule Captured
+
+Supervision should be explainable. The system should tell the learner which
+constraint was violated, not only that risk is red.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest tests/test_cli.py -q`
+- `python3 -m pytest -q`
+- Tests assert:
+  - normal status includes a normal reason;
+  - practice gaps produce a concrete risk reason;
+  - CLI status behavior remains stable.

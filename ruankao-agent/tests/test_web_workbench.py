@@ -25,6 +25,7 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert "学习信号" in html
     assert "把 Cheko 弱点入队" in html
     assert "记忆诊断" in html
+    assert "风险原因" in html
     assert "生成日结回执" in html
     assert "生成夜间进化草案" in html
     assert "生成三题型覆盖图" in html
@@ -215,8 +216,27 @@ def test_workbench_status_json_exposes_current_route(tmp_path) -> None:
 
     assert '"countdown": "D-117"' in payload
     assert '"phase": "启动诊断"' in payload
+    assert '"risk_reasons": [' in payload
+    assert "当前风险信号正常" in payload
     assert str(root / "vault") in payload
     assert str(root / "learning") in payload
+
+
+def test_workbench_status_json_explains_practice_gap_risk(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+    app.initialize()
+    app.add_practice_session(
+        parse_qs(
+            "front=choice&topic=选择题 10 道&summary=只做选择题"
+            "&created_on=2026-06-29"
+        )
+    )
+
+    payload = app.render_status_json()
+
+    assert '"risk": "red"' in payload
+    assert "本周缺席 2 个以上题型" in payload
 
 
 def test_vault_request_paths_are_decoded_before_file_lookup() -> None:

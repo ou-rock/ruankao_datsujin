@@ -520,6 +520,8 @@ class WorkbenchApp:
               <div class="item">选择题保持概念密度，案例题保持论证手感，论文题保持素材活性。</div>
               <div class="item">每次学习至少沉淀一条 Mein / Du / Uns。</div>
             </div>
+            <h3 style="margin-top:14px;">风险原因</h3>
+            {_risk_reason_list(snapshot.risk_reasons)}
             <h3 style="margin-top:14px;">记忆诊断</h3>
             {_diagnostic_list(active_diagnostics)}
             <form method="post" action="/daily/receipt" style="margin-top:10px;">
@@ -788,6 +790,7 @@ class WorkbenchApp:
             "phase": snapshot.phase_name,
             "countdown": snapshot.countdown,
             "risk": snapshot.risk_text,
+            "risk_reasons": list(snapshot.risk_reasons),
             "due_cards": snapshot.dashboard.due_cards,
             "review_backlog_ratio": snapshot.dashboard.review_backlog_ratio,
             "root": str(self.root),
@@ -1051,6 +1054,11 @@ def _practice_list(sessions: list[PracticeSession]) -> str:
   <div class="meta">{escape(session.summary[:140])}</div>
 </div>"""
         )
+    return '<div class="list">' + "".join(items) + "</div>"
+
+
+def _risk_reason_list(reasons: tuple[str, ...]) -> str:
+    items = [f'<div class="item">{escape(reason)}</div>' for reason in reasons]
     return '<div class="list">' + "".join(items) + "</div>"
 
 
