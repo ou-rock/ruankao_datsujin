@@ -30,13 +30,14 @@ starts the same workbench.
 Daily close and night evolution can run from Codex:
 
 ```text
+/ruankao-daily-cycle 2026-06-29
 /ruankao-daily-close 2026-06-29
 /ruankao-night-evolve 2026-06-29
 ```
 
-The daily close command seeds Cheko weak areas into memory cards and writes a
-daily receipt. The night evolution command creates a stage-only plan; it does
-not directly mutate live skills or learning rules.
+The daily cycle command runs Cheko weak-area seeding, daily receipt generation,
+route map generation, and a stage-only night evolution plan. The night evolution
+command does not directly mutate live skills or learning rules.
 
 ## What Is Not Committed
 

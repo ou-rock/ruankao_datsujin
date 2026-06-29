@@ -510,3 +510,36 @@ constraint was violated, not only that risk is red.
   - normal status includes a normal reason;
   - practice gaps produce a concrete risk reason;
   - CLI status behavior remains stable.
+
+## 2026-06-29 Round 015 - Daily Cycle Script For Scheduled Runs
+
+### Learner Friction
+
+The system had separate commands for Cheko seeding, daily receipts, route maps,
+and night evolution. A human can run them one by one, but a scheduled job needs
+one stable entry point.
+
+### Change
+
+- Added `run-daily-cycle.command`.
+- Added `/ruankao-daily-cycle` Codex command.
+- Updated README daily-use instructions.
+- Updated `.gitignore` so local `reports/` and staged evolution outputs are not
+  accidentally committed.
+- The cycle runs:
+  - Cheko weak-area seeding;
+  - daily receipt generation;
+  - three-front route map generation;
+  - stage-only night evolution plan generation.
+
+### Learning Rule Captured
+
+Daily closure should be one callable operation. The learner can still inspect
+each artifact, but the loop itself needs a single scheduled-task entry point.
+
+### Validation
+
+- `chmod +x run-daily-cycle.command`
+- `./run-daily-cycle.command 2026-06-29`
+- `python3 -m pytest -q`
+- Script follows the same root layout as `start-workbench.command`.

@@ -21,6 +21,8 @@ resources/
 # Generated local agent state
 ruankao-agent/data/
 ruankao-agent/vault/
+ruankao-agent/reports/
+ruankao-agent/evolution/staged/
 ruankao-agent/dashboard.html
 .codex/environments/
 
