@@ -13,6 +13,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 from .dashboard import render_dashboard
 from .domain import CardType, ExamFront, PrincipleRelationType, SourceIdentity
+from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
 from .storage import MemoryCard, RuankaoStore
 from .vault import initialize_vault, write_principle_note
@@ -41,6 +42,10 @@ class WorkbenchApp:
         return self.root / "vault"
 
     @property
+    def learning_path(self) -> Path:
+        return self.root / "learning"
+
+    @property
     def today(self) -> date:
         return self.config.as_of or date.today()
 
@@ -49,6 +54,7 @@ class WorkbenchApp:
         self.store().initialize()
         initialize_vault(self.vault_path)
         self._ensure_seed_principle()
+        ensure_learning_resources(self.root)
         self.write_dashboard()
 
     def store(self) -> RuankaoStore:
@@ -420,6 +426,7 @@ class WorkbenchApp:
       <a href="#capture">三源录入</a>
       <a href="#cards">记忆卡</a>
       <a href="#principles">原则网络</a>
+      <a href="/learning/">学习台</a>
       <a href="#vault">Obsidian</a>
       <a href="/dashboard.html">静态总图</a>
       <a href="/api/status">状态 JSON</a>
@@ -571,6 +578,7 @@ class WorkbenchApp:
           </div>
         </div>
         <div class="footer-actions">
+          <a class="button secondary" href="/learning/">打开学习台</a>
           <a class="button secondary" href="/dashboard.html">打开静态 HTML 总图</a>
           <a class="button secondary" href="/api/status">查看状态 JSON</a>
         </div>
@@ -585,6 +593,20 @@ class WorkbenchApp:
         self.initialize()
         return (self.root / "dashboard.html").read_text(encoding="utf-8")
 
+    def render_learning_file(self, relative: str = "index.html") -> str:
+        self.initialize()
+        target = self._safe_learning_file(relative)
+        return target.read_text(encoding="utf-8")
+
+    def _safe_learning_file(self, relative: str) -> Path:
+        learning_root = self.learning_path.resolve()
+        target = (learning_root / relative).resolve()
+        if learning_root not in target.parents and target != learning_root:
+            raise PermissionError(relative)
+        if not target.exists() or not target.is_file():
+            raise FileNotFoundError(relative)
+        return target
+
     def render_status_json(self) -> str:
         snapshot = self.snapshot()
         payload = {
@@ -596,6 +618,7 @@ class WorkbenchApp:
             "review_backlog_ratio": snapshot.dashboard.review_backlog_ratio,
             "root": str(self.root),
             "vault": str(self.vault_path),
+            "learning": str(self.learning_path),
         }
         return json.dumps(payload, ensure_ascii=False, indent=2)
 
@@ -632,6 +655,12 @@ def _handler_for(app: WorkbenchApp):
                 return
             if parsed.path == "/api/status":
                 self._send_text(app.render_status_json(), "application/json; charset=utf-8")
+                return
+            if parsed.path in ("/learning", "/learning/"):
+                self._send_html(app.render_learning_file())
+                return
+            if parsed.path.startswith("/learning/"):
+                self._send_learning_file(_learning_relative_path(parsed.path))
                 return
             if parsed.path.startswith("/vault/"):
                 self._send_vault_file(_vault_relative_path(parsed.path))
@@ -692,6 +721,14 @@ def _handler_for(app: WorkbenchApp):
                 return
             self._send_text(target.read_text(encoding="utf-8"), "text/plain; charset=utf-8")
 
+        def _send_learning_file(self, relative: str) -> None:
+            try:
+                self._send_html(app.render_learning_file(relative))
+            except PermissionError:
+                self.send_error(HTTPStatus.FORBIDDEN, "Forbidden")
+            except FileNotFoundError:
+                self.send_error(HTTPStatus.NOT_FOUND, "Not found")
+
         def _redirect(self, location: str) -> None:
             self.send_response(HTTPStatus.SEE_OTHER)
             self.send_header("Location", location)
@@ -709,6 +746,10 @@ def _one(form: Mapping[str, list[str]], key: str, default: str = "") -> str:
 
 def _vault_relative_path(request_path: str) -> str:
     return unquote(request_path.removeprefix("/vault/"))
+
+
+def _learning_relative_path(request_path: str) -> str:
+    return unquote(request_path.removeprefix("/learning/"))
 
 
 def _optional_int(value: str) -> int | None:

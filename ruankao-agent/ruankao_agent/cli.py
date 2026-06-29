@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Sequence
 
 from .dashboard import render_dashboard
+from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
 from .notebooklm import DEFAULT_NOTEBOOK_SOURCE
 from .web import serve_workbench
@@ -205,6 +206,12 @@ def cmd_web(
     return 0
 
 
+def cmd_learning(root: Path, *, overwrite: bool = False) -> int:
+    learning_path = ensure_learning_resources(root, overwrite=overwrite)
+    print(learning_path / "index.html")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ruankao-agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -220,6 +227,10 @@ def build_parser() -> argparse.ArgumentParser:
     web_parser.add_argument("--host", default="127.0.0.1")
     web_parser.add_argument("--port", default=8765, type=int)
     web_parser.add_argument("--open", action="store_true", dest="open_browser")
+
+    learning_parser = subparsers.add_parser("learning")
+    learning_parser.add_argument("--root", required=True, type=Path)
+    learning_parser.add_argument("--overwrite", action="store_true")
 
     return parser
 
@@ -242,6 +253,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             as_of=_parse_date(args.as_of),
             open_browser=args.open_browser,
         )
+    if args.command == "learning":
+        return cmd_learning(args.root, overwrite=args.overwrite)
     raise AssertionError(f"Unsupported command: {args.command}")
 
 

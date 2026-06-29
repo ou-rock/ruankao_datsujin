@@ -5,7 +5,12 @@ from urllib.parse import parse_qs
 
 from ruankao_agent.domain import CardType, ExamFront, SourceIdentity
 from ruankao_agent.storage import RuankaoStore
-from ruankao_agent.web import WorkbenchApp, WorkbenchConfig, _vault_relative_path
+from ruankao_agent.web import (
+    WorkbenchApp,
+    WorkbenchConfig,
+    _learning_relative_path,
+    _vault_relative_path,
+)
 
 
 def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
@@ -19,11 +24,14 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert "三源录入" in html
     assert "记忆卡" in html
     assert "原则网络" in html
+    assert 'href="/learning/"' in html
     assert 'action="/records"' in html
     assert 'action="/cards"' in html
     assert 'action="/relations"' in html
     assert (root / "data" / "ruankao.db").exists()
     assert (root / "dashboard.html").exists()
+    assert (root / "learning" / "index.html").exists()
+    assert (root / "learning" / "lessons" / "0001-scene-before-solution.html").exists()
     assert (root / "vault" / "00-map" / "原则网络.md").exists()
     assert (root / "vault" / "10-memory-war-room" / "principles" / "场景先于方案.md").exists()
 
@@ -75,6 +83,7 @@ def test_workbench_status_json_exposes_current_route(tmp_path) -> None:
     assert '"countdown": "D-117"' in payload
     assert '"phase": "启动诊断"' in payload
     assert str(root / "vault") in payload
+    assert str(root / "learning") in payload
 
 
 def test_vault_request_paths_are_decoded_before_file_lookup() -> None:
@@ -82,6 +91,24 @@ def test_vault_request_paths_are_decoded_before_file_lookup() -> None:
         _vault_relative_path("/vault/10-memory-war-room/principles/%E5%9C%BA%E6%99%AF.md")
         == "10-memory-war-room/principles/场景.md"
     )
+
+
+def test_learning_request_paths_are_decoded_before_file_lookup() -> None:
+    assert (
+        _learning_relative_path("/learning/reference/%E5%9B%9B%E5%A4%A7.html")
+        == "reference/四大.html"
+    )
+
+
+def test_learning_file_lookup_serves_study_pages(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+    app.initialize()
+
+    html = app.render_learning_file("lessons/0001-scene-before-solution.html")
+
+    assert "场景先于方案" in html
+    assert "选择题易错点" in html
 
 
 def test_vault_file_lookup_serves_chinese_paths(tmp_path) -> None:

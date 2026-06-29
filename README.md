@@ -24,7 +24,8 @@ Open the local workbench:
 ```
 
 Then use the browser page for daily capture, review, memory cards, principle links,
-and the Obsidian vault map. In Codex, `/ruankao-workbench` starts the same workbench.
+the learning desk, and the Obsidian vault map. In Codex, `/ruankao-workbench`
+starts the same workbench.
 
 ## What Is Not Committed
 

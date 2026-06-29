@@ -60,6 +60,7 @@ def render_dashboard(snapshot: DashboardSnapshot) -> str:
         ("Uns", "40-uns/"),
     )
     war_room_links = (
+        ("学习台", "learning/index.html"),
         ("Memory War Room", "vault/10-memory-war-room/"),
         ("原则网络", "vault/00-map/原则网络.md"),
         ("战役总图", "vault/00-map/战役总图.md"),
