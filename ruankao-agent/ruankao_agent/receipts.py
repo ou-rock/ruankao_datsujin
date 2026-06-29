@@ -10,7 +10,7 @@ from typing import Iterable
 
 from .loop import build_daily_loop_snapshot, status_line
 from .memory import MemoryDiagnostic, diagnose_memory
-from .storage import MemoryCard, RawRecord, ReviewLog, RuankaoStore
+from .storage import MemoryCard, PracticeSession, RawRecord, ReviewLog, RuankaoStore
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,7 +38,9 @@ def write_daily_receipt(root: Path | str, *, as_of: date | None = None) -> Daily
     records = store.list_raw_records()
     cards = store.list_memory_cards()
     review_logs = store.list_review_logs()
+    practice_sessions = store.list_practice_sessions()
     reviews_today = [log for log in review_logs if log.reviewed_on == day]
+    practice_today = [session for session in practice_sessions if session.created_on == day]
     due_cards = [card for card in cards if card.next_due is not None and card.next_due <= day]
     cheko_cards = [card for card in cards if card.title.startswith("Cheko")]
     cheko_due_cards = [card for card in cheko_cards if card.next_due is not None and card.next_due <= day]
@@ -61,6 +63,8 @@ def write_daily_receipt(root: Path | str, *, as_of: date | None = None) -> Daily
         cards=cards,
         review_logs=review_logs,
         reviews_today=reviews_today,
+        practice_sessions=practice_sessions,
+        practice_today=practice_today,
         diagnostics=list(diagnostics),
         due_cards=due_cards,
         cheko_cards=cheko_cards,
@@ -91,14 +95,18 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
     recent_records = payload["recent_records"]
     recent_cards = payload["recent_cards"]
     recent_reviews = payload["recent_reviews"]
+    recent_practice = payload["recent_practice"]
     memory_diagnostics = payload["memory_diagnostics"]
+    practice_front_counts = payload["practice_front_counts"]
     assert isinstance(source_counts, dict)
     assert isinstance(card_type_counts, dict)
     assert isinstance(front_counts, dict)
     assert isinstance(recent_records, list)
     assert isinstance(recent_cards, list)
     assert isinstance(recent_reviews, list)
+    assert isinstance(recent_practice, list)
     assert isinstance(memory_diagnostics, list)
+    assert isinstance(practice_front_counts, dict)
 
     return f"""<!doctype html>
 <html lang="zh-CN">
@@ -212,6 +220,7 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
         {_metric("原始材料", metrics["raw_records"])}
         {_metric("记忆卡", metrics["memory_cards"])}
         {_metric("今日复习", metrics["reviews_today"])}
+        {_metric("今日练习", metrics["practice_today"])}
         {_metric("薄弱卡", metrics["weak_memory_cards"])}
         {_metric("Cheko 卡", metrics["cheko_cards"])}
         {_metric("冗余消耗", payload["reserve_days_consumed"])}
@@ -230,6 +239,10 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
       <div class="grid">{_count_cards(front_counts)}</div>
     </section>
     <section>
+      <h2>练习题型</h2>
+      <div class="grid">{_count_cards(practice_front_counts)}</div>
+    </section>
+    <section>
       <h2>记忆诊断</h2>
       <div class="list">{_memory_diagnostics(memory_diagnostics)}</div>
     </section>
@@ -244,6 +257,10 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
     <section>
       <h2>最近复习</h2>
       <div class="list">{_recent_reviews(recent_reviews)}</div>
+    </section>
+    <section>
+      <h2>最近练习</h2>
+      <div class="list">{_recent_practice(recent_practice)}</div>
     </section>
   </main>
 </body>
@@ -264,6 +281,8 @@ def _receipt_payload(
     cards: list[MemoryCard],
     review_logs: list[ReviewLog],
     reviews_today: list[ReviewLog],
+    practice_sessions: list[PracticeSession],
+    practice_today: list[PracticeSession],
     diagnostics: list[MemoryDiagnostic],
     due_cards: list[MemoryCard],
     cheko_cards: list[MemoryCard],
@@ -283,6 +302,8 @@ def _receipt_payload(
             "memory_cards": len(cards),
             "review_logs": len(review_logs),
             "reviews_today": len(reviews_today),
+            "practice_sessions": len(practice_sessions),
+            "practice_today": len(practice_today),
             "weak_memory_cards": sum(
                 1 for diagnostic in diagnostics if diagnostic.status in {"leech", "unstable"}
             ),
@@ -293,6 +314,7 @@ def _receipt_payload(
         "source_counts": _count(record.source.value for record in records),
         "card_type_counts": _count(card.card_type.value for card in cards),
         "front_counts": _count(front.value for card in cards for front in card.fronts),
+        "practice_front_counts": _count(session.front.value for session in practice_sessions),
         "memory_diagnostics": [
             {
                 "card_id": diagnostic.card_id,
@@ -341,6 +363,21 @@ def _receipt_payload(
                 "next_due": log.next_due.isoformat(),
             }
             for log in review_logs[-8:]
+        ],
+        "recent_practice": [
+            {
+                "id": session.id,
+                "front": session.front.value,
+                "topic": session.topic,
+                "source": session.source,
+                "score": session.score,
+                "max_score": session.max_score,
+                "duration_minutes": session.duration_minutes,
+                "summary": session.summary,
+                "mistakes": session.mistakes,
+                "created_on": session.created_on.isoformat() if session.created_on else None,
+            }
+            for session in practice_sessions[-8:]
         ],
     }
 
@@ -422,3 +459,29 @@ def _recent_reviews(reviews: list[object]) -> str:
 </div>"""
         )
     return "".join(items)
+
+
+def _recent_practice(sessions: list[object]) -> str:
+    if not sessions:
+        return '<div class="item">暂无练习记录</div>'
+    items = []
+    for item in sessions:
+        assert isinstance(item, dict)
+        score = _score_text(item["score"], item["max_score"])
+        items.append(
+            f"""<div class="item">
+  <strong>#{escape(str(item["id"]))} {escape(str(item["front"]))} {escape(str(item["topic"]))}</strong>
+  <div>{escape(str(item["summary"]))}</div>
+  <div class="meta">score={escape(score)} | source={escape(str(item["source"]))} | duration={escape(str(item["duration_minutes"]))} | date={escape(str(item["created_on"]))}</div>
+  <div class="meta">mistakes={escape(str(item["mistakes"]))}</div>
+</div>"""
+        )
+    return "".join(items)
+
+
+def _score_text(score: object, max_score: object) -> str:
+    if score is None:
+        return "none"
+    if max_score is None:
+        return str(score)
+    return f"{score}/{max_score}"

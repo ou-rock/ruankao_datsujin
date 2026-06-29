@@ -31,6 +31,17 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
         next_due=date(2026, 6, 29),
     )
     store.record_review(card_id=card_id, reviewed_on=date(2026, 6, 29), grade=4)
+    store.add_practice_session(
+        front=ExamFront.CHOICE,
+        topic="系统架构设计错题",
+        source="Cheko",
+        score=7,
+        max_score=10,
+        duration_minutes=18,
+        summary="质量属性题仍然不稳。",
+        mistakes="把可用性和可靠性混在一起。",
+        created_on=date(2026, 6, 29),
+    )
     seed_cheko_cards(root, next_due=date(2026, 6, 29))
 
     result = write_daily_receipt(root, as_of=date(2026, 6, 29))
@@ -47,8 +58,12 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
     assert payload["metrics"]["cheko_cards"] == 4
     assert payload["metrics"]["review_logs"] == 1
     assert payload["metrics"]["reviews_today"] == 1
+    assert payload["metrics"]["practice_sessions"] == 1
+    assert payload["metrics"]["practice_today"] == 1
     assert payload["metrics"]["weak_memory_cards"] == 0
     assert payload["memory_diagnostics"][0]["status"] == "due"
+    assert payload["practice_front_counts"] == {"choice": 1}
+    assert payload["recent_practice"][0]["topic"] == "系统架构设计错题"
     assert payload["source_counts"] == {"mein": 1, "uns": 1}
     assert payload["front_counts"]["choice"] == 4
     assert payload["front_counts"]["essay"] == 1
@@ -59,6 +74,8 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
     assert "质量属性场景" in html
     assert "错题归因完成" in html
     assert "记忆诊断" in html
+    assert "最近练习" in html
+    assert "系统架构设计错题" in html
     assert "最近复习" in html
     assert "grade=4" in html
 

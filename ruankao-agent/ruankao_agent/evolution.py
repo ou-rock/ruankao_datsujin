@@ -172,6 +172,7 @@ def _build_actions(
     weak_count = int(metrics.get("weak_memory_cards", 0))
     due_count = int(metrics.get("due_cards", 0))
     reviews_today = int(metrics.get("reviews_today", 0))
+    practice_today = int(metrics.get("practice_today", 0))
     cheko_cards = int(metrics.get("cheko_cards", 0))
     raw_records = int(metrics.get("raw_records", 0))
     memory_cards = int(metrics.get("memory_cards", 0))
@@ -207,6 +208,15 @@ def _build_actions(
                 "medium",
                 "保护检索练习",
                 "今天没有复习记录，明天第一动作必须是检索而不是阅读。",
+            )
+        )
+    if practice_today == 0:
+        actions.append(
+            _action(
+                "protect-exam-practice",
+                "medium",
+                "保护实战练习",
+                "今天没有选择/案例/论文练习记录，明天至少补一条实战记录。",
             )
         )
     if cheko_cards == 0:

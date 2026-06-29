@@ -368,3 +368,42 @@ learner can feel busy while still starving case practice or essay expression.
   - weak cards turn the affected route red;
   - the CLI prints report paths;
   - the workbench can generate and serve the route coverage HTML.
+
+## 2026-06-29 Round 011 - Practice Session Ledger
+
+### Learner Friction
+
+The system could manage memory and route coverage, but it did not preserve
+actual practice sessions. Passing the exam requires remembering what was
+practiced, scored, timed, and missed across choice, case, and essay fronts.
+
+### Change
+
+- Added `practice_sessions` SQLite table.
+- Added `PracticeSession`, `add_practice_session()`, and `list_practice_sessions()`.
+- Added workbench "练习记录" form and recent practice list.
+- Extended daily receipts with:
+  - total practice sessions;
+  - today's practice count;
+  - practice front counts;
+  - recent practice sessions.
+- Extended night evolution with `protect-exam-practice` when no practice was
+  recorded for the day.
+
+### Learning Rule Captured
+
+Memory review is necessary but not sufficient. The system must also track real
+exam practice: score, duration, topic, source, and mistakes.
+
+### Validation
+
+- `python3 -m pytest tests/test_storage_and_memory.py -q`
+- `python3 -m pytest tests/test_daily_receipt.py -q`
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest tests/test_evolution.py -q`
+- `python3 -m pytest -q`
+- Tests assert:
+  - practice sessions survive SQLite reopen and front filtering;
+  - daily receipts include practice metrics and recent practice;
+  - the workbench writes and renders practice sessions;
+  - night evolution warns when no practice session was recorded.

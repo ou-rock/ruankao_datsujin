@@ -167,3 +167,43 @@ def test_review_logs_preserve_each_review_attempt(tmp_path) -> None:
     assert [log.grade for log in logs] == [1, 5]
     assert [log.reviewed_on for log in logs] == [date(2026, 6, 29), date(2026, 6, 30)]
     assert len(all_logs) == 2
+
+
+def test_practice_sessions_preserve_exam_front_scores_and_mistakes(tmp_path) -> None:
+    db_path = tmp_path / "ruankao.db"
+    store = RuankaoStore(db_path)
+    store.initialize()
+
+    choice_id = store.add_practice_session(
+        front=ExamFront.CHOICE,
+        topic="系统架构设计错题",
+        source="Cheko",
+        score=7,
+        max_score=10,
+        duration_minutes=18,
+        summary="质量属性题仍然不稳。",
+        mistakes="把可用性和可靠性混在一起。",
+        created_on=date(2026, 6, 29),
+    )
+    store.add_practice_session(
+        front=ExamFront.ESSAY,
+        topic="项目背景段",
+        source="自写",
+        summary="补了一段项目背景。",
+        mistakes="业务价值不够具体。",
+        created_on=date(2026, 6, 29),
+    )
+
+    reopened = RuankaoStore(db_path)
+    reopened.initialize()
+    sessions = reopened.list_practice_sessions()
+    choice_sessions = reopened.list_practice_sessions(ExamFront.CHOICE)
+
+    assert sessions[0].id == choice_id
+    assert sessions[0].front == ExamFront.CHOICE
+    assert sessions[0].score == 7
+    assert sessions[0].max_score == 10
+    assert sessions[0].duration_minutes == 18
+    assert "可用性" in sessions[0].mistakes
+    assert [session.front for session in sessions] == [ExamFront.CHOICE, ExamFront.ESSAY]
+    assert len(choice_sessions) == 1

@@ -65,6 +65,20 @@ class ReviewLog:
 
 
 @dataclass(frozen=True, slots=True)
+class PracticeSession:
+    id: int
+    front: ExamFront
+    topic: str
+    source: str
+    score: float | None
+    max_score: float | None
+    duration_minutes: int | None
+    summary: str
+    mistakes: str
+    created_on: date | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class PrincipleRelation:
     id: int
     from_card_id: int
@@ -131,12 +145,27 @@ class RuankaoStore:
                 created_on TEXT NOT NULL DEFAULT (date('now'))
             );
 
+            CREATE TABLE IF NOT EXISTS practice_sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                front TEXT NOT NULL,
+                topic TEXT NOT NULL,
+                source TEXT NOT NULL DEFAULT '',
+                score REAL,
+                max_score REAL,
+                duration_minutes INTEGER,
+                summary TEXT NOT NULL,
+                mistakes TEXT NOT NULL,
+                created_on TEXT NOT NULL DEFAULT (date('now'))
+            );
+
             CREATE INDEX IF NOT EXISTS idx_raw_records_source ON raw_records(source);
             CREATE INDEX IF NOT EXISTS idx_memory_cards_type ON memory_cards(card_type);
             CREATE INDEX IF NOT EXISTS idx_memory_cards_next_due ON memory_cards(next_due);
             CREATE INDEX IF NOT EXISTS idx_principle_relations_from ON principle_relations(from_card_id);
             CREATE INDEX IF NOT EXISTS idx_review_logs_card ON review_logs(card_id);
             CREATE INDEX IF NOT EXISTS idx_review_logs_reviewed_on ON review_logs(reviewed_on);
+            CREATE INDEX IF NOT EXISTS idx_practice_sessions_front ON practice_sessions(front);
+            CREATE INDEX IF NOT EXISTS idx_practice_sessions_created_on ON practice_sessions(created_on);
             """
         )
         self._ensure_column("raw_records", "promotion_status", "TEXT NOT NULL DEFAULT 'raw'")
@@ -389,6 +418,79 @@ class RuankaoStore:
                 grade=row["grade"],
                 retrieval_strength=row["retrieval_strength"],
                 next_due=date.fromisoformat(row["next_due"]),
+                created_on=date.fromisoformat(row["created_on"]) if row["created_on"] else None,
+            )
+            for row in rows
+        ]
+
+    def add_practice_session(
+        self,
+        front: ExamFront,
+        topic: str,
+        summary: str,
+        *,
+        source: str = "",
+        score: float | None = None,
+        max_score: float | None = None,
+        duration_minutes: int | None = None,
+        mistakes: str = "",
+        created_on: date | None = None,
+    ) -> int:
+        cur = self._conn.execute(
+            """
+            INSERT INTO practice_sessions (
+                front, topic, source, score, max_score, duration_minutes,
+                summary, mistakes, created_on
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                front.value,
+                topic,
+                source,
+                score,
+                max_score,
+                duration_minutes,
+                summary,
+                mistakes,
+                (created_on or date.today()).isoformat(),
+            ),
+        )
+        self._conn.commit()
+        return int(cur.lastrowid)
+
+    def list_practice_sessions(self, front: ExamFront | None = None) -> list[PracticeSession]:
+        if front is None:
+            rows = self._conn.execute(
+                """
+                SELECT id, front, topic, source, score, max_score, duration_minutes,
+                       summary, mistakes, created_on
+                FROM practice_sessions
+                ORDER BY id
+                """
+            ).fetchall()
+        else:
+            rows = self._conn.execute(
+                """
+                SELECT id, front, topic, source, score, max_score, duration_minutes,
+                       summary, mistakes, created_on
+                FROM practice_sessions
+                WHERE front = ?
+                ORDER BY id
+                """,
+                (front.value,),
+            ).fetchall()
+        return [
+            PracticeSession(
+                id=row["id"],
+                front=ExamFront(row["front"]),
+                topic=row["topic"],
+                source=row["source"],
+                score=row["score"],
+                max_score=row["max_score"],
+                duration_minutes=row["duration_minutes"],
+                summary=row["summary"],
+                mistakes=row["mistakes"],
                 created_on=date.fromisoformat(row["created_on"]) if row["created_on"] else None,
             )
             for row in rows

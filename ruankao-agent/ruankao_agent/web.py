@@ -20,7 +20,7 @@ from .loop import build_daily_loop_snapshot, status_line
 from .memory import MemoryDiagnostic, diagnose_memory
 from .receipts import daily_receipt_html_path, write_daily_receipt
 from .route_map import route_map_html_path, write_route_map
-from .storage import MemoryCard, RuankaoStore
+from .storage import MemoryCard, PracticeSession, RuankaoStore
 from .vault import initialize_vault, write_principle_note
 
 
@@ -148,6 +148,21 @@ class WorkbenchApp:
             rationale=_one(form, "rationale"),
         )
 
+    def add_practice_session(self, form: Mapping[str, list[str]]) -> int:
+        store = self.store()
+        store.initialize()
+        return store.add_practice_session(
+            front=ExamFront(_one(form, "front", ExamFront.CHOICE.value)),
+            topic=_one(form, "topic"),
+            source=_one(form, "source"),
+            score=_optional_float(_one(form, "score")),
+            max_score=_optional_float(_one(form, "max_score")),
+            duration_minutes=_optional_int(_one(form, "duration_minutes")),
+            summary=_one(form, "summary"),
+            mistakes=_one(form, "mistakes"),
+            created_on=_optional_date(_one(form, "created_on")) or self.today,
+        )
+
     def record_review(self, form: Mapping[str, list[str]]) -> None:
         store = self.store()
         store.initialize()
@@ -180,6 +195,7 @@ class WorkbenchApp:
         store = self.store()
         records = store.list_raw_records()
         cards = store.list_memory_cards()
+        practice_sessions = store.list_practice_sessions()
         review_logs = store.list_review_logs()
         snapshot = self.snapshot()
         due_cards = [card for card in cards if card.next_due is not None and card.next_due <= self.today]
@@ -478,6 +494,7 @@ class WorkbenchApp:
     <aside>
       <a href="#today">今日闭环</a>
       <a href="#cheko">学习信号</a>
+      <a href="#practice">练习记录</a>
       <a href="#capture">三源录入</a>
       <a href="#cards">记忆卡</a>
       <a href="#principles">原则网络</a>
@@ -542,6 +559,54 @@ class WorkbenchApp:
           <div>
             <h3>最近 Cheko 卡片</h3>
             {_card_list(cheko_cards[-4:], with_review=False, today=self.today)}
+          </div>
+        </div>
+      </section>
+
+      <section id="practice">
+        <h2>练习记录</h2>
+        <div class="split">
+          <form method="post" action="/practice">
+            <div class="grid">
+              <label>题型
+                <select name="front">
+                  <option value="choice">选择题</option>
+                  <option value="case">案例题</option>
+                  <option value="essay">论文题</option>
+                </select>
+              </label>
+              <label>日期
+                <input type="date" name="created_on" value="{escape(self.today.isoformat())}">
+              </label>
+            </div>
+            <label>主题
+              <input name="topic" required placeholder="系统架构设计错题 / 项目背景段">
+            </label>
+            <div class="grid">
+              <label>得分
+                <input name="score" inputmode="decimal">
+              </label>
+              <label>满分
+                <input name="max_score" inputmode="decimal">
+              </label>
+              <label>耗时分钟
+                <input name="duration_minutes" inputmode="numeric">
+              </label>
+            </div>
+            <label>来源
+              <input name="source" placeholder="Cheko / 真题 / 自写">
+            </label>
+            <label>练习摘要
+              <textarea name="summary" required></textarea>
+            </label>
+            <label>错因 / 卡点
+              <textarea name="mistakes"></textarea>
+            </label>
+            <button type="submit">记录练习</button>
+          </form>
+          <div>
+            <h3>最近练习</h3>
+            {_practice_list(practice_sessions[-8:])}
           </div>
         </div>
       </section>
@@ -793,6 +858,10 @@ def _handler_for(app: WorkbenchApp):
                     relation_id = app.add_principle_relation(form)
                     self._redirect(f"/?message=principle-relation-{relation_id}-saved")
                     return
+                if self.path == "/practice":
+                    session_id = app.add_practice_session(form)
+                    self._redirect(f"/?message=practice-session-{session_id}-saved")
+                    return
                 if self.path == "/reviews":
                     app.record_review(form)
                     self._redirect("/?message=review-saved")
@@ -901,6 +970,10 @@ def _optional_int(value: str) -> int | None:
     return int(value) if value.strip() else None
 
 
+def _optional_float(value: str) -> float | None:
+    return float(value) if value.strip() else None
+
+
 def _optional_date(value: str) -> date | None:
     return date.fromisoformat(value) if value.strip() else None
 
@@ -962,6 +1035,30 @@ def _card_list(cards: list[MemoryCard], *, with_review: bool, today: date) -> st
 </div>"""
         )
     return '<div class="list">' + "".join(items) + "</div>"
+
+
+def _practice_list(sessions: list[PracticeSession]) -> str:
+    if not sessions:
+        return '<div class="empty">还没有练习记录。先记录一次选择、案例或论文练习。</div>'
+    items = []
+    for session in reversed(sessions):
+        score = _score_text(session.score, session.max_score)
+        items.append(
+            f"""<div class="item">
+  <div class="item-title"><span>#{session.id} {escape(session.topic)}</span><span>{escape(session.front.value)}</span></div>
+  <div class="meta">score={escape(score)} | source={escape(session.source or "none")} | duration={escape(str(session.duration_minutes or "none"))} | date={escape(session.created_on.isoformat() if session.created_on else "none")}</div>
+  <div class="meta">{escape(session.summary[:140])}</div>
+</div>"""
+        )
+    return '<div class="list">' + "".join(items) + "</div>"
+
+
+def _score_text(score: float | None, max_score: float | None) -> str:
+    if score is None:
+        return "none"
+    if max_score is None:
+        return f"{score:g}"
+    return f"{score:g}/{max_score:g}"
 
 
 def _diagnostic_list(diagnostics: list[MemoryDiagnostic]) -> str:

@@ -28,6 +28,7 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert "生成日结回执" in html
     assert "生成夜间进化草案" in html
     assert "生成三题型覆盖图" in html
+    assert "练习记录" in html
     assert "三源录入" in html
     assert "记忆卡" in html
     assert "原则网络" in html
@@ -36,6 +37,7 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert 'action="/night/evolve"' in html
     assert 'action="/routes/map"' in html
     assert 'action="/cheko/cards"' in html
+    assert 'action="/practice"' in html
     assert 'action="/records"' in html
     assert 'action="/cards"' in html
     assert 'action="/relations"' in html
@@ -82,6 +84,33 @@ def test_workbench_forms_write_store_and_principle_note(tmp_path) -> None:
     note = root / "vault" / "10-memory-war-room" / "principles" / "场景先于方案.md"
     assert note.exists()
     assert "[[技术先行]]" in note.read_text(encoding="utf-8")
+
+
+def test_workbench_forms_write_practice_session(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+    app.initialize()
+
+    session_id = app.add_practice_session(
+        parse_qs(
+            "front=case&topic=质量属性效用树&source=真题&score=8&max_score=15"
+            "&duration_minutes=35&summary=能列出场景但度量不够具体"
+            "&mistakes=响应和响应度量混写&created_on=2026-06-29"
+        )
+    )
+
+    store = RuankaoStore(root / "data" / "ruankao.db")
+    store.initialize()
+    sessions = store.list_practice_sessions()
+    html = app.render_home()
+
+    assert sessions[0].id == session_id
+    assert sessions[0].front == ExamFront.CASE
+    assert sessions[0].score == 8
+    assert sessions[0].max_score == 15
+    assert sessions[0].duration_minutes == 35
+    assert "质量属性效用树" in html
+    assert "8/15" in html
 
 
 def test_workbench_can_seed_cheko_cards_from_learning_signal_action(tmp_path) -> None:

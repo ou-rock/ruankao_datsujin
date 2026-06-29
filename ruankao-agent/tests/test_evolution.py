@@ -34,9 +34,11 @@ def test_night_evolution_plan_stages_actions_from_daily_receipt(tmp_path) -> Non
     assert (root / "data" / "daily-receipts" / "2026-06-29.json").exists()
 
     payload = json.loads(result.json_path.read_text(encoding="utf-8"))
+    action_ids = [action["id"] for action in payload["actions"]]
     assert payload["stage_only"] is True
     assert payload["actions"][0]["id"] == "repair-memory"
     assert payload["actions"][0]["priority"] == "high"
+    assert "protect-exam-practice" in action_ids
     assert "敏感点 vs 权衡点" in payload["actions"][0]["detail"]
 
     html = result.html_path.read_text(encoding="utf-8")
