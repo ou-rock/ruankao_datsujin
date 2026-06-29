@@ -298,3 +298,34 @@ evidence into a bounded action plan before any live system behavior changes.
   - weak memory diagnostics become high-priority repair actions;
   - the CLI prints hook-friendly staged plan paths;
   - the workbench can generate and serve the nightly HTML plan.
+
+## 2026-06-29 Round 009 - Codex Operations For Daily Close And Night Evolution
+
+### Learner Friction
+
+The system had the right CLI commands, but daily use should not require
+remembering Python module invocations. The learner should be able to ask Codex
+for a named operation.
+
+### Change
+
+- Added `.codex/commands/ruankao-daily-close.md`.
+- Added `.codex/commands/ruankao-night-evolve.md`.
+- Updated `README.md` daily-use instructions.
+- Daily close now has a named Codex operation for:
+  - Cheko weak-area seeding;
+  - daily receipt generation.
+- Night evolution now has a named Codex operation for stage-only plan generation.
+
+### Learning Rule Captured
+
+Recurring learning-system actions should have stable names. A companion system
+should reduce command memory load, especially for the actions that must happen
+every day.
+
+### Validation
+
+- Command docs point at the local `ruankao-agent` root.
+- README exposes both daily operations.
+- `python3 -m pytest -q`
+- `rg -n "ruankao-daily-close|ruankao-night-evolve|night-evolve|daily-receipt|cheko-seed-cards" .codex/commands README.md ruankao-agent/docs/OPTIMIZATION_LOG.md`

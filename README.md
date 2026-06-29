@@ -27,6 +27,17 @@ Then use the browser page for daily capture, review, memory cards, principle lin
 the learning desk, and the Obsidian vault map. In Codex, `/ruankao-workbench`
 starts the same workbench.
 
+Daily close and night evolution can run from Codex:
+
+```text
+/ruankao-daily-close 2026-06-29
+/ruankao-night-evolve 2026-06-29
+```
+
+The daily close command seeds Cheko weak areas into memory cards and writes a
+daily receipt. The night evolution command creates a stage-only plan; it does
+not directly mutate live skills or learning rules.
+
 ## What Is Not Committed
 
 The local `resources/` folder contains exam PDFs and generated study materials. It is ignored
