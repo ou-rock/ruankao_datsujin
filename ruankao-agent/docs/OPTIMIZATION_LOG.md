@@ -835,3 +835,27 @@ constraint, and feedback; learning improves when the graph becomes explicit.
   - first seeding creates all principle relations;
   - repeated seeding skips existing relations;
   - Cheko seed output remains unchanged.
+
+## 2026-06-29 Round 025 - Architect Review Command
+
+### Learner Friction
+
+The architect-thinking skill seed existed, but the learner still needed an easy
+Codex entry point to apply it to an answer, design, or essay paragraph.
+
+### Change
+
+- Added `.codex/commands/ruankao-architect-review.md`.
+- Linked the command from README.
+- The command points Codex to the local `architect-thinking/SKILL.md` and asks it
+  to apply the Core Seven review shape.
+
+### Learning Rule Captured
+
+A principle kernel becomes useful when it is applied repeatedly to real answers.
+The review command makes that application path explicit.
+
+### Validation
+
+- Command doc points at the local skill file.
+- README lists the command with the other daily operations.

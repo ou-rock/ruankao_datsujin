@@ -34,6 +34,7 @@ Daily close and night evolution can run from Codex:
 /ruankao-daily-cycle 2026-06-29
 /ruankao-daily-close 2026-06-29
 /ruankao-night-evolve 2026-06-29
+/ruankao-architect-review <question-or-draft>
 ```
 
 The daily cycle command runs Cheko weak-area seeding, core principle seeding,
