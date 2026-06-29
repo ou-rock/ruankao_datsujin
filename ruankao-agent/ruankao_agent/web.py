@@ -16,6 +16,7 @@ from .dashboard import render_dashboard
 from .domain import CardType, ExamFront, PrincipleRelationType, SourceIdentity
 from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
+from .receipts import daily_receipt_html_path, write_daily_receipt
 from .storage import MemoryCard, RuankaoStore
 from .vault import initialize_vault, write_principle_note
 
@@ -45,6 +46,10 @@ class WorkbenchApp:
     @property
     def learning_path(self) -> Path:
         return self.root / "learning"
+
+    @property
+    def reports_path(self) -> Path:
+        return self.root / "reports"
 
     @property
     def today(self) -> date:
@@ -155,6 +160,10 @@ class WorkbenchApp:
         self.write_dashboard()
         return result
 
+    def write_daily_receipt(self, form: Mapping[str, list[str]]):
+        receipt_date = _optional_date(_one(form, "as_of")) or self.today
+        return write_daily_receipt(self.root, as_of=receipt_date)
+
     def render_home(self, message: str = "") -> str:
         self.initialize()
         store = self.store()
@@ -167,6 +176,12 @@ class WorkbenchApp:
             card for card in cheko_cards if card.next_due is not None and card.next_due <= self.today
         ]
         principle_cards = [card for card in cards if card.card_type is CardType.PRINCIPLE]
+        receipt_path = daily_receipt_html_path(self.root, self.today)
+        receipt_link = (
+            f'<a class="button secondary" href="/reports/daily/{escape(self.today.isoformat())}.html">打开今日日结</a>'
+            if receipt_path.exists()
+            else ""
+        )
 
         return f"""<!doctype html>
 <html lang="zh-CN">
@@ -459,6 +474,11 @@ class WorkbenchApp:
               <div class="item">选择题保持概念密度，案例题保持论证手感，论文题保持素材活性。</div>
               <div class="item">每次学习至少沉淀一条 Mein / Du / Uns。</div>
             </div>
+            <form method="post" action="/daily/receipt" style="margin-top:10px;">
+              <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
+              <button type="submit">生成日结回执</button>
+            </form>
+            <div class="footer-actions">{receipt_link}</div>
           </div>
         </div>
       </section>
@@ -635,10 +655,23 @@ class WorkbenchApp:
         target = self._safe_learning_file(relative)
         return target.read_text(encoding="utf-8")
 
+    def render_report_file(self, relative: str) -> str:
+        target = self._safe_report_file(relative)
+        return target.read_text(encoding="utf-8")
+
     def _safe_learning_file(self, relative: str) -> Path:
         learning_root = self.learning_path.resolve()
         target = (learning_root / relative).resolve()
         if learning_root not in target.parents and target != learning_root:
+            raise PermissionError(relative)
+        if not target.exists() or not target.is_file():
+            raise FileNotFoundError(relative)
+        return target
+
+    def _safe_report_file(self, relative: str) -> Path:
+        reports_root = self.reports_path.resolve()
+        target = (reports_root / relative).resolve()
+        if reports_root not in target.parents and target != reports_root:
             raise PermissionError(relative)
         if not target.exists() or not target.is_file():
             raise FileNotFoundError(relative)
@@ -699,6 +732,9 @@ def _handler_for(app: WorkbenchApp):
             if parsed.path.startswith("/learning/"):
                 self._send_learning_file(_learning_relative_path(parsed.path))
                 return
+            if parsed.path.startswith("/reports/"):
+                self._send_report_file(_report_relative_path(parsed.path))
+                return
             if parsed.path.startswith("/vault/"):
                 self._send_vault_file(_vault_relative_path(parsed.path))
                 return
@@ -729,6 +765,10 @@ def _handler_for(app: WorkbenchApp):
                         f"/?message=cheko-cards-created-{len(result.created_card_ids)}"
                         f"-skipped-{len(result.skipped_titles)}"
                     )
+                    return
+                if self.path == "/daily/receipt":
+                    result = app.write_daily_receipt(form)
+                    self._redirect(f"/?message=daily-receipt-{result.as_of.isoformat()}-written")
                     return
             except Exception as exc:  # pragma: no cover - exercised by real browser use.
                 self.send_error(HTTPStatus.BAD_REQUEST, str(exc))
@@ -773,6 +813,14 @@ def _handler_for(app: WorkbenchApp):
             except FileNotFoundError:
                 self.send_error(HTTPStatus.NOT_FOUND, "Not found")
 
+        def _send_report_file(self, relative: str) -> None:
+            try:
+                self._send_html(app.render_report_file(relative))
+            except PermissionError:
+                self.send_error(HTTPStatus.FORBIDDEN, "Forbidden")
+            except FileNotFoundError:
+                self.send_error(HTTPStatus.NOT_FOUND, "Not found")
+
         def _redirect(self, location: str) -> None:
             self.send_response(HTTPStatus.SEE_OTHER)
             self.send_header("Location", location)
@@ -794,6 +842,10 @@ def _vault_relative_path(request_path: str) -> str:
 
 def _learning_relative_path(request_path: str) -> str:
     return unquote(request_path.removeprefix("/learning/"))
+
+
+def _report_relative_path(request_path: str) -> str:
+    return unquote(request_path.removeprefix("/reports/"))
 
 
 def _optional_int(value: str) -> int | None:

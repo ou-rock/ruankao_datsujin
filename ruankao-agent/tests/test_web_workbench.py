@@ -9,6 +9,7 @@ from ruankao_agent.web import (
     WorkbenchApp,
     WorkbenchConfig,
     _learning_relative_path,
+    _report_relative_path,
     _vault_relative_path,
 )
 
@@ -23,10 +24,12 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert "今日闭环" in html
     assert "学习信号" in html
     assert "把 Cheko 弱点入队" in html
+    assert "生成日结回执" in html
     assert "三源录入" in html
     assert "记忆卡" in html
     assert "原则网络" in html
     assert 'href="/learning/"' in html
+    assert 'action="/daily/receipt"' in html
     assert 'action="/cheko/cards"' in html
     assert 'action="/records"' in html
     assert 'action="/cards"' in html
@@ -98,6 +101,22 @@ def test_workbench_can_seed_cheko_cards_from_learning_signal_action(tmp_path) ->
     assert "Cheko 记忆卡" in app.render_home()
 
 
+def test_workbench_can_write_and_serve_daily_receipt(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+    app.initialize()
+    app.seed_cheko_cards(parse_qs("next_due=2026-06-29"))
+
+    result = app.write_daily_receipt(parse_qs("as_of=2026-06-29"))
+    html = app.render_report_file("daily/2026-06-29.html")
+    home = app.render_home()
+
+    assert result.as_of == date(2026, 6, 29)
+    assert "日结回执 2026-06-29" in html
+    assert "Cheko 到期" in html
+    assert 'href="/reports/daily/2026-06-29.html"' in home
+
+
 def test_workbench_status_json_exposes_current_route(tmp_path) -> None:
     root = tmp_path / "demo"
     app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
@@ -122,6 +141,13 @@ def test_learning_request_paths_are_decoded_before_file_lookup() -> None:
     assert (
         _learning_relative_path("/learning/reference/%E5%9B%9B%E5%A4%A7.html")
         == "reference/四大.html"
+    )
+
+
+def test_report_request_paths_are_decoded_before_file_lookup() -> None:
+    assert (
+        _report_relative_path("/reports/daily/%E6%97%A5%E7%BB%93.html")
+        == "daily/日结.html"
     )
 
 

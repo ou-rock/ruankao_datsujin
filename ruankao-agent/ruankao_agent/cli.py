@@ -11,6 +11,7 @@ from .dashboard import render_dashboard
 from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
 from .notebooklm import DEFAULT_NOTEBOOK_SOURCE
+from .receipts import write_daily_receipt
 from .web import serve_workbench
 
 
@@ -223,6 +224,12 @@ def cmd_cheko_seed_cards(root: Path, *, next_due: date | None = None) -> int:
     return 0
 
 
+def cmd_daily_receipt(root: Path, *, as_of: date | None = None) -> int:
+    result = write_daily_receipt(root, as_of=as_of)
+    print(f"html={result.html_path} json={result.json_path} status={result.status}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ruankao-agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -246,6 +253,10 @@ def build_parser() -> argparse.ArgumentParser:
     cheko_parser = subparsers.add_parser("cheko-seed-cards")
     cheko_parser.add_argument("--root", required=True, type=Path)
     cheko_parser.add_argument("--next-due")
+
+    receipt_parser = subparsers.add_parser("daily-receipt")
+    receipt_parser.add_argument("--root", required=True, type=Path)
+    receipt_parser.add_argument("--as-of")
 
     return parser
 
@@ -272,6 +283,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_learning(args.root, overwrite=args.overwrite)
     if args.command == "cheko-seed-cards":
         return cmd_cheko_seed_cards(args.root, next_due=_parse_date(args.next_due))
+    if args.command == "daily-receipt":
+        return cmd_daily_receipt(args.root, as_of=_parse_date(args.as_of))
     raise AssertionError(f"Unsupported command: {args.command}")
 
 

@@ -151,3 +151,40 @@ main daily surface, not only as a remembered command.
   - the workbench renders the Cheko learning-signal entry;
   - the workbench action creates four due Cheko cards;
   - the home page shows Cheko card state after seeding.
+
+## 2026-06-29 Round 005 - Daily Receipt For Night Evolution
+
+### Learner Friction
+
+The system could show status and create cards, but it still lacked a durable
+daily receipt. Without a receipt, nightly evolution has to infer what happened
+from scattered state instead of reading one bounded artifact.
+
+### Change
+
+- Added `ruankao_agent.receipts.write_daily_receipt()`.
+- Wrote machine-readable JSON to `data/daily-receipts/<date>.json`.
+- Wrote human-readable HTML to `reports/daily/<date>.html`.
+- Added CLI command:
+  - `python3 -m ruankao_agent.cli daily-receipt --root <root> --as-of <YYYY-MM-DD>`
+- Added a workbench button that posts to `/daily/receipt`.
+- Added safe `/reports/` serving so the generated receipt can be opened in the
+  browser workbench.
+
+### Learning Rule Captured
+
+Daily learning must leave a receipt. Night evolution should consume an explicit
+summary of status, inventory, Cheko queue state, recent raw material, and recent
+cards instead of guessing from scattered files.
+
+### Validation
+
+- `python3 -m pytest tests/test_daily_receipt.py -q`
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- `python3 -m ruankao_agent.cli daily-receipt --root /tmp/ruankao-daily-receipt-<id> --as-of 2026-06-29`
+- Tests assert:
+  - daily receipt JSON and HTML are written;
+  - counts cover raw records, memory cards, due cards, Cheko cards, sources, and fronts;
+  - the CLI prints hook-friendly paths and status;
+  - the workbench can write and serve the daily HTML receipt.
