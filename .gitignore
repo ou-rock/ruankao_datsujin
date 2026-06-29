@@ -1,0 +1,30 @@
+.DS_Store
+**/.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local exam resources. Keep these local unless explicitly approved for upload.
+resources/
+*.pdf
+*.epub
+*.docx
+*.pptx
+*.xlsx
+
+# Generated local agent state
+ruankao-agent/data/
+ruankao-agent/vault/
+ruankao-agent/dashboard.html
+
+# Local temp/demo outputs
+tmp/
+*.db
+*.sqlite
+*.sqlite3
