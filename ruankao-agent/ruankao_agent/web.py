@@ -14,6 +14,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 from .cheko import ChekoSeedResult, seed_cheko_cards as seed_cheko_memory_cards
 from .dashboard import render_dashboard
 from .domain import CardType, ExamFront, PrincipleRelationType, SourceIdentity
+from .evolution import night_evolution_html_path, write_night_evolution_plan
 from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
 from .memory import MemoryDiagnostic, diagnose_memory
@@ -165,6 +166,10 @@ class WorkbenchApp:
         receipt_date = _optional_date(_one(form, "as_of")) or self.today
         return write_daily_receipt(self.root, as_of=receipt_date)
 
+    def write_night_evolution_plan(self, form: Mapping[str, list[str]]):
+        evolution_date = _optional_date(_one(form, "as_of")) or self.today
+        return write_night_evolution_plan(self.root, as_of=evolution_date)
+
     def render_home(self, message: str = "") -> str:
         self.initialize()
         store = self.store()
@@ -186,6 +191,12 @@ class WorkbenchApp:
         receipt_link = (
             f'<a class="button secondary" href="/reports/daily/{escape(self.today.isoformat())}.html">打开今日日结</a>'
             if receipt_path.exists()
+            else ""
+        )
+        evolution_path = night_evolution_html_path(self.root, self.today)
+        evolution_link = (
+            f'<a class="button secondary" href="/reports/nightly/{escape(self.today.isoformat())}.html">打开夜间草案</a>'
+            if evolution_path.exists()
             else ""
         )
 
@@ -486,7 +497,11 @@ class WorkbenchApp:
               <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
               <button type="submit">生成日结回执</button>
             </form>
-            <div class="footer-actions">{receipt_link}</div>
+            <form method="post" action="/night/evolve" style="margin-top:10px;">
+              <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
+              <button type="submit">生成夜间进化草案</button>
+            </form>
+            <div class="footer-actions">{receipt_link}{evolution_link}</div>
           </div>
         </div>
       </section>
@@ -777,6 +792,13 @@ def _handler_for(app: WorkbenchApp):
                 if self.path == "/daily/receipt":
                     result = app.write_daily_receipt(form)
                     self._redirect(f"/?message=daily-receipt-{result.as_of.isoformat()}-written")
+                    return
+                if self.path == "/night/evolve":
+                    result = app.write_night_evolution_plan(form)
+                    self._redirect(
+                        f"/?message=night-evolution-{result.as_of.isoformat()}"
+                        f"-actions-{result.action_count}-staged"
+                    )
                     return
             except Exception as exc:  # pragma: no cover - exercised by real browser use.
                 self.send_error(HTTPStatus.BAD_REQUEST, str(exc))

@@ -26,11 +26,13 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert "把 Cheko 弱点入队" in html
     assert "记忆诊断" in html
     assert "生成日结回执" in html
+    assert "生成夜间进化草案" in html
     assert "三源录入" in html
     assert "记忆卡" in html
     assert "原则网络" in html
     assert 'href="/learning/"' in html
     assert 'action="/daily/receipt"' in html
+    assert 'action="/night/evolve"' in html
     assert 'action="/cheko/cards"' in html
     assert 'action="/records"' in html
     assert 'action="/cards"' in html
@@ -137,6 +139,23 @@ def test_workbench_can_write_and_serve_daily_receipt(tmp_path) -> None:
     assert "日结回执 2026-06-29" in html
     assert "Cheko 到期" in html
     assert 'href="/reports/daily/2026-06-29.html"' in home
+
+
+def test_workbench_can_write_and_serve_night_evolution_plan(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+    app.initialize()
+    app.seed_cheko_cards(parse_qs("next_due=2026-06-29"))
+
+    result = app.write_night_evolution_plan(parse_qs("as_of=2026-06-29"))
+    html = app.render_report_file("nightly/2026-06-29.html")
+    home = app.render_home()
+
+    assert result.as_of == date(2026, 6, 29)
+    assert result.stage_only is True
+    assert "夜间进化草案 2026-06-29" in html
+    assert "write-tomorrow-plan" in html
+    assert 'href="/reports/nightly/2026-06-29.html"' in home
 
 
 def test_workbench_status_json_exposes_current_route(tmp_path) -> None:

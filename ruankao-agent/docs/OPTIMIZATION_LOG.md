@@ -262,3 +262,39 @@ review today, or schedule first retrieval.
   - diagnostics rank leech, unstable, due, untested, and stable cards in action order;
   - daily receipts mark repeated low-grade cards as `leech`;
   - the workbench surfaces weak-card diagnostics and repair actions.
+
+## 2026-06-29 Round 008 - Stage-Only Night Evolution Plan
+
+### Learner Friction
+
+The system had daily receipts and memory diagnostics, but no bounded nighttime
+evolution artifact. Without a staged plan, "night evolution" would either do
+nothing or risk silently changing live behavior.
+
+### Change
+
+- Added `ruankao_agent.evolution.write_night_evolution_plan()`.
+- Generated machine-readable staged plans under `evolution/staged/<date>.json`.
+- Generated readable HTML under `reports/nightly/<date>.html`.
+- Added CLI command:
+  - `python3 -m ruankao_agent.cli night-evolve --root <root> --as-of <YYYY-MM-DD>`
+- Added a workbench button that posts to `/night/evolve`.
+- Kept the plan `stage_only=true`; it proposes actions but does not mutate core
+  skills or live learning rules.
+
+### Learning Rule Captured
+
+Autonomous improvement needs a staging layer. Night work should transform daily
+evidence into a bounded action plan before any live system behavior changes.
+
+### Validation
+
+- `python3 -m pytest tests/test_evolution.py -q`
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- `python3 -m ruankao_agent.cli night-evolve --root /tmp/ruankao-night-evolve-<id> --as-of 2026-06-29`
+- Tests assert:
+  - night evolution creates a staged JSON plan and HTML report;
+  - weak memory diagnostics become high-priority repair actions;
+  - the CLI prints hook-friendly staged plan paths;
+  - the workbench can generate and serve the nightly HTML plan.

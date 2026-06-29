@@ -8,6 +8,7 @@ from typing import Sequence
 
 from .cheko import seed_cheko_cards
 from .dashboard import render_dashboard
+from .evolution import write_night_evolution_plan
 from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
 from .notebooklm import DEFAULT_NOTEBOOK_SOURCE
@@ -230,6 +231,15 @@ def cmd_daily_receipt(root: Path, *, as_of: date | None = None) -> int:
     return 0
 
 
+def cmd_night_evolve(root: Path, *, as_of: date | None = None) -> int:
+    result = write_night_evolution_plan(root, as_of=as_of)
+    print(
+        f"html={result.html_path} json={result.json_path} "
+        f"actions={result.action_count} stage_only={str(result.stage_only).lower()}"
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ruankao-agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -258,6 +268,10 @@ def build_parser() -> argparse.ArgumentParser:
     receipt_parser.add_argument("--root", required=True, type=Path)
     receipt_parser.add_argument("--as-of")
 
+    evolve_parser = subparsers.add_parser("night-evolve")
+    evolve_parser.add_argument("--root", required=True, type=Path)
+    evolve_parser.add_argument("--as-of")
+
     return parser
 
 
@@ -285,6 +299,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_cheko_seed_cards(args.root, next_due=_parse_date(args.next_due))
     if args.command == "daily-receipt":
         return cmd_daily_receipt(args.root, as_of=_parse_date(args.as_of))
+    if args.command == "night-evolve":
+        return cmd_night_evolve(args.root, as_of=_parse_date(args.as_of))
     raise AssertionError(f"Unsupported command: {args.command}")
 
 
