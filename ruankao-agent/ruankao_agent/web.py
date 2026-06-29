@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Mapping
 from urllib.parse import parse_qs, unquote, urlparse
 
+from .cheko import ChekoSeedResult, seed_cheko_cards as seed_cheko_memory_cards
 from .dashboard import render_dashboard
 from .domain import CardType, ExamFront, PrincipleRelationType, SourceIdentity
 from .learning import ensure_learning_resources
@@ -148,6 +149,12 @@ class WorkbenchApp:
             grade=int(_one(form, "grade", "3")),
         )
 
+    def seed_cheko_cards(self, form: Mapping[str, list[str]]) -> ChekoSeedResult:
+        next_due = _optional_date(_one(form, "next_due")) or self.today
+        result = seed_cheko_memory_cards(self.root, next_due=next_due)
+        self.write_dashboard()
+        return result
+
     def render_home(self, message: str = "") -> str:
         self.initialize()
         store = self.store()
@@ -155,6 +162,10 @@ class WorkbenchApp:
         cards = store.list_memory_cards()
         snapshot = self.snapshot()
         due_cards = [card for card in cards if card.next_due is not None and card.next_due <= self.today]
+        cheko_cards = [card for card in cards if card.title.startswith("Cheko")]
+        cheko_due_cards = [
+            card for card in cheko_cards if card.next_due is not None and card.next_due <= self.today
+        ]
         principle_cards = [card for card in cards if card.card_type is CardType.PRINCIPLE]
 
         return f"""<!doctype html>
@@ -423,6 +434,7 @@ class WorkbenchApp:
   <main>
     <aside>
       <a href="#today">今日闭环</a>
+      <a href="#cheko">学习信号</a>
       <a href="#capture">三源录入</a>
       <a href="#cards">记忆卡</a>
       <a href="#principles">原则网络</a>
@@ -447,6 +459,31 @@ class WorkbenchApp:
               <div class="item">选择题保持概念密度，案例题保持论证手感，论文题保持素材活性。</div>
               <div class="item">每次学习至少沉淀一条 Mein / Du / Uns。</div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="cheko">
+        <h2>学习信号</h2>
+        <div class="split">
+          <div>
+            <h3>Cheko 入队</h3>
+            <div class="metrics">
+              <div class="metric"><span>Cheko 记忆卡</span><strong>{len(cheko_cards)}</strong></div>
+              <div class="metric"><span>今日到期</span><strong>{len(cheko_due_cards)}</strong></div>
+            </div>
+            <form method="post" action="/cheko/cards" style="margin-top:10px;">
+              <input type="hidden" name="next_due" value="{escape(self.today.isoformat())}">
+              <button type="submit">把 Cheko 弱点入队</button>
+            </form>
+            <div class="footer-actions">
+              <a class="button secondary" href="/learning/cheko-sync.html">同步信号</a>
+              <a class="button secondary" href="/learning/today.html">今日三任务</a>
+            </div>
+          </div>
+          <div>
+            <h3>最近 Cheko 卡片</h3>
+            {_card_list(cheko_cards[-4:], with_review=False, today=self.today)}
           </div>
         </div>
       </section>
@@ -685,6 +722,13 @@ def _handler_for(app: WorkbenchApp):
                 if self.path == "/reviews":
                     app.record_review(form)
                     self._redirect("/?message=review-saved")
+                    return
+                if self.path == "/cheko/cards":
+                    result = app.seed_cheko_cards(form)
+                    self._redirect(
+                        f"/?message=cheko-cards-created-{len(result.created_card_ids)}"
+                        f"-skipped-{len(result.skipped_titles)}"
+                    )
                     return
             except Exception as exc:  # pragma: no cover - exercised by real browser use.
                 self.send_error(HTTPStatus.BAD_REQUEST, str(exc))

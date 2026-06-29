@@ -119,3 +119,35 @@ it must become a scheduled retrieval object with a due date.
   - four memory cards are created with the expected fronts and due date;
   - repeated seeding skips existing card titles;
   - the CLI prints a compact hook-friendly result line.
+
+## 2026-06-29 Round 004 - Cheko One-Click Workbench Entry
+
+### Learner Friction
+
+Round 003 created the right command for hooks and scheduled jobs, but the daily
+learner still had to remember a CLI command. That keeps the system feeling like
+an implementation detail instead of a companion workbench.
+
+### Change
+
+- Added a workbench "学习信号" section.
+- Added a one-click form that posts to `/cheko/cards`.
+- Reused `seed_cheko_cards()` so CLI, hooks, and browser actions share the same
+  Cheko-to-memory-card path.
+- Displayed Cheko card count, due Cheko card count, and recent Cheko cards in
+  the workbench.
+- Added navigation from the workbench to Cheko sync and 今日三任务 pages.
+
+### Learning Rule Captured
+
+When an action is strategically important and recurring, it should exist in the
+main daily surface, not only as a remembered command.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- Tests assert:
+  - the workbench renders the Cheko learning-signal entry;
+  - the workbench action creates four due Cheko cards;
+  - the home page shows Cheko card state after seeding.

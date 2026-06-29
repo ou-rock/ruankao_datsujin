@@ -21,10 +21,13 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
 
     assert "软考达人工作台" in html
     assert "今日闭环" in html
+    assert "学习信号" in html
+    assert "把 Cheko 弱点入队" in html
     assert "三源录入" in html
     assert "记忆卡" in html
     assert "原则网络" in html
     assert 'href="/learning/"' in html
+    assert 'action="/cheko/cards"' in html
     assert 'action="/records"' in html
     assert 'action="/cards"' in html
     assert 'action="/relations"' in html
@@ -71,6 +74,28 @@ def test_workbench_forms_write_store_and_principle_note(tmp_path) -> None:
     note = root / "vault" / "10-memory-war-room" / "principles" / "场景先于方案.md"
     assert note.exists()
     assert "[[技术先行]]" in note.read_text(encoding="utf-8")
+
+
+def test_workbench_can_seed_cheko_cards_from_learning_signal_action(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+    app.initialize()
+
+    result = app.seed_cheko_cards(parse_qs("next_due=2026-06-29"))
+
+    store = RuankaoStore(root / "data" / "ruankao.db")
+    store.initialize()
+    cards = store.list_memory_cards()
+
+    assert len(result.created_card_ids) == 4
+    assert store.count_due_cards(date(2026, 6, 29)) == 4
+    assert {card.title for card in cards} >= {
+        "Cheko错题池：系统架构设计",
+        "Cheko错题池：软件工程",
+        "Cheko错题池：系统分析与设计",
+        "Cheko论文最低触达",
+    }
+    assert "Cheko 记忆卡" in app.render_home()
 
 
 def test_workbench_status_json_exposes_current_route(tmp_path) -> None:
