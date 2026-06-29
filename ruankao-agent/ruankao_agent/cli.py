@@ -6,6 +6,7 @@ from datetime import date
 from pathlib import Path
 from typing import Sequence
 
+from .cheko import seed_cheko_cards
 from .dashboard import render_dashboard
 from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
@@ -212,6 +213,16 @@ def cmd_learning(root: Path, *, overwrite: bool = False) -> int:
     return 0
 
 
+def cmd_cheko_seed_cards(root: Path, *, next_due: date | None = None) -> int:
+    result = seed_cheko_cards(root, next_due=next_due)
+    print(
+        f"raw={result.raw_record_id} "
+        f"created={len(result.created_card_ids)} "
+        f"skipped={len(result.skipped_titles)}"
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ruankao-agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -231,6 +242,10 @@ def build_parser() -> argparse.ArgumentParser:
     learning_parser = subparsers.add_parser("learning")
     learning_parser.add_argument("--root", required=True, type=Path)
     learning_parser.add_argument("--overwrite", action="store_true")
+
+    cheko_parser = subparsers.add_parser("cheko-seed-cards")
+    cheko_parser.add_argument("--root", required=True, type=Path)
+    cheko_parser.add_argument("--next-due")
 
     return parser
 
@@ -255,6 +270,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     if args.command == "learning":
         return cmd_learning(args.root, overwrite=args.overwrite)
+    if args.command == "cheko-seed-cards":
+        return cmd_cheko_seed_cards(args.root, next_due=_parse_date(args.next_due))
     raise AssertionError(f"Unsupported command: {args.command}")
 
 

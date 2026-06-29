@@ -82,3 +82,40 @@ examples.
   - the learning desk links to 今日三任务;
   - the three tasks derive from Cheko weak areas;
   - the essay task is triggered by the 0 / 4 essay signal.
+
+## 2026-06-29 Round 003 - Cheko Signals Into Memory Cards
+
+### Learner Friction
+
+Round 002 made the next actions visible, but visibility still depended on the
+learner manually carrying the signal into the memory system. Because memory is a
+strategic layer for this exam, the largest wrong-answer pools should enter the
+review queue automatically.
+
+### Change
+
+- Added `ruankao_agent.cheko.seed_cheko_cards()`.
+- Added CLI command:
+  - `python3 -m ruankao_agent.cli cheko-seed-cards --root <root> --next-due <YYYY-MM-DD>`
+- Stored the Cheko snapshot as an `Uns` raw record with `promotion_status=extracted`.
+- Seeded four memory cards:
+  - top three Cheko weak areas as scenario cards for choice/case review;
+  - essay 0 / 4 signal as an expression card for essay practice.
+- Added duplicate protection by memory-card title, so repeated syncs keep a new
+  raw snapshot record without creating duplicate review cards.
+
+### Learning Rule Captured
+
+External practice data is not just a report. Once a weak area is large enough,
+it must become a scheduled retrieval object with a due date.
+
+### Validation
+
+- `python3 -m pytest tests/test_cheko.py -q`
+- `python3 -m pytest -q`
+- `python3 -m ruankao_agent.cli cheko-seed-cards --root /tmp/ruankao-cheko-seed --next-due 2026-06-29`
+- Tests assert:
+  - Cheko snapshot becomes an `Uns` raw record;
+  - four memory cards are created with the expected fronts and due date;
+  - repeated seeding skips existing card titles;
+  - the CLI prints a compact hook-friendly result line.

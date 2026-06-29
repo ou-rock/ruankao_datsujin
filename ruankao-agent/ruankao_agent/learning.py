@@ -918,6 +918,10 @@ def _load_cheko_snapshot(path: Path) -> ChekoSnapshot:
     return _cheko_snapshot_from_dict(payload)
 
 
+def load_cheko_snapshot(path: Path | str) -> ChekoSnapshot:
+    return _load_cheko_snapshot(Path(path))
+
+
 def _cheko_snapshot_to_dict(snapshot: ChekoSnapshot) -> dict[str, Any]:
     return asdict(snapshot)
 
