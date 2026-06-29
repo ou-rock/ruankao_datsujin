@@ -8,6 +8,7 @@ The working implementation lives in `ruankao-agent/`.
 
 - high-level design document
 - TDD tests
+- local `architect-thinking` skill seed
 - local SQLite state layer
 - Obsidian vault generation
 - local web workbench

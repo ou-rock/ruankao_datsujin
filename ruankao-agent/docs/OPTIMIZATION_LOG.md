@@ -729,3 +729,38 @@ of the learning system, not a pretty export.
 - Tests assert:
   - memory cards without fronts render `fronts: []`;
   - raw records without topics/fronts render `topics: []` and `fronts: []`.
+
+## 2026-06-29 Round 022 - Architect Thinking Skill Seed
+
+### Learner Friction
+
+The system stored cards, practice, routes, and vault notes, but the requested
+"architect thinking" skill was still implicit. The seven most central
+architecture principles needed a concrete local skill seed that can evolve.
+
+### Change
+
+- Added `skills/architect-thinking/SKILL.md`.
+- Captured seven core principles:
+  - 场景先于方案
+  - 质量属性可度量
+  - 取舍必须显式
+  - 边界与职责先行
+  - 简单可演进优先
+  - 风险驱动验证
+  - 证据闭环沉淀
+- Added a compact workflow for architecture analysis, ruankao case/essay answers,
+  and local-system deposits.
+- Updated README to mention the local skill seed.
+
+### Learning Rule Captured
+
+Architectural ability should have a stable kernel. The kernel should be small
+enough to remember, but strong enough to guide case analysis, essay writing, and
+real design judgement.
+
+### Validation
+
+- `python3 -m pytest tests/test_architect_thinking_skill.py -q`
+- `python3 -m pytest -q`
+- Tests assert the skill exists and keeps all seven core principles.
