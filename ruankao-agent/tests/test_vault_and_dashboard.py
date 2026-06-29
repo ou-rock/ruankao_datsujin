@@ -1,9 +1,14 @@
 from datetime import date
 
 from ruankao_agent.dashboard import DashboardSnapshot, render_dashboard
-from ruankao_agent.domain import Campaign, CardType, ExamFront, RiskStatus
+from ruankao_agent.domain import Campaign, CardType, ExamFront, RiskStatus, SourceIdentity
 from ruankao_agent.storage import RuankaoStore
-from ruankao_agent.vault import initialize_vault, sync_memory_cards_to_vault, write_principle_note
+from ruankao_agent.vault import (
+    initialize_vault,
+    sync_memory_cards_to_vault,
+    sync_raw_records_to_vault,
+    write_principle_note,
+)
 
 
 def test_initialize_vault_creates_expected_obsidian_structure(tmp_path) -> None:
@@ -70,6 +75,32 @@ def test_sync_memory_cards_to_vault_writes_generated_obsidian_notes(tmp_path) ->
     assert "card_type: concept" in text
     assert "choice" in text
     assert "刺激源、刺激、环境" in text
+
+
+def test_sync_raw_records_to_vault_writes_mein_du_uns_notes(tmp_path) -> None:
+    root = tmp_path / "demo"
+    vault = initialize_vault(root / "vault")
+    store = RuankaoStore(root / "data" / "ruankao.db")
+    store.initialize()
+    store.add_raw_record(
+        source=SourceIdentity.MEIN,
+        text="我把可用性和可靠性混淆了。",
+        summary="可用性可靠性混淆",
+        topics=("质量属性",),
+        fronts=(ExamFront.CHOICE,),
+    )
+
+    first = sync_raw_records_to_vault(vault, store.list_raw_records())
+    second = sync_raw_records_to_vault(vault, store.list_raw_records())
+
+    notes = list((vault / "20-mein").glob("*.md"))
+    assert len(first.written_paths) == 1
+    assert len(second.skipped_paths) == 1
+    assert len(notes) == 1
+    text = notes[0].read_text(encoding="utf-8")
+    assert "type: raw-record" in text
+    assert "source: mein" in text
+    assert "可用性可靠性混淆" in text
 
 
 def test_dashboard_renders_total_map() -> None:

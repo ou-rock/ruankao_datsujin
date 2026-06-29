@@ -40,6 +40,7 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert 'action="/cheko/cards"' in html
     assert 'action="/practice"' in html
     assert 'action="/vault/sync"' in html
+    assert 'action="/vault/sync-raw"' in html
     assert 'action="/records"' in html
     assert 'action="/cards"' in html
     assert 'action="/relations"' in html
@@ -226,6 +227,25 @@ def test_workbench_can_sync_memory_cards_to_vault(tmp_path) -> None:
     assert len(result.written_paths) == 1
     assert note.exists()
     assert "type: memory-card" in note.read_text(encoding="utf-8")
+
+
+def test_workbench_can_sync_raw_records_to_vault(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+    app.initialize()
+    app.add_raw_record(
+        parse_qs(
+            "source=mein&text=我把可用性和可靠性混淆了"
+            "&summary=可用性可靠性混淆&topics=质量属性&fronts=choice"
+        )
+    )
+
+    result = app.sync_raw_records_to_vault(parse_qs(""))
+
+    notes = list((root / "vault" / "20-mein").glob("*.md"))
+    assert len(result.written_paths) == 1
+    assert len(notes) == 1
+    assert "type: raw-record" in notes[0].read_text(encoding="utf-8")
 
 
 def test_workbench_status_json_exposes_current_route(tmp_path) -> None:

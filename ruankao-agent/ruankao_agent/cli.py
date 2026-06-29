@@ -14,7 +14,7 @@ from .loop import build_daily_loop_snapshot, status_line
 from .notebooklm import DEFAULT_NOTEBOOK_SOURCE
 from .receipts import write_daily_receipt
 from .route_map import write_route_map
-from .vault import sync_memory_cards_to_vault
+from .vault import sync_memory_cards_to_vault, sync_raw_records_to_vault
 from .web import serve_workbench
 
 
@@ -268,6 +268,18 @@ def cmd_vault_sync(root: Path, *, overwrite: bool = False) -> int:
     return 0
 
 
+def cmd_raw_vault_sync(root: Path, *, overwrite: bool = False) -> int:
+    store = _open_store(root)
+    records = store.list_raw_records() if store is not None else []
+    result = sync_raw_records_to_vault(root / "vault", records, overwrite=overwrite)
+    print(
+        f"written={len(result.written_paths)} "
+        f"skipped={len(result.skipped_paths)} "
+        f"vault={root / 'vault'}"
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ruankao-agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -308,6 +320,10 @@ def build_parser() -> argparse.ArgumentParser:
     vault_parser.add_argument("--root", required=True, type=Path)
     vault_parser.add_argument("--overwrite", action="store_true")
 
+    raw_vault_parser = subparsers.add_parser("raw-vault-sync")
+    raw_vault_parser.add_argument("--root", required=True, type=Path)
+    raw_vault_parser.add_argument("--overwrite", action="store_true")
+
     return parser
 
 
@@ -341,6 +357,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_route_map(args.root, as_of=_parse_date(args.as_of))
     if args.command == "vault-sync":
         return cmd_vault_sync(args.root, overwrite=args.overwrite)
+    if args.command == "raw-vault-sync":
+        return cmd_raw_vault_sync(args.root, overwrite=args.overwrite)
     raise AssertionError(f"Unsupported command: {args.command}")
 
 

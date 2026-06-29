@@ -3,7 +3,7 @@ import sys
 
 from datetime import date
 
-from ruankao_agent.domain import CardType, ExamFront
+from ruankao_agent.domain import CardType, ExamFront, SourceIdentity
 from ruankao_agent.storage import RuankaoStore
 
 
@@ -236,3 +236,43 @@ def test_cli_vault_sync_exports_memory_cards(tmp_path) -> None:
     assert result.returncode == 0, result.stderr
     assert "written=1" in result.stdout
     assert (root / "vault" / "10-memory-war-room" / "concepts" / "质量属性场景.md").exists()
+
+
+def test_cli_raw_vault_sync_exports_source_records(tmp_path) -> None:
+    root = tmp_path / "demo"
+    subprocess.run(
+        [sys.executable, "-m", "ruankao_agent.cli", "init", "--root", str(root), "--as-of", "2026-06-29"],
+        cwd=".",
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    store = RuankaoStore(root / "data" / "ruankao.db")
+    store.initialize()
+    store.add_raw_record(
+        source=SourceIdentity.DU,
+        text="这个错因应该拆成对比卡。",
+        summary="错因转对比卡",
+        topics=("错因",),
+        fronts=(ExamFront.CASE,),
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ruankao_agent.cli",
+            "raw-vault-sync",
+            "--root",
+            str(root),
+        ],
+        cwd=".",
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "written=1" in result.stdout
+    assert len(list((root / "vault" / "30-du").glob("*.md"))) == 1

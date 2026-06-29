@@ -21,7 +21,12 @@ from .memory import MemoryDiagnostic, diagnose_memory
 from .receipts import daily_receipt_html_path, write_daily_receipt
 from .route_map import route_map_html_path, write_route_map
 from .storage import MemoryCard, PracticeSession, RuankaoStore
-from .vault import initialize_vault, sync_memory_cards_to_vault, write_principle_note
+from .vault import (
+    initialize_vault,
+    sync_memory_cards_to_vault,
+    sync_raw_records_to_vault,
+    write_principle_note,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -198,6 +203,16 @@ class WorkbenchApp:
         return sync_memory_cards_to_vault(
             self.vault_path,
             store.list_memory_cards(),
+            overwrite=overwrite,
+        )
+
+    def sync_raw_records_to_vault(self, form: Mapping[str, list[str]]):
+        store = self.store()
+        store.initialize()
+        overwrite = _one(form, "overwrite") == "1"
+        return sync_raw_records_to_vault(
+            self.vault_path,
+            store.list_raw_records(),
             overwrite=overwrite,
         )
 
@@ -758,6 +773,9 @@ class WorkbenchApp:
         <form method="post" action="/vault/sync" style="margin-top:10px;">
           <button type="submit">同步记忆卡到 Obsidian</button>
         </form>
+        <form method="post" action="/vault/sync-raw" style="margin-top:10px;">
+          <button type="submit">同步三源材料到 Obsidian</button>
+        </form>
       </section>
     </div>
   </main>
@@ -909,6 +927,13 @@ def _handler_for(app: WorkbenchApp):
                     result = app.sync_memory_cards_to_vault(form)
                     self._redirect(
                         f"/?message=vault-sync-written-{len(result.written_paths)}"
+                        f"-skipped-{len(result.skipped_paths)}"
+                    )
+                    return
+                if self.path == "/vault/sync-raw":
+                    result = app.sync_raw_records_to_vault(form)
+                    self._redirect(
+                        f"/?message=raw-vault-sync-written-{len(result.written_paths)}"
                         f"-skipped-{len(result.skipped_paths)}"
                     )
                     return

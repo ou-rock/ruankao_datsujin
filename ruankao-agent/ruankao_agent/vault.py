@@ -5,7 +5,7 @@ from pathlib import Path
 from collections.abc import Iterable
 
 from ruankao_agent.memory import render_map_note, render_principle_note
-from ruankao_agent.storage import MemoryCard
+from ruankao_agent.storage import MemoryCard, RawRecord
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,6 +20,12 @@ CARD_TYPE_DIRECTORIES = {
     "comparison": "comparisons",
     "scenario": "scenarios",
     "expression": "expressions",
+}
+
+RAW_SOURCE_DIRECTORIES = {
+    "mein": "20-mein",
+    "du": "30-du",
+    "uns": "40-uns",
 }
 
 
@@ -90,6 +96,26 @@ def sync_memory_cards_to_vault(
     return VaultSyncResult(written_paths=tuple(written), skipped_paths=tuple(skipped))
 
 
+def sync_raw_records_to_vault(
+    vault: Path | str,
+    records: Iterable[RawRecord],
+    *,
+    overwrite: bool = False,
+) -> VaultSyncResult:
+    vault_path = initialize_vault(vault)
+    written: list[Path] = []
+    skipped: list[Path] = []
+    for record in records:
+        note_path = _raw_record_note_path(vault_path, record)
+        if note_path.exists() and not overwrite:
+            skipped.append(note_path)
+            continue
+        note_path.parent.mkdir(parents=True, exist_ok=True)
+        note_path.write_text(_render_raw_record_note(record), encoding="utf-8")
+        written.append(note_path)
+    return VaultSyncResult(written_paths=tuple(written), skipped_paths=tuple(skipped))
+
+
 def _write_map_notes(vault: Path) -> None:
     map_dir = vault / "00-map"
 
@@ -136,6 +162,12 @@ def _memory_card_note_path(vault: Path, card: MemoryCard) -> Path:
     return vault / "10-memory-war-room" / directory / f"{filename}.md"
 
 
+def _raw_record_note_path(vault: Path, record: RawRecord) -> Path:
+    directory = RAW_SOURCE_DIRECTORIES.get(record.source.value, "40-uns")
+    filename = _safe_note_name(f"{record.id:04d}-{record.summary[:48]}")
+    return vault / directory / f"{filename}.md"
+
+
 def _safe_note_name(title: str) -> str:
     return (
         title.replace("/", "-")
@@ -178,4 +210,28 @@ last_reviewed: {last_reviewed}
 ## Exam Fronts
 
 {chr(10).join(f"- {front.value}" for front in card.fronts) or "- none"}
+"""
+
+
+def _render_raw_record_note(record: RawRecord) -> str:
+    topics = "\n".join(f"  - {topic}" for topic in record.topics) or "  []"
+    fronts = "\n".join(f"  - {front.value}" for front in record.fronts) or "  []"
+    created_on = record.created_on.isoformat() if record.created_on else ""
+    return f"""---
+type: raw-record
+record_id: {record.id}
+source: {record.source.value}
+topics:
+{topics}
+fronts:
+{fronts}
+promotion_status: {record.promotion_status}
+created_on: {created_on}
+---
+
+# {record.summary}
+
+## Raw Text
+
+{record.text}
 """

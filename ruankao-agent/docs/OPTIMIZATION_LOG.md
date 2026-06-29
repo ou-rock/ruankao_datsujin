@@ -638,3 +638,39 @@ network for browsing, linking, and manual improvement.
   - memory cards become markdown notes in the right type directory;
   - repeated sync skips existing notes by default;
   - CLI and workbench sync paths work.
+
+## 2026-06-29 Round 019 - Raw Records To Mein Du Uns Vault
+
+### Learner Friction
+
+Memory cards could sync to Obsidian, but the pyramid bottom layer still stayed
+inside SQLite. The learner's notes, agent analysis, and external evidence should
+also be visible in the vault under Mein, Du, and Uns.
+
+### Change
+
+- Added `sync_raw_records_to_vault()`.
+- Wrote raw records into:
+  - `20-mein`
+  - `30-du`
+  - `40-uns`
+- Added CLI command:
+  - `python3 -m ruankao_agent.cli raw-vault-sync --root <root>`
+- Added workbench action that posts to `/vault/sync-raw`.
+- Kept default behavior non-destructive: existing raw notes are skipped.
+
+### Learning Rule Captured
+
+The bottom layer of the knowledge pyramid must be inspectable. Raw material is
+not noise; it is where future cards, principles, and architecture judgement grow.
+
+### Validation
+
+- `python3 -m pytest tests/test_vault_and_dashboard.py -q`
+- `python3 -m pytest tests/test_cli.py -q`
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- Tests assert:
+  - Mein/Du/Uns raw records land in the correct vault directories;
+  - repeated sync skips existing notes;
+  - CLI and workbench raw sync paths work.
