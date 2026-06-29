@@ -1,0 +1,778 @@
+from __future__ import annotations
+
+import json
+import webbrowser
+from dataclasses import dataclass
+from datetime import date
+from html import escape
+from http import HTTPStatus
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from typing import Mapping
+from urllib.parse import parse_qs, unquote, urlparse
+
+from .dashboard import render_dashboard
+from .domain import CardType, ExamFront, PrincipleRelationType, SourceIdentity
+from .loop import build_daily_loop_snapshot, status_line
+from .storage import MemoryCard, RuankaoStore
+from .vault import initialize_vault, write_principle_note
+
+
+@dataclass(frozen=True, slots=True)
+class WorkbenchConfig:
+    root: Path
+    as_of: date | None = None
+
+
+class WorkbenchApp:
+    def __init__(self, config: WorkbenchConfig) -> None:
+        self.config = config
+
+    @property
+    def root(self) -> Path:
+        return self.config.root
+
+    @property
+    def db_path(self) -> Path:
+        return self.root / "data" / "ruankao.db"
+
+    @property
+    def vault_path(self) -> Path:
+        return self.root / "vault"
+
+    @property
+    def today(self) -> date:
+        return self.config.as_of or date.today()
+
+    def initialize(self) -> None:
+        self.root.mkdir(parents=True, exist_ok=True)
+        self.store().initialize()
+        initialize_vault(self.vault_path)
+        self._ensure_seed_principle()
+        self.write_dashboard()
+
+    def store(self) -> RuankaoStore:
+        return RuankaoStore(self.db_path)
+
+    def _ensure_seed_principle(self) -> None:
+        note = self.vault_path / "10-memory-war-room" / "principles" / "场景先于方案.md"
+        if note.exists():
+            return
+        write_principle_note(
+            self.vault_path,
+            title="场景先于方案",
+            core_statement="先确认业务目标、边界和约束，再谈技术方案。",
+            applies_when="任何架构设计、案例题、论文题。",
+            conflicts=("技术先行",),
+        )
+
+    def snapshot(self):
+        store = self.store()
+        store.initialize()
+        return build_daily_loop_snapshot(
+            as_of=self.today,
+            due_cards=store.count_due_cards(self.today),
+            review_backlog_ratio=store.review_backlog_ratio(self.today),
+        )
+
+    def write_dashboard(self) -> Path:
+        snapshot = self.snapshot()
+        dashboard_path = self.root / "dashboard.html"
+        dashboard_path.write_text(render_dashboard(snapshot.dashboard), encoding="utf-8")
+        return dashboard_path
+
+    def add_raw_record(self, form: Mapping[str, list[str]]) -> int:
+        store = self.store()
+        store.initialize()
+        return store.add_raw_record(
+            source=SourceIdentity(_one(form, "source", SourceIdentity.MEIN.value)),
+            text=_one(form, "text"),
+            summary=_one(form, "summary"),
+            topics=_split_lines(_one(form, "topics")),
+            fronts=_fronts(form),
+            promotion_status=_one(form, "promotion_status", "raw"),
+        )
+
+    def add_memory_card(self, form: Mapping[str, list[str]]) -> int:
+        store = self.store()
+        store.initialize()
+        card_type = CardType(_one(form, "card_type", CardType.CONCEPT.value))
+        title = _one(form, "title")
+        prompt = _one(form, "prompt")
+        answer = _one(form, "answer")
+        source_record_id = _optional_int(_one(form, "source_record_id"))
+        next_due = _optional_date(_one(form, "next_due"))
+        card_id = store.add_memory_card(
+            card_type=card_type,
+            title=title,
+            prompt=prompt,
+            answer=answer,
+            source_record_id=source_record_id,
+            fronts=_fronts(form),
+            next_due=next_due,
+        )
+        if card_type is CardType.PRINCIPLE:
+            conflicts = _split_lines(_one(form, "conflicts"))
+            applies_when = prompt or "待补充"
+            write_principle_note(
+                self.vault_path,
+                title=title,
+                core_statement=answer,
+                applies_when=applies_when,
+                conflicts=conflicts,
+            )
+        return card_id
+
+    def add_principle_relation(self, form: Mapping[str, list[str]]) -> int:
+        store = self.store()
+        store.initialize()
+        return store.add_principle_relation(
+            from_card_id=int(_one(form, "from_card_id")),
+            to_card_id=int(_one(form, "to_card_id")),
+            relation=PrincipleRelationType(_one(form, "relation")),
+            rationale=_one(form, "rationale"),
+        )
+
+    def record_review(self, form: Mapping[str, list[str]]) -> None:
+        store = self.store()
+        store.initialize()
+        store.record_review(
+            card_id=int(_one(form, "card_id")),
+            reviewed_on=_optional_date(_one(form, "reviewed_on")) or self.today,
+            grade=int(_one(form, "grade", "3")),
+        )
+
+    def render_home(self, message: str = "") -> str:
+        self.initialize()
+        store = self.store()
+        records = store.list_raw_records()
+        cards = store.list_memory_cards()
+        snapshot = self.snapshot()
+        due_cards = [card for card in cards if card.next_due is not None and card.next_due <= self.today]
+        principle_cards = [card for card in cards if card.card_type is CardType.PRINCIPLE]
+
+        return f"""<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>软考达人工作台</title>
+  <style>
+    :root {{
+      color-scheme: light;
+      --ink: #172026;
+      --muted: #5e6b73;
+      --line: #cfd8dc;
+      --paper: #ffffff;
+      --band: #f4f7f5;
+      --accent: #0f766e;
+      --accent-ink: #063f3b;
+      --warn: #b45309;
+      --danger: #b91c1c;
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: #fbfcfb;
+    }}
+    header {{
+      border-bottom: 1px solid var(--line);
+      background: var(--paper);
+    }}
+    .top {{
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 20px 24px;
+      display: grid;
+      gap: 14px;
+    }}
+    .title-row {{
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }}
+    h1 {{
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }}
+    .status {{
+      font-size: 14px;
+      color: var(--muted);
+    }}
+    .metrics {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+      gap: 10px;
+    }}
+    .metric {{
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: var(--band);
+      min-height: 68px;
+    }}
+    .metric span {{
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }}
+    .metric strong {{
+      display: block;
+      font-size: 18px;
+      line-height: 1.25;
+    }}
+    main {{
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 18px 24px 48px;
+      display: grid;
+      grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }}
+    aside {{
+      position: sticky;
+      top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      padding: 12px;
+    }}
+    aside a {{
+      display: block;
+      padding: 9px 10px;
+      border-radius: 6px;
+      color: var(--accent-ink);
+      text-decoration: none;
+      font-weight: 600;
+    }}
+    aside a:hover {{ background: var(--band); }}
+    .content {{
+      display: grid;
+      gap: 16px;
+    }}
+    section {{
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      padding: 16px;
+    }}
+    h2 {{
+      margin: 0 0 12px;
+      font-size: 19px;
+      line-height: 1.3;
+    }}
+    h3 {{
+      margin: 0 0 8px;
+      font-size: 15px;
+      line-height: 1.3;
+    }}
+    .grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }}
+    form {{
+      display: grid;
+      gap: 10px;
+    }}
+    label {{
+      display: grid;
+      gap: 5px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }}
+    input, textarea, select {{
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px 10px;
+      font: inherit;
+      color: var(--ink);
+      background: #fff;
+    }}
+    textarea {{
+      min-height: 92px;
+      resize: vertical;
+      line-height: 1.45;
+    }}
+    .checks {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }}
+    .checks label {{
+      display: inline-flex;
+      grid-template-columns: none;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 9px;
+      background: var(--band);
+    }}
+    .checks input {{ width: auto; }}
+    button, .button {{
+      appearance: none;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      background: var(--accent);
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      padding: 9px 12px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 40px;
+    }}
+    .button.secondary, button.secondary {{
+      border-color: var(--line);
+      color: var(--accent-ink);
+      background: #fff;
+    }}
+    .message {{
+      border: 1px solid #99f6e4;
+      background: #ecfdf5;
+      color: #065f46;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-weight: 650;
+    }}
+    .list {{
+      display: grid;
+      gap: 10px;
+    }}
+    .item {{
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      background: #fff;
+    }}
+    .item-title {{
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-weight: 750;
+    }}
+    .meta {{
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      margin-top: 4px;
+    }}
+    .empty {{
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 6px;
+      padding: 12px;
+      background: var(--band);
+    }}
+    .split {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+    }}
+    .footer-actions {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }}
+    @media (max-width: 820px) {{
+      main {{ grid-template-columns: 1fr; padding: 14px 14px 40px; }}
+      aside {{ position: static; }}
+      .top {{ padding: 18px 14px; }}
+      h1 {{ font-size: 24px; }}
+    }}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="top">
+      <div class="title-row">
+        <h1>软考达人工作台</h1>
+        <div class="status">{escape(status_line(snapshot))}</div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><span>目标日期</span><strong>{escape(snapshot.dashboard.campaign.exam_date.isoformat())}</strong></div>
+        <div class="metric"><span>今日阶段</span><strong>{escape(snapshot.phase_name)}</strong></div>
+        <div class="metric"><span>到期复习</span><strong>{len(due_cards)}</strong></div>
+        <div class="metric"><span>记忆卡</span><strong>{len(cards)}</strong></div>
+        <div class="metric"><span>原始材料</span><strong>{len(records)}</strong></div>
+        <div class="metric"><span>风险</span><strong>{escape(snapshot.risk_text)}</strong></div>
+      </div>
+    </div>
+  </header>
+  <main>
+    <aside>
+      <a href="#today">今日闭环</a>
+      <a href="#capture">三源录入</a>
+      <a href="#cards">记忆卡</a>
+      <a href="#principles">原则网络</a>
+      <a href="#vault">Obsidian</a>
+      <a href="/dashboard.html">静态总图</a>
+      <a href="/api/status">状态 JSON</a>
+    </aside>
+    <div class="content">
+      {_message(message)}
+      <section id="today">
+        <h2>今日闭环</h2>
+        <div class="split">
+          <div>
+            <h3>到期卡片</h3>
+            {_card_list(due_cards, with_review=True, today=self.today)}
+          </div>
+          <div>
+            <h3>最小行动</h3>
+            <div class="list">
+              <div class="item">复习所有到期卡片，低于 3 分立刻明天再见。</div>
+              <div class="item">选择题保持概念密度，案例题保持论证手感，论文题保持素材活性。</div>
+              <div class="item">每次学习至少沉淀一条 Mein / Du / Uns。</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="capture">
+        <h2>三源录入</h2>
+        <form method="post" action="/records">
+          <div class="grid">
+            <label>来源
+              <select name="source">
+                <option value="mein">Mein 我的理解</option>
+                <option value="du">Du 你的分析</option>
+                <option value="uns">Uns 外界证据</option>
+              </select>
+            </label>
+            <label>状态
+              <select name="promotion_status">
+                <option value="raw">raw</option>
+                <option value="extracted">extracted</option>
+                <option value="tested">tested</option>
+                <option value="promoted">promoted</option>
+                <option value="rejected">rejected</option>
+              </select>
+            </label>
+          </div>
+          <label>原文 / 灵感 / 对话摘录
+            <textarea name="text" required></textarea>
+          </label>
+          <label>一句话摘要
+            <textarea name="summary" required></textarea>
+          </label>
+          <label>主题，每行一个
+            <input name="topics" placeholder="质量属性&#10;架构评估">
+          </label>
+          {_front_checks()}
+          <button type="submit">沉淀到三源库</button>
+        </form>
+      </section>
+
+      <section id="cards">
+        <h2>记忆卡</h2>
+        <div class="split">
+          <form method="post" action="/cards">
+            <div class="grid">
+              <label>类型
+                <select name="card_type">
+                  <option value="concept">概念卡</option>
+                  <option value="principle">原则卡</option>
+                  <option value="comparison">对比卡</option>
+                  <option value="scenario">场景卡</option>
+                  <option value="expression">表达卡</option>
+                </select>
+              </label>
+              <label>下次复习
+                <input type="date" name="next_due" value="{escape(self.today.isoformat())}">
+              </label>
+            </div>
+            <label>标题
+              <input name="title" required>
+            </label>
+            <label>问题 / 适用场景
+              <textarea name="prompt" required></textarea>
+            </label>
+            <label>答案 / 核心表述
+              <textarea name="answer" required></textarea>
+            </label>
+            <label>关联原始材料 ID
+              <input name="source_record_id" inputmode="numeric">
+            </label>
+            <label>冲突原则，每行一个。仅原则卡使用
+              <input name="conflicts" placeholder="技术先行">
+            </label>
+            {_front_checks(default_all=True)}
+            <button type="submit">创建记忆卡</button>
+          </form>
+          <div>
+            <h3>最近卡片</h3>
+            {_card_list(cards[-8:], with_review=False, today=self.today)}
+          </div>
+        </div>
+      </section>
+
+      <section id="principles">
+        <h2>原则网络</h2>
+        <div class="split">
+          <form method="post" action="/relations">
+            <div class="grid">
+              <label>From 原则 ID
+                <input name="from_card_id" inputmode="numeric" required>
+              </label>
+              <label>To 原则 ID
+                <input name="to_card_id" inputmode="numeric" required>
+              </label>
+            </div>
+            <label>关系
+              <select name="relation">
+                <option value="supports">supports 支撑</option>
+                <option value="constrains">constrains 制约</option>
+                <option value="conflicts_with">conflicts_with 冲突</option>
+                <option value="derived_from">derived_from 派生</option>
+              </select>
+            </label>
+            <label>为什么这样连接
+              <textarea name="rationale" required></textarea>
+            </label>
+            <button type="submit">连接原则</button>
+          </form>
+          <div>
+            <h3>原则卡 ID</h3>
+            {_card_list(principle_cards, with_review=False, today=self.today)}
+          </div>
+        </div>
+      </section>
+
+      <section id="vault">
+        <h2>Obsidian 与总图</h2>
+        <div class="list">
+          <div class="item">
+            <div class="item-title">Vault 路径</div>
+            <div class="meta">{escape(str(self.vault_path))}</div>
+          </div>
+          <div class="item">
+            <div class="item-title">原则网络</div>
+            <div class="meta"><a href="/vault/00-map/原则网络.md">vault/00-map/原则网络.md</a></div>
+          </div>
+          <div class="item">
+            <div class="item-title">战役总图</div>
+            <div class="meta"><a href="/vault/00-map/战役总图.md">vault/00-map/战役总图.md</a></div>
+          </div>
+        </div>
+        <div class="footer-actions">
+          <a class="button secondary" href="/dashboard.html">打开静态 HTML 总图</a>
+          <a class="button secondary" href="/api/status">查看状态 JSON</a>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
+"""
+
+    def render_dashboard_page(self) -> str:
+        self.initialize()
+        return (self.root / "dashboard.html").read_text(encoding="utf-8")
+
+    def render_status_json(self) -> str:
+        snapshot = self.snapshot()
+        payload = {
+            "status": status_line(snapshot),
+            "phase": snapshot.phase_name,
+            "countdown": snapshot.countdown,
+            "risk": snapshot.risk_text,
+            "due_cards": snapshot.dashboard.due_cards,
+            "review_backlog_ratio": snapshot.dashboard.review_backlog_ratio,
+            "root": str(self.root),
+            "vault": str(self.vault_path),
+        }
+        return json.dumps(payload, ensure_ascii=False, indent=2)
+
+
+def serve_workbench(
+    root: Path,
+    *,
+    host: str = "127.0.0.1",
+    port: int = 8765,
+    as_of: date | None = None,
+    open_browser: bool = False,
+) -> None:
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=as_of))
+    app.initialize()
+    handler_cls = _handler_for(app)
+    server = ThreadingHTTPServer((host, port), handler_cls)
+    url = f"http://{host}:{server.server_port}/"
+    print(f"Ruankao workbench: {url}", flush=True)
+    if open_browser:
+        webbrowser.open(url)
+    server.serve_forever()
+
+
+def _handler_for(app: WorkbenchApp):
+    class WorkbenchHandler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            parsed = urlparse(self.path)
+            if parsed.path == "/":
+                query = parse_qs(parsed.query)
+                self._send_html(app.render_home(message=_one(query, "message")))
+                return
+            if parsed.path == "/dashboard.html":
+                self._send_html(app.render_dashboard_page())
+                return
+            if parsed.path == "/api/status":
+                self._send_text(app.render_status_json(), "application/json; charset=utf-8")
+                return
+            if parsed.path.startswith("/vault/"):
+                self._send_vault_file(_vault_relative_path(parsed.path))
+                return
+            self.send_error(HTTPStatus.NOT_FOUND, "Not found")
+
+        def do_POST(self) -> None:
+            form = self._read_form()
+            try:
+                if self.path == "/records":
+                    record_id = app.add_raw_record(form)
+                    self._redirect(f"/?message=raw-record-{record_id}-saved")
+                    return
+                if self.path == "/cards":
+                    card_id = app.add_memory_card(form)
+                    self._redirect(f"/?message=memory-card-{card_id}-saved")
+                    return
+                if self.path == "/relations":
+                    relation_id = app.add_principle_relation(form)
+                    self._redirect(f"/?message=principle-relation-{relation_id}-saved")
+                    return
+                if self.path == "/reviews":
+                    app.record_review(form)
+                    self._redirect("/?message=review-saved")
+                    return
+            except Exception as exc:  # pragma: no cover - exercised by real browser use.
+                self.send_error(HTTPStatus.BAD_REQUEST, str(exc))
+                return
+            self.send_error(HTTPStatus.NOT_FOUND, "Not found")
+
+        def log_message(self, format: str, *args: object) -> None:
+            return
+
+        def _read_form(self) -> Mapping[str, list[str]]:
+            length = int(self.headers.get("Content-Length", "0"))
+            payload = self.rfile.read(length).decode("utf-8")
+            return parse_qs(payload, keep_blank_values=True)
+
+        def _send_html(self, html: str) -> None:
+            self._send_text(html, "text/html; charset=utf-8")
+
+        def _send_text(self, text: str, content_type: str) -> None:
+            encoded = text.encode("utf-8")
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(encoded)))
+            self.end_headers()
+            self.wfile.write(encoded)
+
+        def _send_vault_file(self, relative: str) -> None:
+            vault_root = app.vault_path.resolve()
+            target = (vault_root / relative).resolve()
+            if vault_root not in target.parents and target != vault_root:
+                self.send_error(HTTPStatus.FORBIDDEN, "Forbidden")
+                return
+            if not target.exists() or not target.is_file():
+                self.send_error(HTTPStatus.NOT_FOUND, "Not found")
+                return
+            self._send_text(target.read_text(encoding="utf-8"), "text/plain; charset=utf-8")
+
+        def _redirect(self, location: str) -> None:
+            self.send_response(HTTPStatus.SEE_OTHER)
+            self.send_header("Location", location)
+            self.end_headers()
+
+    return WorkbenchHandler
+
+
+def _one(form: Mapping[str, list[str]], key: str, default: str = "") -> str:
+    values = form.get(key)
+    if not values:
+        return default
+    return values[0].strip()
+
+
+def _vault_relative_path(request_path: str) -> str:
+    return unquote(request_path.removeprefix("/vault/"))
+
+
+def _optional_int(value: str) -> int | None:
+    return int(value) if value.strip() else None
+
+
+def _optional_date(value: str) -> date | None:
+    return date.fromisoformat(value) if value.strip() else None
+
+
+def _split_lines(value: str) -> tuple[str, ...]:
+    return tuple(item.strip() for item in value.replace(",", "\n").splitlines() if item.strip())
+
+
+def _fronts(form: Mapping[str, list[str]]) -> tuple[ExamFront, ...]:
+    values = form.get("fronts") or []
+    return tuple(ExamFront(value) for value in values if value)
+
+
+def _front_checks(default_all: bool = False) -> str:
+    checked = " checked" if default_all else ""
+    return f"""<div class="checks" aria-label="题型">
+  <label><input type="checkbox" name="fronts" value="choice"{checked}>选择</label>
+  <label><input type="checkbox" name="fronts" value="case"{checked}>案例</label>
+  <label><input type="checkbox" name="fronts" value="essay"{checked}>论文</label>
+</div>"""
+
+
+def _message(message: str) -> str:
+    if not message:
+        return ""
+    return f'<div class="message">{escape(message)}</div>'
+
+
+def _card_list(cards: list[MemoryCard], *, with_review: bool, today: date) -> str:
+    if not cards:
+        return '<div class="empty">还没有内容。下一步先沉淀一条材料或创建一张卡。</div>'
+    items = []
+    for card in reversed(cards):
+        review_form = ""
+        if with_review:
+            review_form = f"""
+            <form method="post" action="/reviews" style="margin-top:8px;">
+              <input type="hidden" name="card_id" value="{card.id}">
+              <input type="hidden" name="reviewed_on" value="{escape(today.isoformat())}">
+              <label>复习评分
+                <select name="grade">
+                  <option value="5">5 很稳</option>
+                  <option value="4">4 基本会</option>
+                  <option value="3">3 勉强过</option>
+                  <option value="2">2 模糊</option>
+                  <option value="1">1 不会</option>
+                  <option value="0">0 完全空白</option>
+                </select>
+              </label>
+              <button type="submit">完成复习</button>
+            </form>
+            """
+        items.append(
+            f"""<div class="item">
+  <div class="item-title"><span>#{card.id} {escape(card.title)}</span><span>{escape(card.card_type.value)}</span></div>
+  <div class="meta">fronts={escape(",".join(front.value for front in card.fronts) or "none")} | due={escape(card.next_due.isoformat() if card.next_due else "none")} | reviews={card.review_count}</div>
+  <div class="meta">{escape(card.prompt[:140])}</div>
+  {review_form}
+</div>"""
+        )
+    return '<div class="list">' + "".join(items) + "</div>"

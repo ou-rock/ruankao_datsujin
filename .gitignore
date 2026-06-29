@@ -22,6 +22,7 @@ resources/
 ruankao-agent/data/
 ruankao-agent/vault/
 ruankao-agent/dashboard.html
+.codex/environments/
 
 # Local temp/demo outputs
 tmp/

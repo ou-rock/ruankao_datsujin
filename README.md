@@ -10,9 +10,21 @@ The working implementation lives in `ruankao-agent/`.
 - TDD tests
 - local SQLite state layer
 - Obsidian vault generation
+- local web workbench
 - static HTML dashboard generation
 - NotebookLM source metadata wrapper
 - imported upstream skill references
+
+## Daily Use
+
+Open the local workbench:
+
+```sh
+./start-workbench.command
+```
+
+Then use the browser page for daily capture, review, memory cards, principle links,
+and the Obsidian vault map. In Codex, `/ruankao-workbench` starts the same workbench.
 
 ## What Is Not Committed
 
@@ -32,4 +44,5 @@ python3 -m pytest
 cd ruankao-agent
 python3 -m ruankao_agent.cli init --root /tmp/ruankao-agent-demo --as-of 2026-06-29
 python3 -m ruankao_agent.cli status --root /tmp/ruankao-agent-demo --as-of 2026-06-29
+python3 -m ruankao_agent.cli web --root /tmp/ruankao-agent-demo --open
 ```

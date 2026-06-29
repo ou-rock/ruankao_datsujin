@@ -82,6 +82,12 @@ def _write_map_notes(vault: Path) -> None:
         ],
     )
 
-    (map_dir / "战役总图.md").write_text(total_map, encoding="utf-8")
-    (map_dir / "原则网络.md").write_text(principle_network, encoding="utf-8")
-    (map_dir / "三题型路线图.md").write_text(route_map, encoding="utf-8")
+    _write_if_missing(map_dir / "战役总图.md", total_map)
+    _write_if_missing(map_dir / "原则网络.md", principle_network)
+    _write_if_missing(map_dir / "三题型路线图.md", route_map)
+
+
+def _write_if_missing(path: Path, text: str) -> None:
+    if path.exists():
+        return
+    path.write_text(text, encoding="utf-8")

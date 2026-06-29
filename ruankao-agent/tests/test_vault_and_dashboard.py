@@ -16,6 +16,16 @@ def test_initialize_vault_creates_expected_obsidian_structure(tmp_path) -> None:
     assert (vault / "40-uns").is_dir()
 
 
+def test_initialize_vault_preserves_existing_map_notes(tmp_path) -> None:
+    vault = initialize_vault(tmp_path / "vault")
+    map_note = vault / "00-map" / "战役总图.md"
+    map_note.write_text("# 我的战役总图\n\n- 手工整理\n", encoding="utf-8")
+
+    initialize_vault(vault)
+
+    assert "手工整理" in map_note.read_text(encoding="utf-8")
+
+
 def test_principle_note_uses_obsidian_links(tmp_path) -> None:
     vault = initialize_vault(tmp_path / "vault")
 

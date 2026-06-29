@@ -9,6 +9,7 @@ from typing import Sequence
 from .dashboard import render_dashboard
 from .loop import build_daily_loop_snapshot, status_line
 from .notebooklm import DEFAULT_NOTEBOOK_SOURCE
+from .web import serve_workbench
 
 
 def _load_domain() -> object | None:
@@ -186,6 +187,24 @@ def cmd_dashboard(root: Path, as_of: date | None = None) -> int:
     return 0
 
 
+def cmd_web(
+    root: Path,
+    *,
+    host: str,
+    port: int,
+    as_of: date | None = None,
+    open_browser: bool = False,
+) -> int:
+    serve_workbench(
+        root,
+        host=host,
+        port=port,
+        as_of=as_of,
+        open_browser=open_browser,
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ruankao-agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -194,6 +213,13 @@ def build_parser() -> argparse.ArgumentParser:
         subparser = subparsers.add_parser(command)
         subparser.add_argument("--root", required=True, type=Path)
         subparser.add_argument("--as-of")
+
+    web_parser = subparsers.add_parser("web")
+    web_parser.add_argument("--root", required=True, type=Path)
+    web_parser.add_argument("--as-of")
+    web_parser.add_argument("--host", default="127.0.0.1")
+    web_parser.add_argument("--port", default=8765, type=int)
+    web_parser.add_argument("--open", action="store_true", dest="open_browser")
 
     return parser
 
@@ -208,6 +234,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_status(args.root, as_of=_parse_date(args.as_of))
     if args.command == "dashboard":
         return cmd_dashboard(args.root, as_of=_parse_date(args.as_of))
+    if args.command == "web":
+        return cmd_web(
+            args.root,
+            host=args.host,
+            port=args.port,
+            as_of=_parse_date(args.as_of),
+            open_browser=args.open_browser,
+        )
     raise AssertionError(f"Unsupported command: {args.command}")
 
 
