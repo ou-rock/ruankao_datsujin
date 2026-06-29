@@ -179,7 +179,6 @@ def _safe_note_name(title: str) -> str:
 
 
 def _render_memory_card_note(card: MemoryCard) -> str:
-    fronts = "\n".join(f"  - {front.value}" for front in card.fronts) or "  []"
     source_record = card.source_record_id if card.source_record_id is not None else ""
     next_due = card.next_due.isoformat() if card.next_due else ""
     last_reviewed = card.last_reviewed_on.isoformat() if card.last_reviewed_on else ""
@@ -187,8 +186,7 @@ def _render_memory_card_note(card: MemoryCard) -> str:
 type: memory-card
 card_id: {card.id}
 card_type: {card.card_type.value}
-fronts:
-{fronts}
+{_yaml_list("fronts", [front.value for front in card.fronts])}
 source_record_id: {source_record}
 review_count: {card.review_count}
 retrieval_strength: {card.retrieval_strength}
@@ -214,17 +212,13 @@ last_reviewed: {last_reviewed}
 
 
 def _render_raw_record_note(record: RawRecord) -> str:
-    topics = "\n".join(f"  - {topic}" for topic in record.topics) or "  []"
-    fronts = "\n".join(f"  - {front.value}" for front in record.fronts) or "  []"
     created_on = record.created_on.isoformat() if record.created_on else ""
     return f"""---
 type: raw-record
 record_id: {record.id}
 source: {record.source.value}
-topics:
-{topics}
-fronts:
-{fronts}
+{_yaml_list("topics", list(record.topics))}
+{_yaml_list("fronts", [front.value for front in record.fronts])}
 promotion_status: {record.promotion_status}
 created_on: {created_on}
 ---
@@ -235,3 +229,10 @@ created_on: {created_on}
 
 {record.text}
 """
+
+
+def _yaml_list(key: str, values: list[str]) -> str:
+    if not values:
+        return f"{key}: []"
+    lines = "\n".join(f"  - {value}" for value in values)
+    return f"{key}:\n{lines}"

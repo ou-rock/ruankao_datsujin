@@ -103,6 +103,36 @@ def test_sync_raw_records_to_vault_writes_mein_du_uns_notes(tmp_path) -> None:
     assert "可用性可靠性混淆" in text
 
 
+def test_vault_sync_renders_empty_frontmatter_lists_as_yaml_arrays(tmp_path) -> None:
+    root = tmp_path / "demo"
+    vault = initialize_vault(root / "vault")
+    store = RuankaoStore(root / "data" / "ruankao.db")
+    store.initialize()
+    store.add_memory_card(
+        card_type=CardType.CONCEPT,
+        title="无题型卡",
+        prompt="临时问题",
+        answer="临时答案",
+    )
+    store.add_raw_record(
+        source=SourceIdentity.UNS,
+        text="外部材料暂未分类。",
+        summary="未分类外部材料",
+    )
+
+    sync_memory_cards_to_vault(vault, store.list_memory_cards())
+    sync_raw_records_to_vault(vault, store.list_raw_records())
+
+    card_text = (vault / "10-memory-war-room" / "concepts" / "无题型卡.md").read_text(
+        encoding="utf-8"
+    )
+    raw_text = next((vault / "40-uns").glob("*.md")).read_text(encoding="utf-8")
+
+    assert "fronts: []" in card_text
+    assert "topics: []" in raw_text
+    assert "fronts: []" in raw_text
+
+
 def test_dashboard_renders_total_map() -> None:
     campaign = Campaign.default()
     snapshot = DashboardSnapshot(

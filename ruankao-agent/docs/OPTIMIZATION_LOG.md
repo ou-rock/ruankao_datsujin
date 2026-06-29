@@ -702,3 +702,30 @@ occasional export; it is part of the daily closure surface.
 - `./run-daily-cycle.command 2026-06-29`
 - `python3 -m pytest -q`
 - Script output includes memory-card vault sync and raw-record vault sync.
+
+## 2026-06-29 Round 021 - Robust Empty YAML Lists In Vault Sync
+
+### Learner Friction
+
+Vault sync could produce awkward frontmatter when a card or raw record had no
+fronts or topics. That is easy to miss early, but brittle once Obsidian,
+scripts, or future agents parse the notes.
+
+### Change
+
+- Added a shared `_yaml_list()` helper in `vault.py`.
+- Rendered empty lists as `key: []`.
+- Applied it to memory-card fronts and raw-record topics/fronts.
+
+### Learning Rule Captured
+
+Generated knowledge files should be boringly parseable. Durable notes are part
+of the learning system, not a pretty export.
+
+### Validation
+
+- `python3 -m pytest tests/test_vault_and_dashboard.py -q`
+- `python3 -m pytest -q`
+- Tests assert:
+  - memory cards without fronts render `fronts: []`;
+  - raw records without topics/fronts render `topics: []` and `fronts: []`.
