@@ -12,6 +12,7 @@ from .evolution import write_night_evolution_plan
 from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
 from .notebooklm import DEFAULT_NOTEBOOK_SOURCE
+from .principles import seed_core_principles
 from .receipts import write_daily_receipt
 from .route_map import write_route_map
 from .vault import sync_memory_cards_to_vault, sync_raw_records_to_vault
@@ -280,6 +281,16 @@ def cmd_raw_vault_sync(root: Path, *, overwrite: bool = False) -> int:
     return 0
 
 
+def cmd_seed_principles(root: Path, *, next_due: date | None = None) -> int:
+    result = seed_core_principles(root, next_due=next_due)
+    print(
+        f"raw={result.raw_record_id} "
+        f"created={len(result.created_card_ids)} "
+        f"skipped={len(result.skipped_titles)}"
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ruankao-agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -324,6 +335,10 @@ def build_parser() -> argparse.ArgumentParser:
     raw_vault_parser.add_argument("--root", required=True, type=Path)
     raw_vault_parser.add_argument("--overwrite", action="store_true")
 
+    principles_parser = subparsers.add_parser("seed-principles")
+    principles_parser.add_argument("--root", required=True, type=Path)
+    principles_parser.add_argument("--next-due")
+
     return parser
 
 
@@ -359,6 +374,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_vault_sync(args.root, overwrite=args.overwrite)
     if args.command == "raw-vault-sync":
         return cmd_raw_vault_sync(args.root, overwrite=args.overwrite)
+    if args.command == "seed-principles":
+        return cmd_seed_principles(args.root, next_due=_parse_date(args.next_due))
     raise AssertionError(f"Unsupported command: {args.command}")
 
 

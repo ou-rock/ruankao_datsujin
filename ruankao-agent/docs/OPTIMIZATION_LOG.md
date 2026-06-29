@@ -764,3 +764,38 @@ real design judgement.
 - `python3 -m pytest tests/test_architect_thinking_skill.py -q`
 - `python3 -m pytest -q`
 - Tests assert the skill exists and keeps all seven core principles.
+
+## 2026-06-29 Round 023 - Seed Core Principles Into Memory
+
+### Learner Friction
+
+Round 022 created the architect-thinking skill seed, but the seven principles
+were still only text. To actually train them, they need to become principle
+cards in the Memory War Room.
+
+### Change
+
+- Added `ruankao_agent.principles`.
+- Added `CORE_ARCHITECTURE_PRINCIPLES`.
+- Added `seed_core_principles()`.
+- Added CLI command:
+  - `python3 -m ruankao_agent.cli seed-principles --root <root> --next-due <YYYY-MM-DD>`
+- Added principle seeding to `run-daily-cycle.command`.
+- Updated README and `/ruankao-daily-cycle` docs.
+
+### Learning Rule Captured
+
+Principles are not just prose. They must become retrievable memory objects so
+they can be practiced, challenged, linked, and eventually replaced if evidence
+demands it.
+
+### Validation
+
+- `python3 -m pytest tests/test_principles.py -q`
+- `python3 -m pytest tests/test_architect_thinking_skill.py -q`
+- `./run-daily-cycle.command 2026-06-29`
+- `python3 -m pytest -q`
+- Tests assert:
+  - seven core principles become principle cards;
+  - repeated seeding skips existing titles;
+  - CLI seeding creates all seven cards.

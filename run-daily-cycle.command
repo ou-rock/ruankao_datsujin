@@ -11,6 +11,10 @@ python3 -m ruankao_agent.cli cheko-seed-cards \
   --root "$AGENT_ROOT" \
   --next-due "$DAY"
 
+python3 -m ruankao_agent.cli seed-principles \
+  --root "$AGENT_ROOT" \
+  --next-due "$DAY"
+
 python3 -m ruankao_agent.cli daily-receipt \
   --root "$AGENT_ROOT" \
   --as-of "$DAY"
