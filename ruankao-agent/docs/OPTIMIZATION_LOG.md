@@ -674,3 +674,31 @@ not noise; it is where future cards, principles, and architecture judgement grow
   - Mein/Du/Uns raw records land in the correct vault directories;
   - repeated sync skips existing notes;
   - CLI and workbench raw sync paths work.
+
+## 2026-06-29 Round 020 - Daily Cycle Includes Vault Sync
+
+### Learner Friction
+
+Vault sync existed as separate actions, but the daily-cycle script did not call
+them. A scheduled daily loop should move both SQLite state and Obsidian-visible
+knowledge forward.
+
+### Change
+
+- Updated `run-daily-cycle.command` to run:
+  - `vault-sync`
+  - `raw-vault-sync`
+- Updated `/ruankao-daily-cycle` command docs.
+- Updated README daily-cycle description.
+- Kept sync non-destructive by default.
+
+### Learning Rule Captured
+
+The daily loop should end with a readable knowledge network. Obsidian is not an
+occasional export; it is part of the daily closure surface.
+
+### Validation
+
+- `./run-daily-cycle.command 2026-06-29`
+- `python3 -m pytest -q`
+- Script output includes memory-card vault sync and raw-record vault sync.

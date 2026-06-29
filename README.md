@@ -36,8 +36,9 @@ Daily close and night evolution can run from Codex:
 ```
 
 The daily cycle command runs Cheko weak-area seeding, daily receipt generation,
-route map generation, and a stage-only night evolution plan. The night evolution
-command does not directly mutate live skills or learning rules.
+route map generation, a stage-only night evolution plan, and Obsidian vault
+sync for memory cards and raw Mein/Du/Uns material. The night evolution command
+does not directly mutate live skills or learning rules.
 
 For scheduled nightly runs, see `ruankao-agent/docs/AUTOMATION.md`.
 

@@ -22,3 +22,9 @@ python3 -m ruankao_agent.cli route-map \
 python3 -m ruankao_agent.cli night-evolve \
   --root "$AGENT_ROOT" \
   --as-of "$DAY"
+
+python3 -m ruankao_agent.cli vault-sync \
+  --root "$AGENT_ROOT"
+
+python3 -m ruankao_agent.cli raw-vault-sync \
+  --root "$AGENT_ROOT"
