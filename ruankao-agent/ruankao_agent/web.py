@@ -1615,6 +1615,8 @@ def _rag_hit_item(hit: object) -> str:
   <div>{escape(str(hit.get("snippet", "")))}</div>
   <div class="meta-row">
     <span>{escape(str(hit.get("ref", "")))}</span>
+    <span>{escape(str(hit.get("chunk_ref", "")))}</span>
+    <span>{escape(str(hit.get("retrieval_strategy", "")))}</span>
     <span>得分：{escape(str(hit.get("score", "")))}</span>
     <span>状态：{escape(_rag_status_label(hit.get("progress_status")))}</span>
   </div>

@@ -4,6 +4,7 @@ argument-hint: [查询文本] [--front choice|case|essay]
 ---
 
 用本地 SQLite 里的三源材料、记忆卡、复习日志和练习记录生成 RAG 控制简报。
+当前实现会切块、建立 SQLite FTS5 临时索引、使用 BM25 和进步权重混合排序。
 这个操作不调用外部向量库；SQLite 仍是唯一事实源。
 
 默认执行：
@@ -16,4 +17,4 @@ python3 -m ruankao_agent.cli rag-query \
 ```
 
 如果 `$ARGUMENTS` 指定主题或题型，追加到 `--query` 或 `--front`。
-输出包括召回证据、进步闸门、建议动作和回答契约。
+输出包括召回证据、进步闸门、建议动作、回答契约、chunk 引用和分数分解。

@@ -31,7 +31,9 @@ def test_daily_command_docs_hide_internal_stage_labels() -> None:
     assert "RAG 控制简报" in daily_close
     assert "学习台网页资料" in learning
     assert "SQLite 仍是唯一事实源" in rag_query
-    assert "召回证据、进步闸门、建议动作和回答契约" in rag_query
+    assert "SQLite FTS5 临时索引" in rag_query
+    assert "BM25 和进步权重混合排序" in rag_query
+    assert "chunk 引用和分数分解" in rag_query
     assert "stage-only" not in daily_cycle
     assert "stage-only" not in night_evolve
     assert "staged plan" not in night_evolve

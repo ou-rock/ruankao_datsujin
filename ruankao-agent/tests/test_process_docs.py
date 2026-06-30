@@ -46,6 +46,9 @@ def test_rag_design_captures_memory_progress_control() -> None:
 
     assert "# RAG 记忆与进步控制方案" in text
     assert "SQLite 仍保存三源材料、记忆卡、复习日志和练习记录" in text
+    assert "v0 只有本地检索和进步控制，偏壳子" in text
+    assert "FTS/BM25" in text
+    assert "score_breakdown" in text
     assert "不是搜索框，而是控制层" in text
     assert "进步闸门" in text
     assert "召回证据" in text

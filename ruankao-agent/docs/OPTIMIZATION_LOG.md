@@ -3267,3 +3267,45 @@ the highest-risk progress gate.
 - `python3 -m pytest tests/test_rag.py tests/test_cli.py tests/test_daily_receipt.py tests/test_web_workbench.py tests/test_daily_cycle_script.py tests/test_command_docs.py tests/test_process_docs.py tests/test_design_contract.py -q`
 - `python3 -m pytest -q`
 - `git diff --check`
+
+## 2026-06-30 Round 109 - Upgrade RAG From Control Shell To Hybrid Retrieval
+
+### Learner Friction
+
+The learner correctly challenged the previous RAG implementation: it had a useful
+control layer, but it did not yet use professional retrieval mechanics. It was
+closer to deterministic search plus progress gates than a serious local RAG
+pipeline.
+
+### Change
+
+- Added `RagChunk` and chunk references.
+- Added local SQLite FTS5 temporary indexing.
+- Added BM25 lexical scoring through `bm25()`.
+- Added hybrid reranking across progress, token overlap, FTS/BM25, phrase match,
+  exam-front match, and progress status.
+- Added `retrieval_strategy`, `corpus_size`, `chunk_count`, `chunk_ref`, and
+  `score_breakdown` to JSON and HTML output.
+- Documented the boundary: v1 is local FTS/BM25 hybrid RAG; embeddings and
+  cross-encoder reranking remain future pluggable backends.
+
+### UX Rule Captured
+
+A learner-facing RAG report must explain why evidence was retrieved. If it cannot
+show chunk references and score components, it is too opaque to govern memory.
+
+### BrowserAct Evidence
+
+- Built a temporary local corpus with a high-concurrency scenario card and a Mein
+  raw record.
+- Opened `/reports/rag/2026-06-30.html` through browser-act.
+- Verified the rendered report shows:
+  - `sqlite-fts5-hybrid-progress`
+  - `memory:1#c1`
+  - `FTS/BM25 切块命中`
+  - `fts_bm25` score breakdown
+
+### Validation
+
+- RAG tests assert chunking, FTS/BM25 retrieval strategy, chunk references, and
+  score breakdown.

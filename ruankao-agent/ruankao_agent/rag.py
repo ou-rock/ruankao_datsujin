@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import sqlite3
 from dataclasses import dataclass
 from datetime import date
 from html import escape
@@ -34,11 +35,22 @@ class RagDocument:
 
 
 @dataclass(frozen=True, slots=True)
+class RagChunk:
+    chunk_ref: str
+    document: RagDocument
+    text: str
+    chunk_index: int
+
+
+@dataclass(frozen=True, slots=True)
 class RagHit:
     document: RagDocument
     score: float
     reasons: tuple[str, ...]
     snippet: str
+    chunk_ref: str = ""
+    retrieval_strategy: str = "token-hybrid-progress"
+    score_breakdown: tuple[tuple[str, float], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,6 +70,9 @@ class RagBrief:
     progress_gates: tuple[ProgressGate, ...]
     recommended_action: str
     answer_contract: tuple[str, ...]
+    retrieval_strategy: str
+    corpus_size: int
+    chunk_count: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -91,6 +106,7 @@ def build_rag_brief(
         diagnostics=diagnostics,
         as_of=day,
     )
+    chunks = build_rag_chunks(documents)
     hits = retrieve_rag_documents(
         documents,
         query=query,
@@ -115,6 +131,9 @@ def build_rag_brief(
             "回答必须引用召回证据，区分 Mein、Du、Uns、记忆卡和练习记录。",
             "每次学习结束必须产出下一张卡、一次练习或一条三源沉淀。",
         ),
+        retrieval_strategy=_retrieval_strategy_name(chunks),
+        corpus_size=len(documents),
+        chunk_count=len(chunks),
     )
 
 
@@ -140,6 +159,39 @@ def build_rag_documents(
     return tuple(documents)
 
 
+def build_rag_chunks(
+    documents: Iterable[RagDocument],
+    *,
+    max_chars: int = 420,
+    overlap: int = 80,
+) -> tuple[RagChunk, ...]:
+    chunks: list[RagChunk] = []
+    for document in documents:
+        pieces = _chunk_text(
+            "\n".join(
+                item
+                for item in (
+                    document.title,
+                    " ".join(document.topics),
+                    document.body,
+                )
+                if item
+            ),
+            max_chars=max_chars,
+            overlap=overlap,
+        )
+        for index, piece in enumerate(pieces):
+            chunks.append(
+                RagChunk(
+                    chunk_ref=f"{document.ref}#c{index + 1}",
+                    document=document,
+                    text=piece,
+                    chunk_index=index,
+                )
+            )
+    return tuple(chunks)
+
+
 def retrieve_rag_documents(
     documents: Iterable[RagDocument],
     *,
@@ -150,22 +202,38 @@ def retrieve_rag_documents(
     clean_query = query.strip() or DEFAULT_RAG_QUERY
     query_tokens = _tokens(clean_query)
     front_filter = set(fronts)
-    hits: list[RagHit] = []
-    for document in documents:
-        scored = _score_document(document, query_tokens, clean_query, front_filter)
+    chunks = build_rag_chunks(documents)
+    fts_scores = _fts5_chunk_scores(chunks, query_tokens)
+    strategy = "sqlite-fts5-hybrid-progress" if fts_scores else "token-hybrid-progress"
+    best_by_document: dict[str, RagHit] = {}
+    for chunk in chunks:
+        document = chunk.document
+        scored = _score_chunk(
+            chunk,
+            query_tokens,
+            clean_query,
+            front_filter,
+            fts_score=fts_scores.get(chunk.chunk_ref, 0.0),
+            retrieval_strategy=strategy,
+        )
         if scored is None:
             continue
-        score, reasons = scored
+        score, reasons, breakdown = scored
         if score <= 0:
             continue
-        hits.append(
-            RagHit(
-                document=document,
-                score=round(score, 3),
-                reasons=tuple(reasons),
-                snippet=_snippet(document.body, query_tokens),
-            )
+        hit = RagHit(
+            document=document,
+            score=round(score, 3),
+            reasons=tuple(reasons),
+            snippet=_snippet(chunk.text, query_tokens),
+            chunk_ref=chunk.chunk_ref,
+            retrieval_strategy=strategy,
+            score_breakdown=tuple((label, round(value, 3)) for label, value in breakdown),
         )
+        previous = best_by_document.get(document.ref)
+        if previous is None or hit.score > previous.score:
+            best_by_document[document.ref] = hit
+    hits = list(best_by_document.values())
     return tuple(sorted(hits, key=lambda hit: (-hit.score, hit.document.ref))[: max(1, limit)])
 
 
@@ -311,6 +379,9 @@ def rag_brief_to_payload(brief: RagBrief) -> dict[str, object]:
         "version": 1,
         "query": brief.query,
         "as_of": brief.as_of.isoformat(),
+        "retrieval_strategy": brief.retrieval_strategy,
+        "corpus_size": brief.corpus_size,
+        "chunk_count": brief.chunk_count,
         "recommended_action": brief.recommended_action,
         "answer_contract": list(brief.answer_contract),
         "progress_gates": [
@@ -326,6 +397,7 @@ def rag_brief_to_payload(brief: RagBrief) -> dict[str, object]:
         "hits": [
             {
                 "ref": hit.document.ref,
+                "chunk_ref": hit.chunk_ref,
                 "kind": hit.document.kind,
                 "source_label": hit.document.source_label,
                 "title": hit.document.title,
@@ -334,6 +406,11 @@ def rag_brief_to_payload(brief: RagBrief) -> dict[str, object]:
                 "progress_status": hit.document.progress_status,
                 "score": hit.score,
                 "reasons": list(hit.reasons),
+                "retrieval_strategy": hit.retrieval_strategy,
+                "score_breakdown": [
+                    {"name": name, "value": value}
+                    for name, value in hit.score_breakdown
+                ],
                 "snippet": hit.snippet,
                 "action_hint": hit.document.action_hint,
             }
@@ -421,6 +498,7 @@ def render_rag_brief(payload: dict[str, object]) -> str:
     <header>
       <h1>RAG 记忆与进步控制</h1>
       <p class="lead">查询：{escape(str(payload["query"]))}</p>
+      <p class="lead">检索策略：{escape(str(payload.get("retrieval_strategy", "token-hybrid-progress")))}；语料 {escape(str(payload.get("corpus_size", 0)))} 条；切块 {escape(str(payload.get("chunk_count", 0)))} 个</p>
       <p class="lead">建议动作：{escape(str(payload["recommended_action"]))}</p>
     </header>
     <section>
@@ -538,33 +616,154 @@ def _practice_document(session: PracticeSession) -> RagDocument:
     )
 
 
-def _score_document(
-    document: RagDocument,
+def _score_chunk(
+    chunk: RagChunk,
     query_tokens: set[str],
     query: str,
     front_filter: set[ExamFront],
-) -> tuple[float, list[str]] | None:
+    *,
+    fts_score: float,
+    retrieval_strategy: str,
+) -> tuple[float, list[str], list[tuple[str, float]]] | None:
+    document = chunk.document
     if front_filter and document.fronts and front_filter.isdisjoint(document.fronts):
         return None
-    haystack = f"{document.title}\n{document.body}\n{' '.join(document.topics)}".lower()
+    haystack = f"{document.title}\n{chunk.text}\n{' '.join(document.topics)}".lower()
     doc_tokens = _tokens(haystack)
     overlap = query_tokens & doc_tokens
-    score = document.priority
+    token_score = float(len(overlap) * 2.0)
+    phrase_score = 4.0 if query and query.lower() in haystack else 0.0
+    front_score = 2.0 if front_filter and not front_filter.isdisjoint(document.fronts) else 0.0
+    status_score = 1.0 if document.progress_status in {"leech", "unstable", "due", "low_score"} else 0.0
+    score = document.priority + token_score + phrase_score + front_score + status_score + fts_score
+    breakdown = [
+        ("progress", document.priority),
+        ("token", token_score),
+        ("fts_bm25", fts_score),
+        ("phrase", phrase_score),
+        ("front", front_score),
+        ("status", status_score),
+    ]
     reasons = [f"进步权重 {document.priority:g}"]
+    if retrieval_strategy == "sqlite-fts5-hybrid-progress":
+        reasons.append(f"FTS/BM25 切块命中 {chunk.chunk_ref}")
     if overlap:
-        score += len(overlap) * 2.0
         reasons.append("命中：" + "、".join(sorted(overlap)[:5]))
-    if query and query.lower() in haystack:
-        score += 4.0
+    if phrase_score:
         reasons.append("完整短语命中")
-    if front_filter and not front_filter.isdisjoint(document.fronts):
-        score += 2.0
+    if front_score:
         reasons.append("题型匹配")
-    if document.progress_status in {"leech", "unstable", "due", "low_score"}:
+    if status_score:
         reasons.append(_status_label(document.progress_status))
-    if query_tokens and not overlap and document.priority < 3:
+    if query_tokens and not overlap and fts_score <= 0 and document.priority < 3:
         return None
-    return score, reasons
+    return score, reasons, breakdown
+
+
+def _chunk_text(text: str, *, max_chars: int, overlap: int) -> tuple[str, ...]:
+    clean_parts = [part.strip() for part in re.split(r"\n{2,}|\n", text) if part.strip()]
+    chunks: list[str] = []
+    current = ""
+    for part in clean_parts:
+        candidate = f"{current}\n{part}".strip() if current else part
+        if len(candidate) <= max_chars:
+            current = candidate
+            continue
+        if current:
+            chunks.extend(_split_long_chunk(current, max_chars=max_chars, overlap=overlap))
+        current = part
+    if current:
+        chunks.extend(_split_long_chunk(current, max_chars=max_chars, overlap=overlap))
+    return tuple(chunks or (text.strip(),))
+
+
+def _split_long_chunk(text: str, *, max_chars: int, overlap: int) -> list[str]:
+    if len(text) <= max_chars:
+        return [text]
+    chunks: list[str] = []
+    start = 0
+    step = max(1, max_chars - overlap)
+    while start < len(text):
+        end = min(len(text), start + max_chars)
+        chunks.append(text[start:end].strip())
+        if end >= len(text):
+            break
+        start += step
+    return [chunk for chunk in chunks if chunk]
+
+
+def _fts5_chunk_scores(chunks: Sequence[RagChunk], query_tokens: set[str]) -> dict[str, float]:
+    if not chunks or not query_tokens:
+        return {}
+    query = _fts_query(query_tokens)
+    if not query:
+        return {}
+    try:
+        con = sqlite3.connect(":memory:")
+        con.execute("CREATE VIRTUAL TABLE rag_chunks USING fts5(chunk_ref UNINDEXED, title, body)")
+        con.executemany(
+            "INSERT INTO rag_chunks(chunk_ref, title, body) VALUES (?, ?, ?)",
+            (
+                (
+                    chunk.chunk_ref,
+                    chunk.document.title,
+                    _fts_search_text(chunk),
+                )
+                for chunk in chunks
+            ),
+        )
+        rows = con.execute(
+            """
+            SELECT chunk_ref, bm25(rag_chunks) AS rank
+            FROM rag_chunks
+            WHERE rag_chunks MATCH ?
+            ORDER BY rank
+            LIMIT 40
+            """,
+            (query,),
+        ).fetchall()
+    except sqlite3.Error:
+        return {}
+    finally:
+        try:
+            con.close()
+        except Exception:
+            pass
+    scores: dict[str, float] = {}
+    for index, (chunk_ref, rank) in enumerate(rows):
+        scores[str(chunk_ref)] = round(8.0 / (index + 1) + max(0.0, -float(rank)), 3)
+    return scores
+
+
+def _fts_search_text(chunk: RagChunk) -> str:
+    source = f"{chunk.document.title}\n{chunk.text}\n{' '.join(chunk.document.topics)}"
+    tokens = sorted(_tokens(source))
+    return " ".join(tokens)
+
+
+def _fts_query(tokens: set[str]) -> str:
+    selected = [
+        token
+        for token in sorted(tokens, key=lambda item: (-len(item), item))[:16]
+        if token.strip()
+    ]
+    return " OR ".join(f'"{token.replace(chr(34), chr(34) + chr(34))}"' for token in selected)
+
+
+def _retrieval_strategy_name(chunks: Sequence[RagChunk]) -> str:
+    if not chunks:
+        return "token-hybrid-progress"
+    try:
+        con = sqlite3.connect(":memory:")
+        con.execute("CREATE VIRTUAL TABLE rag_probe USING fts5(body)")
+        return "sqlite-fts5-hybrid-progress"
+    except sqlite3.Error:
+        return "token-hybrid-progress"
+    finally:
+        try:
+            con.close()
+        except Exception:
+            pass
 
 
 def _tokens(text: str) -> set[str]:
@@ -683,11 +882,14 @@ def _hit_items(hits: list[object]) -> str:
   <div class="meta-row">
     <span>{escape(str(hit["source_label"]))}</span>
     <span>{escape(str(hit["ref"]))}</span>
+    <span>{escape(str(hit.get("chunk_ref", "")))}</span>
+    <span>{escape(str(hit.get("retrieval_strategy", "")))}</span>
     <span>得分：{escape(str(hit["score"]))}</span>
     <span>题型：{escape(_fronts_text(hit["fronts"]))}</span>
     <span>状态：{escape(_status_label(str(hit["progress_status"])))}</span>
   </div>
   <div class="meta-row">{_reason_spans(hit["reasons"])}</div>
+  <div class="meta-row">{_breakdown_spans(hit.get("score_breakdown", []))}</div>
   <div>{escape(str(hit["action_hint"]))}</div>
 </div>"""
         )
@@ -704,6 +906,19 @@ def _reason_spans(reasons: object) -> str:
     if not isinstance(reasons, list):
         return ""
     return "".join(f"<span>{escape(str(reason))}</span>" for reason in reasons)
+
+
+def _breakdown_spans(breakdown: object) -> str:
+    if not isinstance(breakdown, list):
+        return ""
+    spans = []
+    for item in breakdown:
+        if not isinstance(item, dict):
+            continue
+        spans.append(
+            f"<span>{escape(str(item.get('name', 'score')))}：{escape(str(item.get('value', 0)))}</span>"
+        )
+    return "".join(spans)
 
 
 def _fronts_text(fronts: object) -> str:

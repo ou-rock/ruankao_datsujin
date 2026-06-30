@@ -608,6 +608,8 @@ def _rag_hit(hit: dict[object, object]) -> str:
   <div class="meta-row">
     <span>{escape(str(hit.get("source_label", "")))}</span>
     <span>{escape(str(hit.get("ref", "")))}</span>
+    <span>{escape(str(hit.get("chunk_ref", "")))}</span>
+    <span>{escape(str(hit.get("retrieval_strategy", "")))}</span>
     <span>得分：{escape(str(hit.get("score", "")))}</span>
   </div>
 </div>"""
