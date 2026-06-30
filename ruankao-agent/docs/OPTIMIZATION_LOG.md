@@ -1559,3 +1559,35 @@ focus in study language.
 - `python3 -m pytest tests/test_route_map.py -q`
 - Tests assert the route map renders localized state badges, localized footer
   metadata, and no longer renders `status=red` or `last_practice=`.
+
+## 2026-06-30 Round 050 - Workbench Missing Value Language
+
+### Learner Friction
+
+The workbench still rendered missing card and practice fields as `none`. This
+could appear on normal in-progress material: cards without a due date, cards
+without chosen exam fronts, or quick practice logs without scores and timing.
+
+### Change
+
+- Replaced visible workbench missing values with `未记录`.
+- Applied the change to:
+  - card fronts;
+  - card due dates;
+  - practice score;
+  - practice score ratio;
+  - practice source;
+  - practice duration.
+- Changed multi-front labels from comma-separated values to Chinese顿号
+  separation.
+
+### UX Rule Captured
+
+An incomplete learning artifact should feel like something to refine, not a
+programming null. Use learner-facing missing-value language in visible lists.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert missing card and practice fields render as `未记录` and no longer
+  render old visible `none` metadata.

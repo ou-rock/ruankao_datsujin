@@ -1427,7 +1427,7 @@ def _card_list(cards: list[MemoryCard], *, with_review: bool, today: date) -> st
         items.append(
             f"""<div class="item">
   <div class="item-title"><span>#{card.id} {escape(card.title)}</span><span>{escape(_card_type_label(card.card_type))}</span></div>
-  <div class="meta">题型={escape(_fronts_label(card.fronts))} | 到期={escape(card.next_due.isoformat() if card.next_due else "none")} | 复习={card.review_count}次</div>
+  <div class="meta">题型={escape(_fronts_label(card.fronts))} | 到期={escape(_date_text(card.next_due))} | 复习={card.review_count}次</div>
   <div class="meta">{escape(card.prompt[:140])}</div>
   {review_form}
 </div>"""
@@ -1475,7 +1475,7 @@ def _practice_list(sessions: list[PracticeSession]) -> str:
         items.append(
             f"""<div class="item">
   <div class="item-title"><span>#{session.id} {escape(session.topic)}</span><span>{escape(_front_label(session.front))}</span></div>
-  <div class="meta">得分={escape(score)} | 得分率={escape(ratio)} | 来源={escape(session.source or "none")} | 耗时={escape(_duration_text(session.duration_minutes))} | 日期={escape(session.created_on.isoformat() if session.created_on else "none")}</div>
+  <div class="meta">得分={escape(score)} | 得分率={escape(ratio)} | 来源={escape(_value_text(session.source))} | 耗时={escape(_duration_text(session.duration_minutes))} | 日期={escape(_date_text(session.created_on))}</div>
   <div class="meta">{escape(session.summary[:140])}</div>
 </div>"""
         )
@@ -1489,7 +1489,7 @@ def _risk_reason_list(reasons: tuple[str, ...]) -> str:
 
 def _score_text(score: float | None, max_score: float | None) -> str:
     if score is None:
-        return "none"
+        return "未记录"
     if max_score is None:
         return f"{score:g}"
     return f"{score:g}/{max_score:g}"
@@ -1497,14 +1497,26 @@ def _score_text(score: float | None, max_score: float | None) -> str:
 
 def _score_ratio_text(score: float | None, max_score: float | None) -> str:
     if score is None or max_score is None or max_score <= 0:
-        return "none"
+        return "未记录"
     return f"{score / max_score:.0%}"
 
 
 def _duration_text(duration_minutes: int | None) -> str:
     if duration_minutes is None:
-        return "none"
+        return "未记录"
     return f"{duration_minutes}分钟"
+
+
+def _date_text(value: date | None) -> str:
+    if value is None:
+        return "未记录"
+    return value.isoformat()
+
+
+def _value_text(value: object) -> str:
+    if value is None or value == "":
+        return "未记录"
+    return str(value)
 
 
 def _front_label(front: ExamFront) -> str:
@@ -1517,8 +1529,8 @@ def _front_label(front: ExamFront) -> str:
 
 def _fronts_label(fronts: tuple[ExamFront, ...]) -> str:
     if not fronts:
-        return "none"
-    return ",".join(_front_label(front) for front in fronts)
+        return "未记录"
+    return "、".join(_front_label(front) for front in fronts)
 
 
 def _diagnostic_list(diagnostics: list[MemoryDiagnostic]) -> str:

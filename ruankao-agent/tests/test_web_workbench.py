@@ -257,6 +257,29 @@ def test_workbench_forms_write_practice_session(tmp_path) -> None:
     assert "耗时=35分钟" in html
 
 
+def test_workbench_lists_render_missing_values_as_unrecorded(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+    app.initialize()
+    app.add_memory_card(
+        parse_qs(
+            "card_type=concept&title=未归类概念&prompt=先占位"
+            "&answer=稍后补充"
+        )
+    )
+    app.add_practice_session(
+        parse_qs("front=choice&topic=选择题速记&summary=只记录了结论")
+    )
+
+    html = app.render_home()
+
+    assert "题型=未记录 | 到期=未记录 | 复习=0次" in html
+    assert "得分=未记录 | 得分率=未记录 | 来源=未记录 | 耗时=未记录 | 日期=2026-06-29" in html
+    assert "到期=none" not in html
+    assert "得分=none" not in html
+    assert "来源=none" not in html
+
+
 def test_workbench_can_seed_cheko_cards_from_learning_signal_action(tmp_path) -> None:
     root = tmp_path / "demo"
     app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
