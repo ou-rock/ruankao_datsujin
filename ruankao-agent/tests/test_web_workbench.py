@@ -21,8 +21,10 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
 
     html = app.render_home()
 
-    assert "<title>软考达人工作台 · D-117 · green</title>" in html
+    assert "<title>软考达人工作台 · D-117 · 绿灯</title>" in html
     assert "软考达人工作台" in html
+    assert "D-117 | 启动诊断 | 绿灯 | 到期=0 | 积压=0%" in html
+    assert '<div class="metric"><span>风险</span><strong>绿灯</strong></div>' in html
     assert 'class="skip-link" href="#today"' in html
     assert "今日闭环" in html
     assert "今日第一动作" in html
@@ -114,8 +116,8 @@ def test_workbench_home_shows_three_front_radar_with_due_state(tmp_path) -> None
     html = app.render_home()
 
     assert 'aria-label="三题型雷达"' in html
-    assert '<div class="front-head"><span>案例题</span><span class="front-state">red</span></div>' in html
-    assert '<div class="front-head"><span>选择题</span><span class="front-state">green</span></div>' in html
+    assert '<div class="front-head"><span>案例题</span><span class="front-state red">红灯</span></div>' in html
+    assert '<div class="front-head"><span>选择题</span><span class="front-state green">绿灯</span></div>' in html
     assert "今天补一次练习" in html
 
 

@@ -274,7 +274,7 @@ class WorkbenchApp:
         )
         primary_reason = _today_primary_reason(snapshot.risk_reasons, due_cards)
         front_overview = _front_overview(cards, due_cards, practice_sessions, self.today)
-        page_title = f"软考达人工作台 · {snapshot.countdown} · {snapshot.risk_text}"
+        page_title = f"软考达人工作台 · {snapshot.countdown} · {_risk_label(snapshot.risk_text)}"
 
         return f"""<!doctype html>
 <html lang="zh-CN">
@@ -431,9 +431,28 @@ class WorkbenchApp:
       font-weight: 800;
     }}
     .front-state {{
-      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 2px 7px;
       font-size: 12px;
       font-weight: 750;
+      white-space: nowrap;
+      background: var(--band);
+    }}
+    .front-state.red {{
+      color: #8a1f11;
+      border-color: #f0b6ad;
+      background: #fff1f0;
+    }}
+    .front-state.yellow {{
+      color: #7a5600;
+      border-color: #ead18a;
+      background: #fff8db;
+    }}
+    .front-state.green {{
+      color: #17623a;
+      border-color: #a9d5b8;
+      background: #eefaf1;
     }}
     .front-metrics {{
       display: grid;
@@ -711,7 +730,7 @@ class WorkbenchApp:
     <div class="top">
       <div class="title-row">
         <h1>软考达人工作台</h1>
-        <div class="status">{escape(status_line(snapshot))}</div>
+        <div class="status">{escape(_status_summary(snapshot))}</div>
       </div>
       <div class="metrics">
         <div class="metric"><span>目标日期</span><strong>{escape(snapshot.dashboard.campaign.exam_date.isoformat())}</strong></div>
@@ -719,7 +738,7 @@ class WorkbenchApp:
         <div class="metric"><span>到期复习</span><strong>{len(due_cards)}</strong></div>
         <div class="metric"><span>记忆卡</span><strong>{len(cards)}</strong></div>
         <div class="metric"><span>原始材料</span><strong>{len(records)}</strong></div>
-        <div class="metric"><span>风险</span><strong>{escape(snapshot.risk_text)}</strong></div>
+        <div class="metric"><span>风险</span><strong>{escape(_risk_label(snapshot.risk_text))}</strong></div>
       </div>
       <div class="action-strip risk-{escape(snapshot.risk_text)}">
         <div>
@@ -1420,10 +1439,12 @@ def _front_overview(
 def _front_cards(rows: list[dict[str, object]]) -> str:
     cards = []
     for row in rows:
-        state = escape(str(row["state"]))
+        raw_state = str(row["state"])
+        state = escape(raw_state)
+        state_label = escape(_risk_label(raw_state))
         cards.append(
             f"""<div class="front-card {state}">
-  <div class="front-head"><span>{escape(str(row["label"]))}</span><span class="front-state">{state}</span></div>
+  <div class="front-head"><span>{escape(str(row["label"]))}</span><span class="front-state {state}">{state_label}</span></div>
   <div class="front-metrics">
     <div class="front-mini"><span>卡片</span><strong>{escape(str(row["cards"]))}</strong></div>
     <div class="front-mini"><span>到期</span><strong>{escape(str(row["due"]))}</strong></div>
@@ -1433,6 +1454,23 @@ def _front_cards(rows: list[dict[str, object]]) -> str:
 </div>"""
         )
     return "".join(cards)
+
+
+def _status_summary(snapshot) -> str:
+    backlog = snapshot.dashboard.review_backlog_ratio
+    due_cards = snapshot.dashboard.due_cards
+    return (
+        f"{snapshot.countdown} | {snapshot.phase_name} | {_risk_label(snapshot.risk_text)} "
+        f"| 到期={due_cards} | 积压={backlog:.0%}"
+    )
+
+
+def _risk_label(value: str) -> str:
+    return {
+        "red": "红灯",
+        "yellow": "黄灯",
+        "green": "绿灯",
+    }.get(value, value)
 
 
 def _promotion_status_radios() -> str:

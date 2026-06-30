@@ -1655,3 +1655,33 @@ and quantity created or skipped.
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert common action slugs render as localized status messages and the
   raw slugs are not visible.
+
+## 2026-06-30 Round 053 - Localized Workbench Risk Signals
+
+### Learner Friction
+
+The workbench had localized reports and action messages, but the main title,
+risk metric, header status, and three-front radar still exposed raw risk values:
+`green`, `yellow`, and `red`. These values are useful as CSS and JSON states, but
+they are not the language a learner scans under time pressure.
+
+### Change
+
+- Changed the workbench title risk suffix to `红灯/黄灯/绿灯`.
+- Changed the visible risk metric to the same traffic-light wording.
+- Replaced the header status line with localized labels for risk, due cards, and
+  backlog.
+- Changed three-front radar badges from raw `red/green` text to localized
+  traffic-light labels while keeping the raw state classes.
+
+### UX Rule Captured
+
+Risk signals should be immediately legible. Keep raw states in machine-facing
+classes and JSON, but use traffic-light labels wherever the learner reads the
+status.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert the workbench title, header status, risk metric, and front radar
+  render localized traffic-light labels.
