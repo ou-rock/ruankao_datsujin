@@ -449,7 +449,13 @@ def _memory_diagnostics(diagnostics: list[object]) -> str:
             f"""<div class="item">
   <strong>#{escape(str(item["card_id"]))} {escape(str(item["title"]))}</strong>
   <div>{escape(str(item["action"]))}</div>
-  <div class="meta">状态={escape(_memory_status_label(item["status"]))} | 类型={escape(_card_type_label(item["card_type"]))} | 低分={escape(str(item["low_grade_reviews"]))}次 | 最近={escape(_value_text(item["last_grade"]))} | 平均={escape(_value_text(item["average_grade"]))}</div>
+  <div class="meta-row">
+    <span>状态：{escape(_memory_status_label(item["status"]))}</span>
+    <span>类型：{escape(_card_type_label(item["card_type"]))}</span>
+    <span>低分：{escape(str(item["low_grade_reviews"]))}次</span>
+    <span>最近：{escape(_value_text(item["last_grade"]))}</span>
+    <span>平均：{escape(_value_text(item["average_grade"]))}</span>
+  </div>
 </div>"""
         )
     return "".join(items)

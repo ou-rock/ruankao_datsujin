@@ -118,7 +118,11 @@ def test_daily_receipt_marks_repeated_low_grade_card_as_leech(tmp_path) -> None:
     assert payload["metrics"]["weak_memory_cards"] == 1
     assert payload["memory_diagnostics"][0]["status"] == "leech"
     assert payload["memory_diagnostics"][0]["title"] == "敏感点 vs 权衡点"
-    assert "拆成更小卡片" in result.html_path.read_text(encoding="utf-8")
+    html = result.html_path.read_text(encoding="utf-8")
+    assert "拆成更小卡片" in html
+    assert "状态：反复低分" in html
+    assert "低分：2次" in html
+    assert "状态=反复低分" not in html
 
 
 def test_daily_receipt_renders_missing_practice_ratio_as_unrecorded(tmp_path) -> None:

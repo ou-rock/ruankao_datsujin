@@ -2328,3 +2328,33 @@ state, not decorative text.
 
 - `python3 -m pytest tests/test_daily_receipt.py -q`
 - Tests assert the receipt shows `评分：4` and no longer renders `评分=4`.
+
+## 2026-06-30 Round 076 - Humanize Receipt Diagnostic Metadata
+
+### Learner Friction
+
+Memory diagnostic entries still packed status, type, low-grade count, recent
+grade, and average grade into one pipe-delimited line. That made weak-card
+diagnostics harder to scan, exactly where the learner needs clarity.
+
+### Change
+
+- Reused the daily receipt `meta-row` chip style.
+- Changed memory diagnostic metadata into separate chips:
+  - status
+  - card type
+  - low-grade review count
+  - most recent grade
+  - average grade
+- Kept diagnostic JSON unchanged.
+
+### UX Rule Captured
+
+Weakness diagnosis should be visually decomposed. The learner should be able to
+spot "反复低分" and the low-grade count without parsing punctuation.
+
+### Validation
+
+- `python3 -m pytest tests/test_daily_receipt.py -q`
+- Tests assert repeated-low-grade diagnostics show `状态：反复低分` and no longer
+  show `状态=反复低分`.
