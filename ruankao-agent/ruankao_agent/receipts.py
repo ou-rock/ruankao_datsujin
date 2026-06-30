@@ -211,7 +211,7 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
         {_metric("阶段", payload["phase"])}
         {_metric("倒计时", payload["countdown"])}
         {_metric("风险", payload["risk"])}
-        {_metric("Schema", payload["schema_version"])}
+        {_metric("数据版本", payload["schema_version"])}
         {_metric("复习积压", f'{float(payload["review_backlog_ratio"]):.0%}')}
         {_metric("到期卡片", metrics["due_cards"])}
         {_metric("Cheko 到期", metrics["cheko_due_cards"])}

@@ -72,7 +72,8 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
 
     html = result.html_path.read_text(encoding="utf-8")
     assert "日结回执 2026-06-29" in html
-    assert "Schema" in html
+    assert "数据版本" in html
+    assert "Schema" not in html
     assert "Cheko 到期" in html
     assert "质量属性场景" in html
     assert "错题归因完成" in html

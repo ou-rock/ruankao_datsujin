@@ -2191,3 +2191,27 @@ small structured UI elements when the learner is scanning status metadata.
 - `python3 -m pytest tests/test_route_map.py -q`
 - Tests assert the new localized footer labels render and the old `=` metadata
   format no longer appears.
+
+## 2026-06-30 Round 071 - Localize Daily Receipt Version Label
+
+### Learner Friction
+
+The daily receipt showed a metric labeled `Schema`. The value is useful for
+tooling, but the visible report is read by the learner at the end of the day,
+where `Schema` feels like implementation vocabulary.
+
+### Change
+
+- Kept the JSON `schema_version` field unchanged.
+- Changed the HTML metric label from `Schema` to `数据版本`.
+
+### UX Rule Captured
+
+Machine contract names belong in JSON. Report labels should explain the same
+fact in learner language.
+
+### Validation
+
+- `python3 -m pytest tests/test_daily_receipt.py -q`
+- Tests assert the daily receipt shows `数据版本` and no longer shows `Schema` in
+  the HTML report.
