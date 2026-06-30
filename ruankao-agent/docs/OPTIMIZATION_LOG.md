@@ -3562,3 +3562,49 @@ and inner services, but it must not handle HTTP, compose HTML, or bypass
 - Verified the redirected page showed `练习记录 #1 已保存。`, the case front
   turned green, and the temporary SQLite database contained the submitted
   record: `case 动作层拆分案例验证 9.0/10.0`.
+
+## 2026-06-30 Round 117 - Split Workbench Bootstrap And File Boundaries
+
+### Learner Friction
+
+After the action split, `web_app.py` still mixed runtime page composition with
+startup initialization and safe file lookup for learning pages, reports, and
+exports. That made it too easy for future UI work to accidentally change
+path-traversal behavior or bootstrapping side effects.
+
+### Change
+
+- Added `ruankao_agent/web_bootstrap.py` for root creation, SQLite
+  initialization, Vault initialization, default principle seeding, learning
+  resources, and first dashboard write.
+- Added `ruankao_agent/web_files.py` for dashboard/learning/report/export file
+  reads and safe child-path checks.
+- Kept all public `WorkbenchApp` methods and web routes stable.
+- Added focused `tests/test_web_files.py` coverage for initialization-before-read,
+  parent-directory escape rejection, and missing-file errors.
+- Updated the architecture boundary contract so both modules are documented L5
+  adapters.
+
+### Architecture Rule Captured
+
+`web_bootstrap.py` owns workbench startup side effects, while `web_files.py`
+owns path safety and text reads. Neither module may handle HTTP routing or
+compose the workbench home page.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_files.py tests/test_architecture_boundaries.py tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+
+### BrowserAct Evidence
+
+- Started a temporary workbench root at `http://127.0.0.1:8882/`.
+- Verified the home page bootstrapped dashboard, Vault, and learning resources.
+- Opened `/learning/` through browser-act and confirmed the learning desk HTML
+  was served from the new file boundary.
+- Generated a daily receipt from the page, then opened
+  `/reports/daily/2026-06-30.html`.
+- Generated a local state export from the page, then opened
+  `/exports/state-2026-06-30.json`.
+- Opened `/api/status` and confirmed the status payload still reports the
+  temporary root, Vault, learning path, countdown, and risk.

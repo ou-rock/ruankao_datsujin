@@ -10,7 +10,6 @@ from .dashboard import render_dashboard
 from .domain import CardType
 from .evolution import night_evolution_html_path
 from .export_state import state_export_path
-from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
 from .memory import diagnose_memory
 from .rag import (
@@ -22,10 +21,6 @@ from .rag import (
 from .receipts import daily_receipt_html_path
 from .route_map import route_map_html_path
 from .storage import RuankaoStore
-from .vault import (
-    initialize_vault,
-    write_principle_note,
-)
 from .web_actions import (
     WorkbenchActionContext,
     add_memory_card as add_memory_card_action,
@@ -42,6 +37,17 @@ from .web_actions import (
     write_rag_brief_action,
     write_route_map_action,
     write_state_export_action,
+)
+from .web_bootstrap import WorkbenchBootstrapContext, initialize_workbench
+from .web_files import (
+    WorkbenchFileContext,
+    render_dashboard_page as render_dashboard_page_file,
+    render_export_file as render_export_file_content,
+    render_learning_file as render_learning_file_content,
+    render_report_file as render_report_file_content,
+    safe_export_file,
+    safe_learning_file,
+    safe_report_file,
 )
 from .web_forms import (
     FormData,
@@ -104,27 +110,17 @@ class WorkbenchApp:
         return self.config.as_of or date.today()
 
     def initialize(self) -> None:
-        self.root.mkdir(parents=True, exist_ok=True)
-        self.store().initialize()
-        initialize_vault(self.vault_path)
-        self._ensure_seed_principle()
-        ensure_learning_resources(self.root)
-        self.write_dashboard()
+        initialize_workbench(
+            WorkbenchBootstrapContext(
+                root=self.root,
+                vault_path=self.vault_path,
+                store=self.store,
+                write_dashboard=self.write_dashboard,
+            )
+        )
 
     def store(self) -> RuankaoStore:
         return RuankaoStore(self.db_path)
-
-    def _ensure_seed_principle(self) -> None:
-        note = self.vault_path / "10-memory-war-room" / "principles" / "场景先于方案.md"
-        if note.exists():
-            return
-        write_principle_note(
-            self.vault_path,
-            title="场景先于方案",
-            core_statement="先确认业务目标、边界和约束，再谈技术方案。",
-            applies_when="任何架构设计、案例题、论文题。",
-            conflicts=("技术先行",),
-        )
 
     def snapshot(self):
         store = self.store()
@@ -149,6 +145,15 @@ class WorkbenchApp:
             today=self.today,
             store=self.store,
             write_dashboard=self.write_dashboard,
+        )
+
+    def _file_context(self) -> WorkbenchFileContext:
+        return WorkbenchFileContext(
+            root=self.root,
+            learning_path=self.learning_path,
+            reports_path=self.reports_path,
+            exports_path=self.exports_path,
+            initialize=self.initialize,
         )
 
     def add_raw_record(self, form: FormData) -> int:
@@ -1124,48 +1129,25 @@ class WorkbenchApp:
 """
 
     def render_dashboard_page(self) -> str:
-        self.initialize()
-        return (self.root / "dashboard.html").read_text(encoding="utf-8")
+        return render_dashboard_page_file(self._file_context())
 
     def render_learning_file(self, relative: str = "index.html") -> str:
-        self.initialize()
-        target = self._safe_learning_file(relative)
-        return target.read_text(encoding="utf-8")
+        return render_learning_file_content(self._file_context(), relative)
 
     def render_report_file(self, relative: str) -> str:
-        target = self._safe_report_file(relative)
-        return target.read_text(encoding="utf-8")
+        return render_report_file_content(self._file_context(), relative)
 
     def render_export_file(self, relative: str) -> str:
-        target = self._safe_export_file(relative)
-        return target.read_text(encoding="utf-8")
+        return render_export_file_content(self._file_context(), relative)
 
     def _safe_learning_file(self, relative: str) -> Path:
-        learning_root = self.learning_path.resolve()
-        target = (learning_root / relative).resolve()
-        if learning_root not in target.parents and target != learning_root:
-            raise PermissionError(relative)
-        if not target.exists() or not target.is_file():
-            raise FileNotFoundError(relative)
-        return target
+        return safe_learning_file(self._file_context(), relative)
 
     def _safe_report_file(self, relative: str) -> Path:
-        reports_root = self.reports_path.resolve()
-        target = (reports_root / relative).resolve()
-        if reports_root not in target.parents and target != reports_root:
-            raise PermissionError(relative)
-        if not target.exists() or not target.is_file():
-            raise FileNotFoundError(relative)
-        return target
+        return safe_report_file(self._file_context(), relative)
 
     def _safe_export_file(self, relative: str) -> Path:
-        exports_root = self.exports_path.resolve()
-        target = (exports_root / relative).resolve()
-        if exports_root not in target.parents and target != exports_root:
-            raise PermissionError(relative)
-        if not target.exists() or not target.is_file():
-            raise FileNotFoundError(relative)
-        return target
+        return safe_export_file(self._file_context(), relative)
 
     def render_status_json(self) -> str:
         snapshot = self.snapshot()

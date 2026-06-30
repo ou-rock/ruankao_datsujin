@@ -7,7 +7,16 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_ROOT = REPO_ROOT / "ruankao_agent"
 DOCS_ROOT = REPO_ROOT / "docs"
-ENTRY_ADAPTERS = {"cli", "web", "web_actions", "web_app", "web_forms", "web_handlers"}
+ENTRY_ADAPTERS = {
+    "cli",
+    "web",
+    "web_actions",
+    "web_app",
+    "web_bootstrap",
+    "web_files",
+    "web_forms",
+    "web_handlers",
+}
 
 
 EXPECTED_INTERNAL_DEPS = {
@@ -63,18 +72,20 @@ EXPECTED_INTERNAL_DEPS = {
         "domain",
         "evolution",
         "export_state",
-        "learning",
         "loop",
         "memory",
         "rag",
         "receipts",
         "route_map",
         "storage",
-        "vault",
         "web_actions",
+        "web_bootstrap",
+        "web_files",
         "web_forms",
         "web_render",
     },
+    "web_bootstrap": {"learning", "storage", "vault"},
+    "web_files": set(),
     "web_forms": {"domain"},
     "web_handlers": {"web_forms"},
     "web_render": {"domain", "memory", "storage"},
@@ -88,7 +99,14 @@ def test_internal_dependency_graph_matches_architecture_contract() -> None:
 def test_inner_modules_do_not_depend_on_entry_adapters() -> None:
     graph = _internal_dependency_graph()
     for module, deps in graph.items():
-        if module in {"cli", "web", "web_actions", "web_app", "web_handlers"}:
+        if module in {
+            "cli",
+            "web",
+            "web_actions",
+            "web_app",
+            "web_bootstrap",
+            "web_handlers",
+        }:
             continue
         assert not (deps & ENTRY_ADAPTERS)
 
