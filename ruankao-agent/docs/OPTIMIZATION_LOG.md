@@ -1993,3 +1993,31 @@ A button that changes study state deserves a one-line reason, not a memory test.
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert the workbench exposes `今日产物生成` and the new purpose hints while
   preserving all original form actions.
+
+## 2026-06-30 Round 064 - Add Practice Capture Rule
+
+### Learner Friction
+
+The practice form had good fields, but it did not state the minimum standard for
+a useful record. A learner could submit a thin entry and later wonder why the
+three-front radar, review loop, or night evolution had weak evidence.
+
+### Change
+
+- Added a compact note at the top of the practice form.
+- The note says each practice record should preserve:
+  - exam front
+  - score or completion amount
+  - mistake cause
+  - next repair action
+- Reused the existing workbench visual language with a small `.form-note` style.
+
+### UX Rule Captured
+
+Input forms should teach the shape of good data. The system should improve
+record quality before storage, not merely complain after analysis.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert the practice form includes the new capture rule.

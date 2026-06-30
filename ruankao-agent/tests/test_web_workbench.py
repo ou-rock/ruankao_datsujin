@@ -45,6 +45,7 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert "收束完成、缺口和明日最低动作" in html
     assert "检查选择、案例、论文是否失衡" in html
     assert "练习记录" in html
+    assert "记录一次练习至少留下题型、得分或完成量、错因，以及下一步补救动作" in html
     assert "三源录入" in html
     assert "记忆卡" in html
     assert "原则网络" in html

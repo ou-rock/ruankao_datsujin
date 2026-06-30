@@ -553,6 +553,15 @@ class WorkbenchApp:
       color: var(--muted);
       font-weight: 600;
     }}
+    .form-note {{
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--band);
+      color: var(--muted);
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.45;
+    }}
     input, textarea, select {{
       width: 100%;
       border: 1px solid var(--line);
@@ -868,6 +877,7 @@ class WorkbenchApp:
         <h2>练习记录</h2>
         <div class="split">
           <form method="post" action="/practice">
+            <div class="form-note">记录一次练习至少留下题型、得分或完成量、错因，以及下一步补救动作；这样三题型雷达和夜间进化才有材料可用。</div>
             <div class="grid">
               <div class="field">
                 <div class="field-label">题型</div>
