@@ -5,8 +5,7 @@ ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PORT="${RUANKAO_WORKBENCH_PORT:-8765}"
 
 print "软考达人工作台"
-print "地址：http://127.0.0.1:$PORT"
-print "按 Ctrl-C 停止。"
+print "正在从 127.0.0.1:$PORT 启动；如果端口占用，会自动改用下一个可用端口。"
 
 cd "$ROOT_DIR/ruankao-agent"
 

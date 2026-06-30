@@ -25,7 +25,7 @@
 ./start-workbench.command
 ```
 
-如果 8765 端口被占用，可以临时指定端口：
+如果 8765 端口被占用，启动脚本会自动改用下一个可用端口；也可以临时指定起始端口：
 
 ```sh
 RUANKAO_WORKBENCH_PORT=8770 ./start-workbench.command

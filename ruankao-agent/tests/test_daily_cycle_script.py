@@ -42,7 +42,7 @@ def test_start_workbench_script_announces_local_url() -> None:
     text = script.read_text(encoding="utf-8")
 
     assert "软考达人工作台" in text
-    assert "地址：http://127.0.0.1:$PORT" in text
-    assert "按 Ctrl-C 停止。" in text
+    assert "正在从 127.0.0.1:$PORT 启动" in text
+    assert "自动改用下一个可用端口" in text
     assert 'PORT="${RUANKAO_WORKBENCH_PORT:-8765}"' in text
     assert '--port "$PORT"' in text

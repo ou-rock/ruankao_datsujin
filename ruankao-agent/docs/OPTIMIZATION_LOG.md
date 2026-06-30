@@ -3309,3 +3309,31 @@ show chunk references and score components, it is too opaque to govern memory.
 
 - RAG tests assert chunking, FTS/BM25 retrieval strategy, chunk references, and
   score breakdown.
+
+## 2026-06-30 Round 110 - Auto Fallback Workbench Port
+
+### Learner Friction
+
+The workbench launcher printed `http://127.0.0.1:8765` before the server actually
+bound the port. If another Python workbench was already listening, startup ended
+with `OSError: [Errno 48] Address already in use`, leaving the learner with a
+dead URL and a stack trace.
+
+### Change
+
+- Made the workbench server try the requested port and then the next available
+  local ports.
+- Changed `start-workbench.command` so it no longer prints a guessed URL before
+  bind succeeds.
+- Updated README to say the launcher auto-falls back when 8765 is occupied.
+
+### UX Evidence
+
+- With an existing Python process listening on `127.0.0.1:8765`, running
+  `./start-workbench.command` started the workbench on `127.0.0.1:8766` and
+  printed the real URL.
+
+### Validation
+
+- Workbench tests cover fallback binding when the requested port is busy.
+- `python3 -m pytest -q`

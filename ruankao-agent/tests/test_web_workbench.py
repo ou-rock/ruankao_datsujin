@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from datetime import date
+from http.server import BaseHTTPRequestHandler
+import socket
 from urllib.parse import parse_qs
 
 from ruankao_agent.domain import CardType, ExamFront, SourceIdentity
@@ -8,6 +10,7 @@ from ruankao_agent.storage import RuankaoStore
 from ruankao_agent.web import (
     WorkbenchApp,
     WorkbenchConfig,
+    _bind_workbench_server,
     _export_relative_path,
     _learning_relative_path,
     _report_relative_path,
@@ -94,6 +97,24 @@ def test_workbench_launch_message_is_localized() -> None:
 
     assert text == "软考达人工作台已启动：http://127.0.0.1:8765/\n按 Ctrl-C 停止。"
     assert "Ruankao workbench" not in text
+
+
+def test_workbench_server_falls_back_when_default_port_is_busy() -> None:
+    class QuietHandler(BaseHTTPRequestHandler):
+        def log_message(self, format: str, *args: object) -> None:
+            return
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as occupied:
+        occupied.bind(("127.0.0.1", 0))
+        occupied.listen(1)
+        busy_port = occupied.getsockname()[1]
+
+        server = _bind_workbench_server("127.0.0.1", busy_port, QuietHandler)
+        try:
+            assert server.server_port != busy_port
+            assert server.server_port > busy_port
+        finally:
+            server.server_close()
 
 
 def test_workbench_messages_translate_common_action_slugs(tmp_path) -> None:

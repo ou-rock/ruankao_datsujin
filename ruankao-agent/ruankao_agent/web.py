@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import errno
 import webbrowser
 from dataclasses import dataclass
 from datetime import date
@@ -1254,12 +1255,35 @@ def serve_workbench(
     app = WorkbenchApp(WorkbenchConfig(root=root, as_of=as_of))
     app.initialize()
     handler_cls = _handler_for(app)
-    server = ThreadingHTTPServer((host, port), handler_cls)
+    server = _bind_workbench_server(host, port, handler_cls)
     url = f"http://{host}:{server.server_port}/"
     print(_workbench_launch_message(url), flush=True)
     if open_browser:
         webbrowser.open(url)
     server.serve_forever()
+
+
+def _bind_workbench_server(
+    host: str,
+    port: int,
+    handler_cls,
+    *,
+    attempts: int = 20,
+) -> ThreadingHTTPServer:
+    if port == 0:
+        return ThreadingHTTPServer((host, port), handler_cls)
+    last_error: OSError | None = None
+    stop = min(65536, port + max(1, attempts))
+    for candidate in range(port, stop):
+        try:
+            return ThreadingHTTPServer((host, candidate), handler_cls)
+        except OSError as exc:
+            if exc.errno != errno.EADDRINUSE:
+                raise
+            last_error = exc
+    if last_error is not None:
+        raise last_error
+    raise OSError(f"Cannot bind workbench server from port {port}")
 
 
 def _workbench_launch_message(url: str) -> str:
