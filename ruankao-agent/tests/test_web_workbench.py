@@ -186,6 +186,9 @@ def test_practice_numeric_fields_have_browser_constraints(tmp_path) -> None:
     assert 'type="number" name="score" min="0" step="0.5"' in html
     assert 'type="number" name="max_score" min="1" step="0.5"' in html
     assert 'type="number" name="duration_minutes" min="1" step="1"' in html
+    assert 'type="number" name="source_record_id" min="1" step="1"' in html
+    assert 'type="number" name="from_card_id" min="1" step="1"' in html
+    assert 'type="number" name="to_card_id" min="1" step="1"' in html
 
 
 def test_raw_record_source_uses_segmented_radio_control(tmp_path) -> None:

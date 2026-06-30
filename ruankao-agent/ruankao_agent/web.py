@@ -946,7 +946,7 @@ class WorkbenchApp:
               <textarea name="answer" required></textarea>
             </label>
             <label>关联原始材料 ID
-              <input name="source_record_id" inputmode="numeric">
+              <input type="number" name="source_record_id" min="1" step="1" inputmode="numeric">
             </label>
             <label>冲突原则，每行一个。仅原则卡使用
               <input name="conflicts" placeholder="技术先行">
@@ -967,10 +967,10 @@ class WorkbenchApp:
           <form method="post" action="/relations">
             <div class="grid">
               <label>From 原则 ID
-                <input name="from_card_id" inputmode="numeric" required>
+                <input type="number" name="from_card_id" min="1" step="1" inputmode="numeric" required>
               </label>
               <label>To 原则 ID
-                <input name="to_card_id" inputmode="numeric" required>
+                <input type="number" name="to_card_id" min="1" step="1" inputmode="numeric" required>
               </label>
             </div>
             <div class="field">

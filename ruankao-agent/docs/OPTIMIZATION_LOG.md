@@ -1717,3 +1717,30 @@ language.
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert the principle relation field renders as segmented radios with
   stable values and no longer renders the relation select.
+
+## 2026-06-30 Round 055 - Numeric Constraints For ID Inputs
+
+### Learner Friction
+
+Several ID fields used `inputmode="numeric"` but not `type="number"` or browser
+range constraints. That meant source-record IDs and principle relation IDs could
+accept text, zero, or fractional values until the backend rejected them.
+
+### Change
+
+- Added `type="number" min="1" step="1"` to:
+  - memory-card source record ID;
+  - principle relation From ID;
+  - principle relation To ID.
+- Kept backend parsing and stored values unchanged.
+
+### UX Rule Captured
+
+Forms should reject impossible values as early as the browser can. Small input
+constraints reduce failed submissions and make advanced graph operations feel
+less brittle.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert ID inputs now expose browser numeric constraints.
