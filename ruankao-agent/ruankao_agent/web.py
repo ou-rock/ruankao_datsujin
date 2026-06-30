@@ -22,6 +22,7 @@ from .memory import MemoryDiagnostic, diagnose_memory
 from .receipts import daily_receipt_html_path, write_daily_receipt
 from .route_map import route_map_html_path, write_route_map
 from .storage import MemoryCard, PracticeSession, RuankaoStore
+from .study import capture_study_turn as capture_learning_turn
 from .vault import (
     initialize_vault,
     sync_memory_cards_to_vault,
@@ -173,6 +174,20 @@ class WorkbenchApp:
             mistakes=_one(form, "mistakes"),
             created_on=_optional_date(_one(form, "created_on")) or self.today,
         )
+
+    def capture_study_turn(self, form: Mapping[str, list[str]]):
+        result = capture_learning_turn(
+            self.root,
+            topic=_one(form, "topic"),
+            user_text=_one(form, "user_text"),
+            assistant_text=_one(form, "assistant_text"),
+            fronts=_fronts(form),
+            learner_position=_one(form, "learner_position"),
+            codex_position=_one(form, "codex_position"),
+            destination=_one(form, "destination"),
+        )
+        self.write_dashboard()
+        return result
 
     def record_review(self, form: Mapping[str, list[str]]) -> None:
         store = self.store()
@@ -826,6 +841,7 @@ class WorkbenchApp:
       <a href="#today">今日闭环</a>
       <a href="#cheko">学习信号</a>
       <a href="#practice">练习记录</a>
+      <a href="#study-turn">学习回合</a>
       <a href="#capture">三源录入</a>
       <a href="#cards">记忆卡</a>
       <a href="#principles">原则网络</a>
@@ -954,6 +970,35 @@ class WorkbenchApp:
             {_practice_list(practice_sessions[-8:])}
           </div>
         </div>
+      </section>
+
+      <section id="study-turn">
+        <h2>学习回合</h2>
+        <form method="post" action="/study-turn">
+          <div class="form-note">把一次苏格拉底式问答沉淀为一条 Mein 和一条 Du；外部证据仍走 Uns，原则链接交给夜间进化挖掘。</div>
+          <label>主题
+            <input name="topic" required placeholder="高可用场景 / ATAM / 缓存一致性">
+          </label>
+          <div class="grid">
+            <label>我在哪
+              <input name="learner_position" placeholder="知道概念名，但不会写可评分场景">
+            </label>
+            <label>你在哪
+              <input name="codex_position" placeholder="ruankao-teach 追问者 / 案例教练">
+            </label>
+            <label>我们要去哪
+              <input name="destination" placeholder="能写出刺激、响应和响应度量">
+            </label>
+          </div>
+          <label>Mein：我的原话 / 我的答案
+            <textarea name="user_text" required placeholder="先保留粗糙答案，不急着美化"></textarea>
+          </label>
+          <label>Du：Codex 的整理 / 纠偏 / 追问
+            <textarea name="assistant_text" required placeholder="复述卡点、补结构，并只留下一个下一步追问"></textarea>
+          </label>
+          {_front_checks()}
+          <button type="submit">记录学习回合</button>
+        </form>
       </section>
 
       <section id="capture">
@@ -1234,6 +1279,13 @@ def _handler_for(app: WorkbenchApp):
                     session_id = app.add_practice_session(form)
                     self._redirect(f"/?message=practice-session-{session_id}-saved")
                     return
+                if self.path == "/study-turn":
+                    result = app.capture_study_turn(form)
+                    self._redirect(
+                        f"/?message=study-turn-mein-{result.mein_record_id}"
+                        f"-du-{result.du_record_id}-saved"
+                    )
+                    return
                 if self.path == "/reviews":
                     app.record_review(form)
                     self._redirect("/?message=review-saved")
@@ -1419,6 +1471,10 @@ def _message_text(message: str) -> str:
     if message.startswith("practice-session-") and message.endswith("-saved"):
         session_id = message.removeprefix("practice-session-").removesuffix("-saved")
         return f"练习记录 #{session_id} 已保存。"
+    if message.startswith("study-turn-mein-") and message.endswith("-saved"):
+        rest = message.removeprefix("study-turn-mein-").removesuffix("-saved")
+        mein_id, _, du_id = rest.partition("-du-")
+        return f"学习回合已沉淀：Mein #{mein_id}，Du #{du_id}。"
     if message.startswith("cheko-cards-created-"):
         rest = message.removeprefix("cheko-cards-created-")
         created, _, skipped = rest.partition("-skipped-")

@@ -47,6 +47,9 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert "检查选择、案例、论文是否失衡" in html
     assert "练习记录" in html
     assert "记录一次练习至少留下题型、得分或完成量、错因，以及下一步补救动作" in html
+    assert "学习回合" in html
+    assert "把一次苏格拉底式问答沉淀为一条 Mein 和一条 Du" in html
+    assert 'action="/study-turn"' in html
     assert "三源录入" in html
     assert "记忆卡" in html
     assert "一张合格记忆卡要能触发回忆、能自评、能映射到选择/案例/论文" in html
@@ -58,6 +61,7 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert 'action="/state/export"' in html
     assert 'action="/cheko/cards"' in html
     assert 'action="/practice"' in html
+    assert 'action="/study-turn"' in html
     assert 'action="/vault/sync"' in html
     assert 'action="/vault/sync-raw"' in html
     assert 'action="/records"' in html
@@ -89,6 +93,7 @@ def test_workbench_messages_translate_common_action_slugs(tmp_path) -> None:
         "raw-record-3-saved": "三源材料 #3 已沉淀。",
         "memory-card-5-saved": "记忆卡 #5 已创建。",
         "practice-session-7-saved": "练习记录 #7 已保存。",
+        "study-turn-mein-8-du-9-saved": "学习回合已沉淀：Mein #8，Du #9。",
         "cheko-cards-created-4-skipped-1": "Cheko 弱点已入队：新增 4 张，跳过 1 张。",
         "daily-receipt-2026-06-29-written": "2026-06-29 日结回执已生成。",
         "night-evolution-2026-06-29-actions-3-staged": "2026-06-29 夜间进化草案已生成，包含 3 个动作。",
@@ -327,6 +332,36 @@ def test_workbench_forms_write_practice_session(tmp_path) -> None:
     assert "耗时：35分钟" in html
     assert "得分率=53%" not in html
     assert "耗时=35分钟" not in html
+
+
+def test_workbench_can_capture_study_turn_as_mein_and_du(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+
+    result = app.capture_study_turn(
+        parse_qs(
+            "topic=ATAM&user_text=ATAM 是评估架构风险"
+            "&assistant_text=补充风险点、非风险点、敏感点和权衡点"
+            "&learner_position=知道名称但分类不稳"
+            "&codex_position=ruankao-teach 追问者"
+            "&destination=能区分四类评估点"
+            "&fronts=choice&fronts=case"
+        )
+    )
+
+    store = RuankaoStore(root / "data" / "ruankao.db")
+    store.initialize()
+    records = store.list_raw_records()
+
+    assert result.mein_record_id == 1
+    assert result.du_record_id == 2
+    assert [record.source for record in records] == [SourceIdentity.MEIN, SourceIdentity.DU]
+    assert records[0].summary == "学习模式 Mein：ATAM"
+    assert records[1].summary == "学习模式 Du：ATAM"
+    assert records[0].fronts == (ExamFront.CHOICE, ExamFront.CASE)
+    assert "我在哪: 知道名称但分类不稳" in records[0].text
+    assert "你在哪: ruankao-teach 追问者" in records[1].text
+    assert "我们要去哪: 能区分四类评估点" in records[1].text
 
 
 def test_workbench_lists_render_missing_values_as_unrecorded(tmp_path) -> None:

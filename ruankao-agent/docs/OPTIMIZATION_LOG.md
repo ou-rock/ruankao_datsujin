@@ -2810,3 +2810,33 @@ focus, and the night evolution plan should make that focus actionable.
   low-grade memory.
 - Night evolution tests assert the focus is carried into the staged plan and
   shown in HTML.
+
+## 2026-06-30 Round 093 - Add Workbench Study Turn Capture
+
+### Learner Friction
+
+The live study mode could record a Socratic turn through the CLI, but the
+workbench still forced the learner to split a conversation into separate raw
+records manually. That kept the most companion-like workflow outside the main
+daily surface.
+
+### Change
+
+- Added a `学习回合` section to the workbench.
+- Added fields for topic, `我在哪`, `你在哪`, `我们要去哪`, Mein text, Du text,
+  and exam fronts.
+- Wired the form to the existing study-turn capture path, so one submit writes
+  both a Mein raw record and a Du raw record.
+- Added a translated success message: `学习回合已沉淀：Mein #N，Du #M。`
+- Added the section to workbench navigation.
+
+### UX Rule Captured
+
+The companion loop should be first-class in the browser workbench. If a study
+conversation is the unit of growth, the UI should capture that unit directly.
+
+### Validation
+
+- Workbench tests assert the new section and action are visible.
+- Tests assert a submitted study turn creates both Mein and Du records with
+  positioning context and题型 mapping.
