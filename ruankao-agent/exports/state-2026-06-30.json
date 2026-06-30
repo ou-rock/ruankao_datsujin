@@ -1,0 +1,553 @@
+{
+  "version": 1,
+  "as_of": "2026-06-30",
+  "schema_version": "5",
+  "metrics": {
+    "raw_records": 16,
+    "memory_cards": 11,
+    "review_logs": 0,
+    "practice_sessions": 0,
+    "principle_relations": 6
+  },
+  "source_counts": {
+    "du": 7,
+    "mein": 3,
+    "uns": 6
+  },
+  "front_counts": {
+    "case": 10,
+    "choice": 10,
+    "essay": 8
+  },
+  "card_type_counts": {
+    "expression": 1,
+    "principle": 7,
+    "scenario": 3
+  },
+  "promotion_status_counts": {
+    "extracted": 9,
+    "promoted": 4,
+    "raw": 3
+  },
+  "raw_records": [
+    {
+      "id": 1,
+      "source": "uns",
+      "text": "captured_on: 2026-06-29\nanswered: 634\nwrong: 194\naccuracy: 69.4%\nestimated_score: 43.75\nessay: 2013-2026 论文真题最近得分均为 0 / 4\nweak_areas:\n- 系统架构设计: 164 题；先做质量属性、架构风格、ATAM 三块错因归类。\n- 软件工程: 82 题；把开发方法、测试、维护、质量管理做成对比卡。\n- 系统分析与设计: 65 题；用 DFD、ERD、UML 填空题训练上下文推理。\n- 数据库系统: 34 题；补读写分离、分库分表、事务一致性和恢复策略。\n- 企业信息化战略: 32 题；只做错题回炉，沉淀术语和场景表达。\n- 计算机网络: 25 题；补协议、网络安全和性能相关概念边界。\n- 操作系统: 25 题；补进程、存储、调度和可靠性基础。",
+      "summary": "Cheko 同步：总答题 634，错题 194，正确率 69.4%，预估分 43.75。",
+      "topics": [
+        "cheko",
+        "错题池",
+        "学习信号"
+      ],
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "promotion_status": "extracted",
+      "created_on": "2026-06-29"
+    },
+    {
+      "id": 2,
+      "source": "uns",
+      "text": "captured_on: 2026-06-29\nanswered: 634\nwrong: 194\naccuracy: 69.4%\nestimated_score: 43.75\nessay: 2013-2026 论文真题最近得分均为 0 / 4\nweak_areas:\n- 系统架构设计: 164 题；先做质量属性、架构风格、ATAM 三块错因归类。\n- 软件工程: 82 题；把开发方法、测试、维护、质量管理做成对比卡。\n- 系统分析与设计: 65 题；用 DFD、ERD、UML 填空题训练上下文推理。\n- 数据库系统: 34 题；补读写分离、分库分表、事务一致性和恢复策略。\n- 企业信息化战略: 32 题；只做错题回炉，沉淀术语和场景表达。\n- 计算机网络: 25 题；补协议、网络安全和性能相关概念边界。\n- 操作系统: 25 题；补进程、存储、调度和可靠性基础。",
+      "summary": "Cheko 同步：总答题 634，错题 194，正确率 69.4%，预估分 43.75。",
+      "topics": [
+        "cheko",
+        "错题池",
+        "学习信号"
+      ],
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "promotion_status": "extracted",
+      "created_on": "2026-06-29"
+    },
+    {
+      "id": 3,
+      "source": "uns",
+      "text": "captured_on: 2026-06-29\nanswered: 634\nwrong: 194\naccuracy: 69.4%\nestimated_score: 43.75\nessay: 2013-2026 论文真题最近得分均为 0 / 4\nweak_areas:\n- 系统架构设计: 164 题；先做质量属性、架构风格、ATAM 三块错因归类。\n- 软件工程: 82 题；把开发方法、测试、维护、质量管理做成对比卡。\n- 系统分析与设计: 65 题；用 DFD、ERD、UML 填空题训练上下文推理。\n- 数据库系统: 34 题；补读写分离、分库分表、事务一致性和恢复策略。\n- 企业信息化战略: 32 题；只做错题回炉，沉淀术语和场景表达。\n- 计算机网络: 25 题；补协议、网络安全和性能相关概念边界。\n- 操作系统: 25 题；补进程、存储、调度和可靠性基础。",
+      "summary": "Cheko 同步：总答题 634，错题 194，正确率 69.4%，预估分 43.75。",
+      "topics": [
+        "cheko",
+        "错题池",
+        "学习信号"
+      ],
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "promotion_status": "extracted",
+      "created_on": "2026-06-29"
+    },
+    {
+      "id": 4,
+      "source": "du",
+      "text": "- 场景先于方案: 先确认业务目标、参与者、边界、约束和质量属性场景，再选择技术方案。\n- 质量属性可度量: 将模糊诉求拆为刺激、环境、响应和响应度量，例如恢复时间、吞吐量或变更成本。\n- 取舍必须显式: 每个决策都改善某些属性，也牺牲复杂度、成本、性能、安全或演进空间，必须说清楚。\n- 边界与职责先行: 系统边界、模块职责、数据归属和接口契约决定协作方式，先于内部优化。\n- 简单可演进优先: 当风险、规模或约束不足以证明复杂度时，选择简单方案，并保留未来演进路径。\n- 风险驱动验证: 先验证最危险假设，用测试、指标、原型、评审或故障演练证明方案能工作。\n- 证据闭环沉淀: 把决策、错因、练习结果和外部证据沉淀为 Mein/Du/Uns、记忆卡或原则链接。",
+      "summary": "architect-thinking Core Seven 原则内核",
+      "topics": [
+        "architect-thinking",
+        "原则内核",
+        "架构能力"
+      ],
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "promotion_status": "promoted",
+      "created_on": "2026-06-29"
+    },
+    {
+      "id": 5,
+      "source": "uns",
+      "text": "captured_on: 2026-06-29\nanswered: 634\nwrong: 194\naccuracy: 69.4%\nestimated_score: 43.75\nessay: 2013-2026 论文真题最近得分均为 0 / 4\nweak_areas:\n- 系统架构设计: 164 题；先做质量属性、架构风格、ATAM 三块错因归类。\n- 软件工程: 82 题；把开发方法、测试、维护、质量管理做成对比卡。\n- 系统分析与设计: 65 题；用 DFD、ERD、UML 填空题训练上下文推理。\n- 数据库系统: 34 题；补读写分离、分库分表、事务一致性和恢复策略。\n- 企业信息化战略: 32 题；只做错题回炉，沉淀术语和场景表达。\n- 计算机网络: 25 题；补协议、网络安全和性能相关概念边界。\n- 操作系统: 25 题；补进程、存储、调度和可靠性基础。",
+      "summary": "Cheko 同步：总答题 634，错题 194，正确率 69.4%，预估分 43.75。",
+      "topics": [
+        "cheko",
+        "错题池",
+        "学习信号"
+      ],
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "promotion_status": "extracted",
+      "created_on": "2026-06-29"
+    },
+    {
+      "id": 6,
+      "source": "du",
+      "text": "- 场景先于方案: 先确认业务目标、参与者、边界、约束和质量属性场景，再选择技术方案。\n- 质量属性可度量: 将模糊诉求拆为刺激、环境、响应和响应度量，例如恢复时间、吞吐量或变更成本。\n- 取舍必须显式: 每个决策都改善某些属性，也牺牲复杂度、成本、性能、安全或演进空间，必须说清楚。\n- 边界与职责先行: 系统边界、模块职责、数据归属和接口契约决定协作方式，先于内部优化。\n- 简单可演进优先: 当风险、规模或约束不足以证明复杂度时，选择简单方案，并保留未来演进路径。\n- 风险驱动验证: 先验证最危险假设，用测试、指标、原型、评审或故障演练证明方案能工作。\n- 证据闭环沉淀: 把决策、错因、练习结果和外部证据沉淀为 Mein/Du/Uns、记忆卡或原则链接。",
+      "summary": "architect-thinking Core Seven 原则内核",
+      "topics": [
+        "architect-thinking",
+        "原则内核",
+        "架构能力"
+      ],
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "promotion_status": "promoted",
+      "created_on": "2026-06-29"
+    },
+    {
+      "id": 7,
+      "source": "uns",
+      "text": "captured_on: 2026-06-29\nanswered: 634\nwrong: 194\naccuracy: 69.4%\nestimated_score: 43.75\nessay: 2013-2026 论文真题最近得分均为 0 / 4\nweak_areas:\n- 系统架构设计: 164 题；先做质量属性、架构风格、ATAM 三块错因归类。\n- 软件工程: 82 题；把开发方法、测试、维护、质量管理做成对比卡。\n- 系统分析与设计: 65 题；用 DFD、ERD、UML 填空题训练上下文推理。\n- 数据库系统: 34 题；补读写分离、分库分表、事务一致性和恢复策略。\n- 企业信息化战略: 32 题；只做错题回炉，沉淀术语和场景表达。\n- 计算机网络: 25 题；补协议、网络安全和性能相关概念边界。\n- 操作系统: 25 题；补进程、存储、调度和可靠性基础。",
+      "summary": "Cheko 同步：总答题 634，错题 194，正确率 69.4%，预估分 43.75。",
+      "topics": [
+        "cheko",
+        "错题池",
+        "学习信号"
+      ],
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "promotion_status": "extracted",
+      "created_on": "2026-06-29"
+    },
+    {
+      "id": 8,
+      "source": "du",
+      "text": "- 场景先于方案: 先确认业务目标、参与者、边界、约束和质量属性场景，再选择技术方案。\n- 质量属性可度量: 将模糊诉求拆为刺激、环境、响应和响应度量，例如恢复时间、吞吐量或变更成本。\n- 取舍必须显式: 每个决策都改善某些属性，也牺牲复杂度、成本、性能、安全或演进空间，必须说清楚。\n- 边界与职责先行: 系统边界、模块职责、数据归属和接口契约决定协作方式，先于内部优化。\n- 简单可演进优先: 当风险、规模或约束不足以证明复杂度时，选择简单方案，并保留未来演进路径。\n- 风险驱动验证: 先验证最危险假设，用测试、指标、原型、评审或故障演练证明方案能工作。\n- 证据闭环沉淀: 把决策、错因、练习结果和外部证据沉淀为 Mein/Du/Uns、记忆卡或原则链接。",
+      "summary": "architect-thinking Core Seven 原则内核",
+      "topics": [
+        "architect-thinking",
+        "原则内核",
+        "架构能力"
+      ],
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "promotion_status": "promoted",
+      "created_on": "2026-06-29"
+    },
+    {
+      "id": 9,
+      "source": "mein",
+      "text": "学习定位:\n- 我在哪: 能列出架构手段，但还没有形成可验证质量属性场景\n- 你在哪: ruankao-teach + 案例教练\n- 我们要去哪: 把高可用需求改写成可评分的质量属性场景\n\n1. 高并发 2. 高容错 3. 多模态 4. 重试机制 5. 备用机制",
+      "summary": "学习模式 Mein：质量属性场景",
+      "topics": [
+        "学习模式",
+        "质量属性场景"
+      ],
+      "fronts": [
+        "case",
+        "essay"
+      ],
+      "promotion_status": "raw",
+      "created_on": "2026-06-30"
+    },
+    {
+      "id": 10,
+      "source": "du",
+      "text": "学习定位:\n- 我在哪: 能列出架构手段，但还没有形成可验证质量属性场景\n- 你在哪: ruankao-teach + 案例教练\n- 我们要去哪: 把高可用需求改写成可评分的质量属性场景\n\nMein：你现在抓到的是一组解决方向：高并发、高容错、重试、备用机制。你的直觉在说系统要扛住压力、失败后能继续服务。但你还没有把它改写成质量属性场景，还停在技术手段或属性名列表。多模态这一项暂时和下单失败场景关系不强，除非题干明确涉及语音、图像、文本等多入口交互。\n\nDu：案例题里更能得分的写法要从“手段”退回“场景”。可以按六要素想：刺激源是谁，刺激是什么，环境是什么，制品是什么，响应是什么，响应度量是什么。比如：大促期间，用户在峰值并发下提交订单时，订单服务应在部分实例故障或支付接口短暂超时的情况下，通过限流、重试、降级和备用链路保证核心下单流程可用，并在 3 秒内返回明确结果，订单提交成功率不低于 99.9%。这里高并发、高容错、重试、备用机制都变成了服务于场景的手段。\n\n追问：只改一件事，请你把“3 秒内返回明确结果”和“99.9% 成功率”这两个度量，换成你认为更合理的一组度量。",
+      "summary": "学习模式 Du：质量属性场景",
+      "topics": [
+        "学习模式",
+        "质量属性场景"
+      ],
+      "fronts": [
+        "case",
+        "essay"
+      ],
+      "promotion_status": "extracted",
+      "created_on": "2026-06-30"
+    },
+    {
+      "id": 11,
+      "source": "mein",
+      "text": "学习定位:\n- 我在哪: 已经能提出响应时间、并发量和成功率，但业务口径与负载窗口还不清晰\n- 你在哪: ruankao-teach + 案例教练\n- 我们要去哪: 把质量属性场景从可度量推进到题干可评分\n\n1s 内查询到进程状态 2s 内反馈执行结果 3s 内返回明确结果，10万同时下单，成果率不低于 99.9%",
+      "summary": "学习模式 Mein：质量属性场景",
+      "topics": [
+        "学习模式",
+        "质量属性场景"
+      ],
+      "fronts": [
+        "case",
+        "essay"
+      ],
+      "promotion_status": "raw",
+      "created_on": "2026-06-30"
+    },
+    {
+      "id": 12,
+      "source": "du",
+      "text": "学习定位:\n- 我在哪: 已经能提出响应时间、并发量和成功率，但业务口径与负载窗口还不清晰\n- 你在哪: ruankao-teach + 案例教练\n- 我们要去哪: 把质量属性场景从可度量推进到题干可评分\n\nMein：你已经从“高并发、高容错、重试、备用机制”的手段清单，推进到了可验证指标。你给出了分层响应时间：1s 查到状态，2s 反馈执行结果，3s 返回明确结果；也给出了负载条件：10 万同时下单；还给出了成功率目标：不低于 99.9%。这一步非常关键，因为案例题最怕只写“要高可用”，没有响应度量。\n\nDu：现在需要再精炼两个点。第一，“进程状态”偏系统内部视角，题目如果是电商下单，最好写成“订单受理状态”或“订单处理状态”，这样更贴业务。第二，“10 万同时下单”还要补环境边界：是大促峰值、同一时间窗口内，还是每分钟/每秒请求量。一个更稳的版本是：在大促峰值期间，当 10 万用户在 1 分钟内同时提交订单时，系统应在 1 秒内返回订单受理状态，2 秒内反馈库存锁定或失败原因，3 秒内给出下单成功/失败的明确结果，核心下单请求成功率不低于 99.9%。注意把“成果率”改成“成功率”。\n\n追问：只补一个边界。你这里的“10 万同时下单”，你想表达的是 10 万用户在 1 分钟内提交，还是系统每秒承受 10 万次下单请求？",
+      "summary": "学习模式 Du：质量属性场景",
+      "topics": [
+        "学习模式",
+        "质量属性场景"
+      ],
+      "fronts": [
+        "case",
+        "essay"
+      ],
+      "promotion_status": "extracted",
+      "created_on": "2026-06-30"
+    },
+    {
+      "id": 13,
+      "source": "mein",
+      "text": "1s 内查询到进程状态 2s 内反馈执行结果 3s 内返回明确结果，10万同时下单，成果率不低于 99.9%",
+      "summary": "学习模式 Mein：高并发质量属性场景",
+      "topics": [
+        "学习模式",
+        "高并发质量属性场景"
+      ],
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "promotion_status": "raw",
+      "created_on": "2026-06-30"
+    },
+    {
+      "id": 14,
+      "source": "du",
+      "text": "Mein：你已经把“高并发”从口号推进到了可度量的质量属性场景：10万同时下单，1s 能查到处理状态，2s 内反馈执行结果，3s 内返回明确结果，并要求 99.9% 的结果质量。你真正抓住的是“并发压力必须落到时间、吞吐、结果可确认性”上。\n\nDu：在软考案例题里，这句话要再严谨一步：把 99.9% 定义成“系统成功处理并给出明确成功/失败结果的比例”，而不是简单写成“下单成功率”。因为库存有限、风控拦截、支付失败都会让业务下单失败，但这不等于系统失败。可按质量属性场景写成：刺激源=10万用户峰值同时下单；刺激=提交下单并查询状态；环境=促销高峰；制品=订单服务、库存服务、消息队列、缓存、数据库；响应=受理请求、幂等处理、返回成功/失败/排队状态；响应度量=1s 查询到处理状态，2s 内返回受理或执行反馈，3s 内给出明确结果，系统处理成功率不低于 99.9%。选择题对应性能、可用性、可靠性；案例题对应质量属性场景和架构策略；论文题可展开异步削峰、幂等、重试、熔断、补偿、限流与监控。\n\n追问：这里的“成果率 99.9%”，你更想定义成“订单创建成功率”，还是“系统给出明确成功/失败结果的处理成功率”？为什么？",
+      "summary": "学习模式 Du：高并发质量属性场景",
+      "topics": [
+        "学习模式",
+        "高并发质量属性场景"
+      ],
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "promotion_status": "extracted",
+      "created_on": "2026-06-30"
+    },
+    {
+      "id": 15,
+      "source": "uns",
+      "text": "captured_on: 2026-06-29\nanswered: 634\nwrong: 194\naccuracy: 69.4%\nestimated_score: 43.75\nessay: 2013-2026 论文真题最近得分均为 0 / 4\nweak_areas:\n- 系统架构设计: 164 题；先做质量属性、架构风格、ATAM 三块错因归类。\n- 软件工程: 82 题；把开发方法、测试、维护、质量管理做成对比卡。\n- 系统分析与设计: 65 题；用 DFD、ERD、UML 填空题训练上下文推理。\n- 数据库系统: 34 题；补读写分离、分库分表、事务一致性和恢复策略。\n- 企业信息化战略: 32 题；只做错题回炉，沉淀术语和场景表达。\n- 计算机网络: 25 题；补协议、网络安全和性能相关概念边界。\n- 操作系统: 25 题；补进程、存储、调度和可靠性基础。",
+      "summary": "Cheko 同步：总答题 634，错题 194，正确率 69.4%，预估分 43.75。",
+      "topics": [
+        "cheko",
+        "错题池",
+        "学习信号"
+      ],
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "promotion_status": "extracted",
+      "created_on": "2026-06-30"
+    },
+    {
+      "id": 16,
+      "source": "du",
+      "text": "- 场景先于方案: 先确认业务目标、参与者、边界、约束和质量属性场景，再选择技术方案。\n- 质量属性可度量: 将模糊诉求拆为刺激、环境、响应和响应度量，例如恢复时间、吞吐量或变更成本。\n- 取舍必须显式: 每个决策都改善某些属性，也牺牲复杂度、成本、性能、安全或演进空间，必须说清楚。\n- 边界与职责先行: 系统边界、模块职责、数据归属和接口契约决定协作方式，先于内部优化。\n- 简单可演进优先: 当风险、规模或约束不足以证明复杂度时，选择简单方案，并保留未来演进路径。\n- 风险驱动验证: 先验证最危险假设，用测试、指标、原型、评审或故障演练证明方案能工作。\n- 证据闭环沉淀: 把决策、错因、练习结果和外部证据沉淀为 Mein/Du/Uns、记忆卡或原则链接。",
+      "summary": "architect-thinking 核心七原则内核",
+      "topics": [
+        "architect-thinking",
+        "原则内核",
+        "架构能力"
+      ],
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "promotion_status": "promoted",
+      "created_on": "2026-06-30"
+    }
+  ],
+  "memory_cards": [
+    {
+      "id": 1,
+      "card_type": "scenario",
+      "title": "Cheko错题池：系统架构设计",
+      "prompt": "系统架构设计 错题池 164 题，今天如何回炉？",
+      "answer": "先做质量属性、架构风格、ATAM 三块错因归类。 完成后至少沉淀 2 张概念卡和 1 张错因卡。",
+      "source_record_id": 1,
+      "fronts": [
+        "choice",
+        "case"
+      ],
+      "review_count": 0,
+      "retrieval_strength": 1.0,
+      "storage_strength": 1.0,
+      "next_due": "2026-06-29",
+      "last_reviewed_on": null
+    },
+    {
+      "id": 2,
+      "card_type": "scenario",
+      "title": "Cheko错题池：软件工程",
+      "prompt": "软件工程 错题池 82 题，今天如何回炉？",
+      "answer": "把开发方法、测试、维护、质量管理做成对比卡。 完成后至少沉淀 2 张概念卡和 1 张错因卡。",
+      "source_record_id": 1,
+      "fronts": [
+        "choice",
+        "case"
+      ],
+      "review_count": 0,
+      "retrieval_strength": 1.0,
+      "storage_strength": 1.0,
+      "next_due": "2026-06-29",
+      "last_reviewed_on": null
+    },
+    {
+      "id": 3,
+      "card_type": "scenario",
+      "title": "Cheko错题池：系统分析与设计",
+      "prompt": "系统分析与设计 错题池 65 题，今天如何回炉？",
+      "answer": "用 DFD、ERD、UML 填空题训练上下文推理。 完成后至少沉淀 2 张概念卡和 1 张错因卡。",
+      "source_record_id": 1,
+      "fronts": [
+        "choice",
+        "case"
+      ],
+      "review_count": 0,
+      "retrieval_strength": 1.0,
+      "storage_strength": 1.0,
+      "next_due": "2026-06-29",
+      "last_reviewed_on": null
+    },
+    {
+      "id": 4,
+      "card_type": "expression",
+      "title": "Cheko论文最低触达",
+      "prompt": "论文真题最近得分为 0 / 4 时，今天最低产出是什么？",
+      "answer": "写 300 字以内摘要 + 1 段项目背景，并沉淀为表达卡；不要只看范文。",
+      "source_record_id": 1,
+      "fronts": [
+        "essay"
+      ],
+      "review_count": 0,
+      "retrieval_strength": 1.0,
+      "storage_strength": 1.0,
+      "next_due": "2026-06-29",
+      "last_reviewed_on": null
+    },
+    {
+      "id": 5,
+      "card_type": "principle",
+      "title": "场景先于方案",
+      "prompt": "做架构设计前，为什么不能先报技术方案？",
+      "answer": "先确认业务目标、参与者、边界、约束和质量属性场景，再选择技术方案。",
+      "source_record_id": 4,
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "review_count": 0,
+      "retrieval_strength": 1.0,
+      "storage_strength": 1.0,
+      "next_due": "2026-06-29",
+      "last_reviewed_on": null
+    },
+    {
+      "id": 6,
+      "card_type": "principle",
+      "title": "质量属性可度量",
+      "prompt": "如何把非功能需求变成架构可验证目标？",
+      "answer": "将模糊诉求拆为刺激、环境、响应和响应度量，例如恢复时间、吞吐量或变更成本。",
+      "source_record_id": 4,
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "review_count": 0,
+      "retrieval_strength": 1.0,
+      "storage_strength": 1.0,
+      "next_due": "2026-06-29",
+      "last_reviewed_on": null
+    },
+    {
+      "id": 7,
+      "card_type": "principle",
+      "title": "取舍必须显式",
+      "prompt": "为什么架构答案必须写取舍？",
+      "answer": "每个决策都改善某些属性，也牺牲复杂度、成本、性能、安全或演进空间，必须说清楚。",
+      "source_record_id": 4,
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "review_count": 0,
+      "retrieval_strength": 1.0,
+      "storage_strength": 1.0,
+      "next_due": "2026-06-29",
+      "last_reviewed_on": null
+    },
+    {
+      "id": 8,
+      "card_type": "principle",
+      "title": "边界与职责先行",
+      "prompt": "为什么先划边界和职责？",
+      "answer": "系统边界、模块职责、数据归属和接口契约决定协作方式，先于内部优化。",
+      "source_record_id": 4,
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "review_count": 0,
+      "retrieval_strength": 1.0,
+      "storage_strength": 1.0,
+      "next_due": "2026-06-29",
+      "last_reviewed_on": null
+    },
+    {
+      "id": 9,
+      "card_type": "principle",
+      "title": "简单可演进优先",
+      "prompt": "什么时候应该拒绝复杂方案？",
+      "answer": "当风险、规模或约束不足以证明复杂度时，选择简单方案，并保留未来演进路径。",
+      "source_record_id": 4,
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "review_count": 0,
+      "retrieval_strength": 1.0,
+      "storage_strength": 1.0,
+      "next_due": "2026-06-29",
+      "last_reviewed_on": null
+    },
+    {
+      "id": 10,
+      "card_type": "principle",
+      "title": "风险驱动验证",
+      "prompt": "架构验证应该先验证什么？",
+      "answer": "先验证最危险假设，用测试、指标、原型、评审或故障演练证明方案能工作。",
+      "source_record_id": 4,
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "review_count": 0,
+      "retrieval_strength": 1.0,
+      "storage_strength": 1.0,
+      "next_due": "2026-06-29",
+      "last_reviewed_on": null
+    },
+    {
+      "id": 11,
+      "card_type": "principle",
+      "title": "证据闭环沉淀",
+      "prompt": "学习和设计经验如何进入系统？",
+      "answer": "把决策、错因、练习结果和外部证据沉淀为 Mein/Du/Uns、记忆卡或原则链接。",
+      "source_record_id": 4,
+      "fronts": [
+        "choice",
+        "case",
+        "essay"
+      ],
+      "review_count": 0,
+      "retrieval_strength": 1.0,
+      "storage_strength": 1.0,
+      "next_due": "2026-06-29",
+      "last_reviewed_on": null
+    }
+  ],
+  "review_logs": [],
+  "practice_sessions": [],
+  "principle_relations": [
+    {
+      "id": 1,
+      "from_card_id": 5,
+      "to_card_id": 6,
+      "relation": "supports",
+      "rationale": "场景清楚后，质量属性才能被具体度量。"
+    },
+    {
+      "id": 2,
+      "from_card_id": 6,
+      "to_card_id": 10,
+      "relation": "supports",
+      "rationale": "可度量目标决定验证指标和优先级。"
+    },
+    {
+      "id": 3,
+      "from_card_id": 7,
+      "to_card_id": 9,
+      "relation": "constrains",
+      "rationale": "简单方案也必须说明牺牲与边界，不能以简单掩盖取舍。"
+    },
+    {
+      "id": 4,
+      "from_card_id": 8,
+      "to_card_id": 9,
+      "relation": "supports",
+      "rationale": "边界清楚会降低不必要复杂度，并保留演进空间。"
+    },
+    {
+      "id": 5,
+      "from_card_id": 10,
+      "to_card_id": 11,
+      "relation": "supports",
+      "rationale": "验证结果必须沉淀为证据、错因、卡片或原则更新。"
+    },
+    {
+      "id": 6,
+      "from_card_id": 11,
+      "to_card_id": 7,
+      "relation": "supports",
+      "rationale": "沉淀的练习和证据会反过来校准取舍判断。"
+    }
+  ]
+}

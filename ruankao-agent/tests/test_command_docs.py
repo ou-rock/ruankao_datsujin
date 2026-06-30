@@ -24,6 +24,7 @@ def test_daily_command_docs_hide_internal_stage_labels() -> None:
     rag_query = (COMMAND_ROOT / "ruankao-rag-query.md").read_text(encoding="utf-8")
     semantic_ingest = (COMMAND_ROOT / "ruankao-semantic-ingest.md").read_text(encoding="utf-8")
     sync_sentinel = (COMMAND_ROOT / "ruankao-sync-sentinel.md").read_text(encoding="utf-8")
+    import_state = (COMMAND_ROOT / "ruankao-import-state.md").read_text(encoding="utf-8")
 
     assert "仅暂存的夜间进化草案" in daily_cycle
     assert "RAG 记忆与进步控制简报" in daily_cycle
@@ -48,6 +49,10 @@ def test_daily_command_docs_hide_internal_stage_labels() -> None:
     assert "realtime" in sync_sentinel
     assert "模拟 Discord JSONL" in sync_sentinel
     assert "零 stdout" in sync_sentinel
+    assert "import-state" in import_state
+    assert "data/backups/ruankao.db.bak.[1-7]" in import_state
+    assert "5 秒" in import_state
+    assert "不修改 SQLite schema" in import_state
     assert "stage-only" not in daily_cycle
     assert "stage-only" not in night_evolve
     assert "staged plan" not in night_evolve

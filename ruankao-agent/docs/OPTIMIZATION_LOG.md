@@ -5190,3 +5190,47 @@ Telegram endpoints, execute daily-cycle scripts, or mutate SQLite schema.
     one JSONL alert containing `灾备响应度量`, `练习得分低于 60%`, and
     `本周缺席 2 个以上题型`.
   - A second realtime sentinel run did not duplicate the alert.
+
+## 2026-06-30 Round 151 - Add Dual-Track Disaster Recovery
+
+### Learner Friction
+
+The Hermes migration prompt requires SQLite to remain the only fact source
+while also surviving accidental deletion or corruption. The project already
+had JSON `export-state`, but SQLite writes did not create rolling binary
+backups, and there was no `import-state` command to rebuild a deleted live DB
+from a tracked JSON snapshot.
+
+### Change
+
+- Added write-before rolling binary backups in `RuankaoStore`.
+- Added `data/backups/ruankao.db.bak.[1-7]` weekday suffix mapping with
+  `date.today().isoweekday()`.
+- Added `ruankao_agent/import_state.py`.
+- Added `python3 -m ruankao_agent.cli import-state --file <JSON_PATH>`.
+- `import-state` infers root from `exports/state-YYYY-MM-DD.json`, builds a
+  temporary SQLite database using the existing schema, reloads raw records,
+  memory cards, review logs, practice sessions, and principle relations, then
+  atomically replaces the live DB.
+- Changed `.gitignore` so only `ruankao-agent/exports/state-*.json` is visible
+  to Git for line-diff audit; other generated export files remain ignored.
+- Added `.codex/commands/ruankao-import-state.md`.
+- Updated the Hermes migration spec and architecture boundary map.
+
+### Architecture Rule Captured
+
+`storage.py` remains the only schema and repository boundary. It may create
+physical rolling backups before writes, but must not render UI or read
+Obsidian. `import_state.py` belongs to the persistence layer: it may consume an
+`export-state` JSON snapshot and rebuild SQLite with the current schema, but it
+must not modify schema, infer learning rules, or become a second fact source.
+
+### Validation
+
+- `python3 -m pytest tests/test_disaster_recovery.py -q`
+- AC-4 local evidence:
+  - After two memory-card writes, the weekday backup file contained the first
+    card and not the second, proving backup occurs before the write.
+  - After deleting `data/ruankao.db`, `import-state --file exports/state-2026-06-30.json`
+    rebuilt SQLite in under 5 seconds and restored raw records, cards, reviews,
+    practice sessions, and principle relations to match the JSON checklist.

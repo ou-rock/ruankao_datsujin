@@ -38,12 +38,15 @@
 *   **物理容灾重要性**：本地 SQLite 数据库 `ruankao.db` 是系统唯一的真理源。必须在中端配备高强度的自动防灾与容灾（Disaster Recovery）机制，防御由于硬件突然断电或大模型逻辑错误引发的数据损坏。
 *   **物理防灾双轨方案 (Dual-Track Backup Contract - B+C)**：
     1.  **第一轨：轻量物理滚动备份（Rolling Binary Backups - C）**：
+        *   **当前本地入口（已落地）**：`RuankaoStore` 在 SQLite 写事务前自动复制当前 `data/ruankao.db` 到 `data/backups/ruankao.db.bak.[1-7]`，后缀使用 `date.today().isoweekday()`。
         *   运行任何 SQLite 写入事务前，中端 Inbound 驱动由 Python 自动将当前 `ruankao.db` 二进制副本备份至本地 `data/backups/ruankao.db.bak.[1-7]` 下。
         *   备份采用 7 天循环滚动淘汰策略（以当前星期几作为后缀映射），保留最新 7天内的完整二进制镜像。
     2.  **第二轨：可审计纯文本状态快照（Versioned Text JSON Snapshots - B）**：
+        *   **当前本地入口（已落地）**：`.gitignore` 只放开 `ruankao-agent/exports/state-*.json`，用于 Git 行级审计；其他导出文件仍默认忽略。
         *   每日闭环最后一步必须强制调用 `export-state` 模块，将当前的卡片、练习记录、Mein/Du/Uns 元数据全量导出为具名格式化纯文本文件：`exports/state-YYYY-MM-DD.json`。
         *   此 JSON 文件应受 Git 版本库持续跟踪，方便在 Git 终端进行代码修改与数据演进的行级差分审计（Line diff audit）。
 *   **崩溃重建与一键导入（Recovery Command）**：
+    *   **当前本地入口（已落地）**：`python3 -m ruankao_agent.cli import-state --file <JSON_PATH>` 会从 `exports/state-YYYY-MM-DD.json` 推断 root，重建 `data/ruankao.db`。重建过程使用临时 SQLite 文件并在完成后替换 live DB，不修改 schema。
     *   中端必须内置容灾指令契约：在 SQLite 数据库物理性缺失或毁坏时，通过一键呼叫 `python3 -m ruankao_agent.cli import-state --file <JSON_PATH>` 解析 Git 历史中的任意文本快照，在 5秒内原地重新构建出状态完全一致的全新 SQLite 物理库。
 
 ### 需求二：Webhook 接收端与静默同步引擎 (Sync Pipeline)

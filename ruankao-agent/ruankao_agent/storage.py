@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import sqlite3
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -24,6 +25,22 @@ def _dump_enum_values(values: Sequence[object]) -> str:
 
 def _load_enum_values(payload: str, enum_cls):
     return tuple(enum_cls(item) for item in json.loads(payload))
+
+
+def rolling_backup_path(db_path: str | Path, on_date: date | None = None) -> Path:
+    path = Path(db_path)
+    day = on_date or date.today()
+    return path.parent / "backups" / f"{path.name}.bak.{day.isoweekday()}"
+
+
+def copy_rolling_backup(db_path: str | Path, on_date: date | None = None) -> Path | None:
+    path = Path(db_path)
+    if not path.exists() or not path.is_file() or path.stat().st_size == 0:
+        return None
+    backup_path = rolling_backup_path(path, on_date=on_date)
+    backup_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(path, backup_path)
+    return backup_path
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,6 +116,7 @@ class RuankaoStore:
         self._conn.execute("PRAGMA foreign_keys = ON")
 
     def initialize(self) -> None:
+        self._backup_before_write()
         self._conn.executescript(
             """
             CREATE TABLE IF NOT EXISTS raw_records (
@@ -181,6 +199,13 @@ class RuankaoStore:
         self._set_schema_meta("schema_version", SCHEMA_VERSION)
         self._conn.commit()
 
+    def close(self) -> None:
+        self._conn.close()
+
+    def _backup_before_write(self) -> None:
+        self._conn.commit()
+        copy_rolling_backup(self.path)
+
     def _ensure_column(self, table: str, column: str, definition: str) -> None:
         existing = {
             row["name"]
@@ -214,6 +239,7 @@ class RuankaoStore:
         fronts: Sequence[ExamFront] = (),
         promotion_status: str = "raw",
     ) -> int:
+        self._backup_before_write()
         cur = self._conn.execute(
             """
             INSERT INTO raw_records (
@@ -265,6 +291,7 @@ class RuankaoStore:
         fronts: Sequence[ExamFront] = (),
         next_due: date | None = None,
     ) -> int:
+        self._backup_before_write()
         cur = self._conn.execute(
             """
             INSERT INTO memory_cards (
@@ -337,6 +364,7 @@ class RuankaoStore:
         relation: PrincipleRelationType,
         rationale: str,
     ) -> int:
+        self._backup_before_write()
         cur = self._conn.execute(
             """
             INSERT INTO principle_relations (from_card_id, to_card_id, relation, rationale)
@@ -382,6 +410,7 @@ class RuankaoStore:
 
         next_due = reviewed_on + timedelta(days=interval_days)
 
+        self._backup_before_write()
         self._conn.execute(
             """
             UPDATE memory_cards
@@ -462,6 +491,7 @@ class RuankaoStore:
         mistakes: str = "",
         created_on: date | None = None,
     ) -> int:
+        self._backup_before_write()
         cur = self._conn.execute(
             """
             INSERT INTO practice_sessions (

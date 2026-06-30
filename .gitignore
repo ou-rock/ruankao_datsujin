@@ -24,7 +24,9 @@ ruankao-agent/vault/
 ruankao-agent/reports/
 ruankao-agent/evolution/staged/
 ruankao-agent/logs/
-ruankao-agent/exports/
+ruankao-agent/exports/*
+!ruankao-agent/exports/
+!ruankao-agent/exports/state-*.json
 ruankao-agent/dashboard.html
 .codex/environments/
 

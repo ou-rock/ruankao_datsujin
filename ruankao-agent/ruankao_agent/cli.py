@@ -12,6 +12,7 @@ from .dashboard import render_dashboard
 from .domain import ExamFront
 from .evolution import write_night_evolution_plan
 from .export_state import write_state_export
+from .import_state import import_state_snapshot
 from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
 from .notebooklm import DEFAULT_NOTEBOOK_SOURCE
@@ -400,6 +401,26 @@ def cmd_export_state(root: Path, *, as_of: date | None = None) -> int:
     return 0
 
 
+def cmd_import_state(snapshot_path: Path, *, root: Path | None = None) -> int:
+    result = import_state_snapshot(snapshot_path, root=root)
+    print(
+        f"状态快照已导入：{result.db_path}"
+        f"（材料 {result.raw_records}，卡片 {result.memory_cards}，"
+        f"复习 {result.review_logs}，练习 {result.practice_sessions}，"
+        f"关系 {result.principle_relations}）。"
+    )
+    print(
+        f"db={result.db_path} "
+        f"json={result.json_path} "
+        f"raw={result.raw_records} "
+        f"cards={result.memory_cards} "
+        f"reviews={result.review_logs} "
+        f"practice={result.practice_sessions} "
+        f"relations={result.principle_relations}"
+    )
+    return 0
+
+
 def cmd_study_turn(
     root: Path,
     *,
@@ -525,6 +546,10 @@ def build_parser() -> argparse.ArgumentParser:
     export_parser.add_argument("--root", required=True, type=Path)
     export_parser.add_argument("--as-of")
 
+    import_parser = subparsers.add_parser("import-state")
+    import_parser.add_argument("--file", required=True, type=Path, dest="snapshot_path")
+    import_parser.add_argument("--root", type=Path)
+
     study_parser = subparsers.add_parser("study-turn")
     study_parser.add_argument("--root", required=True, type=Path)
     study_parser.add_argument("--topic", required=True)
@@ -597,6 +622,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_seed_principles(args.root, next_due=_parse_date(args.next_due))
     if args.command == "export-state":
         return cmd_export_state(args.root, as_of=_parse_date(args.as_of))
+    if args.command == "import-state":
+        return cmd_import_state(args.snapshot_path, root=args.root)
     if args.command == "study-turn":
         return cmd_study_turn(
             args.root,
