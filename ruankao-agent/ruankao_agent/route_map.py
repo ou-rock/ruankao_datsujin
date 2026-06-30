@@ -176,6 +176,20 @@ def render_route_map(payload: dict[str, object]) -> str:
       font-size: 12px;
       margin-top: 8px;
     }}
+    .route-foot {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }}
+    .route-foot span {{
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      padding: 5px 8px;
+      font-size: 12px;
+    }}
   </style>
 </head>
 <body>
@@ -289,7 +303,10 @@ def _route_cards(routes: list[object]) -> str:
     {_metric("今日练习", route["practice_today"])}
     {_metric("均分率", _ratio_text(route["average_score_ratio"]))}
   </div>
-  <div class="meta">最近练习={escape(_value_text(route["last_practice_on"]))} | 焦点={escape(focus)}</div>
+  <div class="route-foot">
+    <span>最近练习：{escape(_value_text(route["last_practice_on"]))}</span>
+    <span>焦点：{escape(focus)}</span>
+  </div>
 </section>"""
         )
     return "".join(items)

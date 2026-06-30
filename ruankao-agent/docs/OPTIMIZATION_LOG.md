@@ -2164,3 +2164,30 @@ to understand a note's role without opening YAML.
 - `python3 -m pytest tests/test_vault_and_dashboard.py -q`
 - Tests assert raw-record notes include readable source, topic, and exam-front
   context in the Markdown body.
+
+## 2026-06-30 Round 070 - Humanize Route Map Footer
+
+### Learner Friction
+
+The three-front route map still rendered route metadata as
+`最近练习=... | 焦点=...`. It was technically understandable, but it read like a
+debug string inside a learner-facing report.
+
+### Change
+
+- Replaced the pipe-delimited route metadata line with two footer chips:
+  - `最近练习：...`
+  - `焦点：...`
+- Added `.route-foot` styling for compact, scannable metadata.
+- Kept the JSON payload and route analysis unchanged.
+
+### UX Rule Captured
+
+Reports should not expose debug-string punctuation in their visible layer. Use
+small structured UI elements when the learner is scanning status metadata.
+
+### Validation
+
+- `python3 -m pytest tests/test_route_map.py -q`
+- Tests assert the new localized footer labels render and the old `=` metadata
+  format no longer appears.
