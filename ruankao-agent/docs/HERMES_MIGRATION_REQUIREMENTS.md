@@ -102,9 +102,12 @@
     1.  **触发阶段**：当用户在任一前端（Obsidian 保存、Webhook 事件或 Discord 回话）输入散装笔记或人话时，Harness 中的 Python 自行捕获。
     2.  **调用规整模型**：中端调用低成本、高并发的大模型（如 Gemini Flash），加载专用 Skill `ruankao-semantic-parser`。
     3.  **JSON 契约化输出**：小模型依据规范 Schema 枚举，将散装字段映射为 JSON 字符串并返回给 Python 中间件。
-*   **物理层双重栅栏校验（Checklist Gate）**：
-    1.  **第一层：认知校验**。如果输出非规范 JSON，硬性拦回重算。
-    2.  **第二层：物理类型校验**。Python 本地强类型解析（Enum 映射匹配和 Float 等强限制），拦截不合规的脏数据，保障事实数据绝对纯净。
+*   **物理层双重栅栏校验（Harness Checklist Gate）**：
+    1.  **第一层：认知拦截**。大模型若输出非规范 JSON，中间件直接拦回，重试或记录错误。
+    2.  **第二层：物理类型校验**。中端 Python 校验器运行强类型解析（使用数据模型对 JSON 字段强制反序列化，如校验 score 为浮点数、front 为合规 Enum 值）。若校验失败，直接抛错或写回本地备份，严防脏数据污染 SQLite 唯一真理源。
+    3.  **第三层：容灾降级（Heuristic Fallback）**。
+        *   若用户输入的是**日常思考或碎片化知识**：当小模型解析失败时，主控制器自动将其降级为 `SourceIdentity.MEIN` 的 `raw`（原始）材料入库。由于 `promotion_status` 仍为 `raw`，下一次触发同步时，该材料会被列入 RAG 控制简报的“三源材料未升格进步闸门”，由 RAG 作为黄色警告推送到前台。
+        *   若用户输入的是**关键打卡得分纪录（带练习意图）**：在此场景下数据缺失会导致红黄绿灯计算失真，系统立即执行“回弹拦截（Fallback Rejection）”，通过当前会话通道（如 Discord）向用户发送明确的指令纠正提示及输入模板，拒绝写入。
 
 ### 需求七：核心中脑 Payload 拼装与反馈机制 (Core Brain Payload & Response Routing)
     *   **核心中脑 Payload 生成者**：主决策大模型（Codex/推理脑）的推理 Payload **必须由中端 Harness Shell 的主编译器自包含装配（Self-contained Compilation）**。
