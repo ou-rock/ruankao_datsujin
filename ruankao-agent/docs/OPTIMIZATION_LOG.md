@@ -4064,3 +4064,56 @@ again.
   browser-act.
 - Verified HTTP 200 and rendered DOM content for `日结回执 2026-06-29`,
   `今晚焦点`, `RAG 控制`, `最近练习`, `得分：7/10`, and `D-117 · 启动诊断`.
+
+## 2026-06-30 Round 128 - Split Route Map Payload And Render Boundary
+
+### Learner Friction
+
+`route_map.py` combined three responsibilities in one file: reading local state,
+building choice/case/essay route metrics, rendering a sizable HTML report, and
+writing JSON/HTML files. That made future changes to the visual route map risky
+because they could disturb the route scoring logic.
+
+### Change
+
+- Added `ruankao_agent/route_map_payload.py` for三题型覆盖 payload
+  construction: memory cards, practice sessions, review diagnostics, status
+  decisions, focus titles, and average score ratios.
+- Added `ruankao_agent/route_map_render.py` for三题型覆盖 HTML rendering and
+  display labels only.
+- Kept `ruankao_agent/route_map.py` as the public facade and file writer:
+  report paths, JSON/HTML writes, `RouteMapResult`, and compatibility re-export
+  of `render_route_map`.
+- Reduced `route_map.py` from roughly 390 lines to roughly 40 lines.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved CLI/Web entry points, generated paths, JSON payload shape, rendered
+  text, and command output.
+
+### Architecture Rule Captured
+
+`route_map_payload.py` may depend on domain, memory, and storage to construct
+facts, but it must not render HTML or write files. `route_map_render.py` must be
+pure presentation over a payload and must not depend on internal modules.
+`route_map.py` writes JSON/HTML files but must not grow route scoring or template
+logic again.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/route_map.py ruankao_agent/route_map_payload.py ruankao_agent/route_map_render.py`
+- `python3 -m pytest tests/test_route_map.py -q`
+- `python3 -m pytest tests/test_architecture_boundaries.py tests/test_route_map.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary route-map root under `/tmp/ruankao-route-map-split`.
+- Created choice/case weak cards and one essay practice session through public
+  store APIs.
+- Generated `/reports/routes/2026-06-29.html` through the public `route-map`
+  CLI path.
+- Served the temporary workbench at `http://127.0.0.1:8898/`.
+- Opened `http://127.0.0.1:8898/reports/routes/2026-06-29.html` through
+  browser-act.
+- Verified HTTP 200 and rendered DOM content for `三题型覆盖图 2026-06-29`,
+  `今日先打`, `选择题`, `案例题`, `论文题`, `敏感点 vs 权衡点`, and `75%`.
