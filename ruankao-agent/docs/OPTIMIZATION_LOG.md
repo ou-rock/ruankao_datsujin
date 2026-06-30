@@ -4879,3 +4879,42 @@ state, render page shells, or own form sections.
   `/practice`, 9 rendered sections, `main` max width `1280px`, title
   `软考达人工作台 · D-117 · 红灯`, and screenshot
   `/tmp/ruankao-web-list-renderers-workbench.png`.
+
+## 2026-06-30 Round 144 - Split RAG Progress Gate Rules
+
+### Learner Friction
+
+`rag_progress.py` carried two related but different responsibilities:
+generating progress gates from memory, front coverage, practice scores and
+raw-material backlog, and turning the final gates or retrieval hits into a
+single next action. That made the RAG progress-control boundary look like a
+rule engine and a recommendation facade at the same time.
+
+### Change
+
+- Added `ruankao_agent/rag_progress_gates.py` for progress gate generation.
+- Kept `ruankao_agent/rag_progress.py` as the public progress-control facade
+  and recommendation selector.
+- Split gate generation into memory, front coverage, practice score, and raw
+  promotion helpers inside the new rule module.
+- Preserved the public `build_progress_gates` import path through
+  `rag_progress.py`.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved gate ordering, severity/kind values, recommended action wording,
+  RAG brief JSON/HTML payloads, retrieval strategy, and CLI/Web report behavior.
+
+### Architecture Rule Captured
+
+`rag_progress_gates.py` owns only progress gate rules. It can inspect read-only
+memory diagnostics, cards, practice sessions, raw records, and front enums, but
+it cannot choose the final recommended action, build retrieval documents,
+retrieve/rank evidence, render reports, or write files. `rag_progress.py`
+remains the thin progress-control facade and may not absorb gate rules back.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/rag_progress.py ruankao_agent/rag_progress_gates.py ruankao_agent/rag.py`
+- `python3 -m pytest tests/test_architecture_boundaries.py tests/test_rag.py -q`
+- `python3 -m pytest -q`
+- `rg -n "rag_progress_gates|rag_progress ->|rag_progress.py" docs/ARCHITECTURE_BOUNDARIES.md`
+- `git diff --check`
