@@ -1,5 +1,5 @@
 ---
-description: 生成或刷新软考达人学习台 HTML 资料。
+description: 生成或刷新软考达人学习台网页资料。
 argument-hint: [--overwrite]
 ---
 

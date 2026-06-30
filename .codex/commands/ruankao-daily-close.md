@@ -1,5 +1,5 @@
 ---
-description: 软考达人日结：Cheko 弱点入队并生成今日回执。
+description: 软考达人日结：Cheko 弱点入队，并生成今天的学习回执。
 argument-hint: [YYYY-MM-DD]
 ---
 
@@ -15,4 +15,4 @@ python3 -m ruankao_agent.cli cheko-seed-cards --root /Users/pedan/Documents/ruan
 python3 -m ruankao_agent.cli daily-receipt --root /Users/pedan/Documents/ruankao/ruankao-agent --as-of <YYYY-MM-DD>
 ```
 
-完成后报告生成的 HTML/JSON 路径，以及 Cheko 入队创建/跳过数量。
+完成后报告生成的网页回执、JSON 数据路径，以及 Cheko 入队创建/跳过数量。

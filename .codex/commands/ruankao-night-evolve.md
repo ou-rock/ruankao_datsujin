@@ -1,5 +1,5 @@
 ---
-description: 软考达人夜间进化：基于日结生成 stage-only 草案。
+description: 软考达人夜间进化：基于日结生成仅暂存草案。
 argument-hint: [YYYY-MM-DD]
 ---
 
@@ -14,4 +14,4 @@ cd /Users/pedan/Documents/ruankao/ruankao-agent
 python3 -m ruankao_agent.cli night-evolve --root /Users/pedan/Documents/ruankao/ruankao-agent --as-of <YYYY-MM-DD>
 ```
 
-该命令只生成 staged plan，不直接修改 live skill、核心原则或学习规则。
+该命令只生成暂存计划，不直接修改正在使用的 skill、核心原则或学习规则。

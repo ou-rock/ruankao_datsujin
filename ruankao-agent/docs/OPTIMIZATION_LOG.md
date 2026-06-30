@@ -2723,3 +2723,33 @@ implementation tasks.
 
 - Added a test that asserts the automation guide uses learner-facing Chinese
   wording and no longer contains the old English project intro.
+
+## 2026-06-30 Round 090 - Humanize Codex Command Entrypoints
+
+### Learner Friction
+
+Some Codex command docs still exposed internal terms at the moment of action:
+`Core Seven`, `raw record`, `memory card`, `practice session`, `stage-only`, and
+`staged plan`. Those terms are accurate for implementation, but they make the
+entrypoint feel like operating internals rather than starting a learning move.
+
+### Change
+
+- Reworded `ruankao-architect-review` around `核心七原则`.
+- Replaced storage terms with learner-facing destinations:
+  `三源材料、记忆卡、原则卡或练习记录`.
+- Clarified that principle links are only candidates during review and should
+  be mined by night evolution.
+- Reworded daily close, daily cycle, learning, and night-evolve commands to use
+  Chinese operation names such as `网页回执`, `仅暂存的夜间进化草案`, and
+  `学习台网页资料`.
+
+### UX Rule Captured
+
+Command docs are interface copy. They should describe the learner's action and
+outcome first, while implementation labels stay in code and hook contracts.
+
+### Validation
+
+- Added command-doc tests that guard the learner-facing terms and reject the old
+  internal labels in Codex command entrypoints.
