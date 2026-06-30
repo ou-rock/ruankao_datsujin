@@ -5019,3 +5019,53 @@ fragments but must remain the section composer.
   16 item rows, `RAG 控制`, `进步闸门`, `召回证据`, `错题归因完成`,
   `质量属性场景`, `评分：4`, `得分：7/10`, `耗时：18分钟`, main max width
   `1120px`, and screenshot `/tmp/ruankao-receipts-lists-report.png`.
+
+## 2026-06-30 Round 147 - Add RAG Observability Contract
+
+### Learner Friction
+
+The learner could run `rag-query` and receive an HTML/JSON report, but the
+report did not explicitly answer the operational questions: how to see the RAG
+effect, where the data lives, why SQLite FTS is the current backend, and why
+embedding/vector database/sync-index services are not the first move.
+
+### Change
+
+- Added `ruankao_agent/rag_observability.py` as a leaf module for the RAG
+  observation contract.
+- Added `observability` to the RAG JSON payload with trace, storage, and backend
+  policy sections.
+- Updated the RAG HTML report with `可观察链路` and `存储与后端边界` sections.
+- Kept SQLite as the only fact source and described the temporary FTS5 index as
+  a query-time artifact rather than a second source of truth.
+- Updated command docs, process docs, architecture dependency tests, and the
+  architecture boundary map.
+
+### Architecture Rule Captured
+
+`rag_observability.py` has no internal dependencies. It can only produce
+explanatory payload for RAG trace/storage/backend policy. It must not read
+SQLite, execute retrieval, render HTML, write files, or decide ranking.
+`rag_report.py` may include that payload when converting a `RagBrief` into
+JSON/HTML.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/rag.py ruankao_agent/rag_report.py ruankao_agent/rag_observability.py ruankao_agent/rag_report_style.py`
+- `python3 -m pytest tests/test_rag.py tests/test_architecture_boundaries.py tests/test_command_docs.py tests/test_process_docs.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Built a temporary root under `/tmp/ruankao-rag-observability`.
+- Recorded a public `study-turn` with high-concurrency response metrics.
+- Generated `reports/rag/2026-06-29.html` through public `rag-query`, producing
+  2 hits and 3 gates.
+- Served the temporary root at `http://127.0.0.1:8916/`.
+- Opened `http://127.0.0.1:8916/reports/rag/2026-06-29.html` through
+  browser-act.
+- Verified title `RAG 记忆与进步控制 2026-06-29`, sections `可观察链路`,
+  `存储与后端边界`, `进步闸门`, `召回证据`, `回答契约`, 20 item rows, 12
+  trace items, `FTS5/BM25`, `为什么暂不引入向量库`, `Mein`, main max width
+  `1120px`, and screenshot `/tmp/ruankao-rag-observability-report.png`.

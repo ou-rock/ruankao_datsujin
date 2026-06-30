@@ -47,6 +47,16 @@ RAG_REPORT_STYLE = r""":root {
       padding: 11px;
     }
     .list { display: grid; gap: 10px; }
+    .trace-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+    }
+    .trace-grid.policy { margin-top: 10px; }
+    .trace-item {
+      min-height: 98px;
+      overflow-wrap: anywhere;
+    }
     .meta-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
     .meta-row span {
       border: 1px solid var(--line);

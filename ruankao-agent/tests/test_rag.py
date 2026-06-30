@@ -94,6 +94,13 @@ def test_rag_brief_writes_json_and_html(tmp_path) -> None:
     assert payload["retrieval_strategy"] == "sqlite-fts5-hybrid-progress"
     assert payload["corpus_size"] == 1
     assert payload["chunk_count"] >= 1
+    assert payload["observability"]["storage"][0]["label"] == "SQLite 事实源"
+    assert "data/ruankao.db" in payload["observability"]["storage"][0]["detail"]
+    assert "临时索引" in payload["observability"]["storage"][3]["label"]
+    assert any(
+        "向量库" in item["label"] and "事实源分叉" in item["detail"]
+        for item in payload["observability"]["backend_policy"]
+    )
     assert payload["hits"][0]["title"] == "订单高并发质量场景"
     assert payload["hits"][0]["chunk_ref"].startswith("memory:")
     assert payload["hits"][0]["retrieval_strategy"] == "sqlite-fts5-hybrid-progress"
@@ -105,6 +112,10 @@ def test_rag_brief_writes_json_and_html(tmp_path) -> None:
     }
     assert "RAG 记忆与进步控制" in html
     assert "检索策略：sqlite-fts5-hybrid-progress" in html
+    assert "可观察链路" in html
+    assert "存储与后端边界" in html
+    assert "SQLite 事实源" in html
+    assert "为什么暂不引入向量库" in html
     assert "fts_bm25" in html
     assert "进步闸门" in html
     assert "召回证据" in html

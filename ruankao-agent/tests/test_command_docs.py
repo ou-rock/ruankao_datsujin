@@ -34,6 +34,8 @@ def test_daily_command_docs_hide_internal_stage_labels() -> None:
     assert "SQLite FTS5 临时索引" in rag_query
     assert "BM25 和进步权重混合排序" in rag_query
     assert "chunk 引用和分数分解" in rag_query
+    assert "可观察链路" in rag_query
+    assert "向量后端暂缓原因" in rag_query
     assert "stage-only" not in daily_cycle
     assert "stage-only" not in night_evolve
     assert "staged plan" not in night_evolve

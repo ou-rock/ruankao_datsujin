@@ -17,4 +17,5 @@ python3 -m ruankao_agent.cli rag-query \
 ```
 
 如果 `$ARGUMENTS` 指定主题或题型，追加到 `--query` 或 `--front`。
-输出包括召回证据、进步闸门、建议动作、回答契约、chunk 引用和分数分解。
+输出包括召回证据、进步闸门、建议动作、回答契约、chunk 引用和分数分解、
+可观察链路、SQLite 事实源位置、临时索引说明和向量后端暂缓原因。

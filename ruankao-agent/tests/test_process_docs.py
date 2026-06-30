@@ -49,6 +49,9 @@ def test_rag_design_captures_memory_progress_control() -> None:
     assert "v0 只有本地检索和进步控制，偏壳子" in text
     assert "FTS/BM25" in text
     assert "score_breakdown" in text
+    assert "可观察链路" in text
+    assert "存储与后端边界" in text
+    assert "embedding/向量库/同步索引服务" in text
     assert "不是搜索框，而是控制层" in text
     assert "进步闸门" in text
     assert "召回证据" in text

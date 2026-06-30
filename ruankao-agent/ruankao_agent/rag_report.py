@@ -4,6 +4,7 @@ from datetime import date
 from html import escape
 from pathlib import Path
 
+from .rag_observability import rag_observability_payload
 from .rag_report_style import RAG_REPORT_STYLE
 from .rag_types import RagBrief
 
@@ -16,7 +17,11 @@ def rag_brief_html_path(root: Path | str, as_of: date) -> Path:
     return Path(root) / "reports" / "rag" / f"{as_of.isoformat()}.html"
 
 
-def rag_brief_to_payload(brief: RagBrief) -> dict[str, object]:
+def rag_brief_to_payload(
+    brief: RagBrief,
+    *,
+    root: Path | str | None = None,
+) -> dict[str, object]:
     return {
         "version": 1,
         "query": brief.query,
@@ -26,6 +31,7 @@ def rag_brief_to_payload(brief: RagBrief) -> dict[str, object]:
         "chunk_count": brief.chunk_count,
         "recommended_action": brief.recommended_action,
         "answer_contract": list(brief.answer_contract),
+        "observability": rag_observability_payload(root, brief.as_of),
         "progress_gates": [
             {
                 "severity": gate.severity,
@@ -65,9 +71,11 @@ def render_rag_brief(payload: dict[str, object]) -> str:
     gates = payload.get("progress_gates", [])
     hits = payload.get("hits", [])
     contract = payload.get("answer_contract", [])
+    observability = payload.get("observability", {})
     assert isinstance(gates, list)
     assert isinstance(hits, list)
     assert isinstance(contract, list)
+    assert isinstance(observability, dict)
     return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -86,6 +94,15 @@ def render_rag_brief(payload: dict[str, object]) -> str:
       <p class="lead">检索策略：{escape(str(payload.get("retrieval_strategy", "token-hybrid-progress")))}；语料 {escape(str(payload.get("corpus_size", 0)))} 条；切块 {escape(str(payload.get("chunk_count", 0)))} 个</p>
       <p class="lead">建议动作：{escape(str(payload["recommended_action"]))}</p>
     </header>
+    <section>
+      <h2>可观察链路</h2>
+      <div class="trace-grid">{_observability_items(observability.get("trace", []))}</div>
+    </section>
+    <section>
+      <h2>存储与后端边界</h2>
+      <div class="trace-grid">{_observability_items(observability.get("storage", []))}</div>
+      <div class="trace-grid policy">{_observability_items(observability.get("backend_policy", []))}</div>
+    </section>
     <section>
       <h2>进步闸门</h2>
       <div class="list">{_gate_items(gates)}</div>
@@ -155,6 +172,22 @@ def _contract_items(contract: list[object]) -> str:
     if not contract:
         return '<div class="item">暂无回答契约。</div>'
     return "".join(f'<div class="item">{escape(str(item))}</div>' for item in contract)
+
+
+def _observability_items(items: object) -> str:
+    if not isinstance(items, list) or not items:
+        return '<div class="item">暂无可观察信息。</div>'
+    rendered = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        rendered.append(
+            f"""<div class="item trace-item">
+  <strong>{escape(str(item.get("label", "")))}</strong>
+  <div>{escape(str(item.get("detail", "")))}</div>
+</div>"""
+        )
+    return "".join(rendered) or '<div class="item">暂无可观察信息。</div>'
 
 
 def _reason_spans(reasons: object) -> str:
