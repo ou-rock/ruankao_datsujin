@@ -562,6 +562,24 @@ class WorkbenchApp:
       font-size: 13px;
       line-height: 1.45;
     }}
+    .source-guide {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+      gap: 6px;
+      margin-top: 6px;
+    }}
+    .source-guide span {{
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--muted);
+      padding: 7px 8px;
+      font-size: 12px;
+      line-height: 1.35;
+    }}
+    .source-guide strong {{
+      color: var(--accent-ink);
+    }}
     input, textarea, select {{
       width: 100%;
       border: 1px solid var(--line);
@@ -933,6 +951,11 @@ class WorkbenchApp:
                 <label><input type="radio" name="source" value="mein" checked>Mein</label>
                 <label><input type="radio" name="source" value="du">Du</label>
                 <label><input type="radio" name="source" value="uns">Uns</label>
+              </div>
+              <div class="source-guide" aria-label="三源边界">
+                <span><strong>Mein：</strong>我的原话和卡点</span>
+                <span><strong>Du：</strong>Codex 的整理和纠偏</span>
+                <span><strong>Uns：</strong>外界资料和证据</span>
               </div>
             </div>
             <div class="field">

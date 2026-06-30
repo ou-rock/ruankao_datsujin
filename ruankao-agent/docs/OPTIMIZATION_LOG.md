@@ -2021,3 +2021,33 @@ record quality before storage, not merely complain after analysis.
 
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert the practice form includes the new capture rule.
+
+## 2026-06-30 Round 065 - Explain Mein Du Uns Boundaries
+
+### Learner Friction
+
+The three-source capture form used the right vocabulary, but the boundary
+between `Mein`, `Du`, and `Uns` was only implicit. That is risky because this
+bottom layer is where raw experience, Codex synthesis, and external evidence
+must stay distinct enough to evolve together.
+
+### Change
+
+- Added a compact source guide under the three-source segmented control.
+- The guide defines:
+  - `Mein`: learner's original words and stuck points.
+  - `Du`: Codex organization, correction, and synthesis.
+  - `Uns`: outside material and evidence.
+- Styled the guide as lightweight inline chips so it teaches without becoming a
+  second manual.
+
+### UX Rule Captured
+
+Core vocabulary should be explained exactly where the learner has to choose it.
+The system should protect source identity at capture time, not during cleanup.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert the `三源边界` guide and all three source definitions render in
+  the workbench.

@@ -220,6 +220,10 @@ def test_raw_record_source_uses_segmented_radio_control(tmp_path) -> None:
     assert 'type="radio" name="source" value="mein" checked' in html
     assert 'type="radio" name="source" value="du"' in html
     assert 'type="radio" name="source" value="uns"' in html
+    assert 'class="source-guide" aria-label="三源边界"' in html
+    assert "Mein：</strong>我的原话和卡点" in html
+    assert "Du：</strong>Codex 的整理和纠偏" in html
+    assert "Uns：</strong>外界资料和证据" in html
     assert '<select name="source">' not in html
 
 
