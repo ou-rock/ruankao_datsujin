@@ -1931,3 +1931,35 @@ four-month exam strategy.
 - `python3 -m pytest tests/test_learning.py -q`
 - Added a deterministic 2026-06-30 test that checks the learning index shows
   `启动诊断`, next stage `诊断建模`, `D-116`, and endpoint `2026-10-24`.
+
+## 2026-06-30 Round 062 - Timebox Today Tasks
+
+### Learner Friction
+
+The today page told the learner what three actions to do, but it did not bound
+how much time to spend. Without a timebox, "今日三任务" can quietly become an
+unbounded study session, which increases avoidance and makes completion harder
+to judge.
+
+### Change
+
+- Added a `minutes` field to today tasks.
+- Assigned a 60-minute study budget:
+  - 25 minutes for the largest wrong-answer pool.
+  - 15 minutes for the comparison card.
+  - 20 minutes for the minimum essay touch.
+- Added a visible `时间盒` metric to the today page.
+- Added each task's suggested duration to the task card.
+- Updated the stop condition to stop after completion or after the timebox is
+  used up.
+
+### UX Rule Captured
+
+Daily execution should be finishable. For a companion study agent, a bounded
+minimum loop beats a heroic, vague study plan.
+
+### Validation
+
+- `python3 -m pytest tests/test_learning.py -q`
+- Tests assert the three tasks carry `25 / 15 / 20` minute budgets and the today
+  page shows a 60-minute timebox.

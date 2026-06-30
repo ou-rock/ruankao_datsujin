@@ -73,6 +73,7 @@ class ChekoCourse:
 @dataclass(frozen=True, slots=True)
 class TodayTask:
     title: str
+    minutes: int
     why: str
     action: str
     done_when: str
@@ -578,6 +579,7 @@ def render_cheko_sync(snapshot: ChekoSnapshot = DEFAULT_CHEKO_SNAPSHOT) -> str:
 
 def render_today(snapshot: ChekoSnapshot = DEFAULT_CHEKO_SNAPSHOT) -> str:
     tasks = today_tasks(snapshot)
+    total_minutes = sum(task.minutes for task in tasks)
     return _page(
         title="今日三任务",
         body=f"""
@@ -597,6 +599,7 @@ def render_today(snapshot: ChekoSnapshot = DEFAULT_CHEKO_SNAPSHOT) -> str:
     <div class="metric"><span>预估分</span><strong>{snapshot.estimated_score:.2f}</strong></div>
     <div class="metric"><span>最大错题池</span><strong>{escape(snapshot.weak_areas[0].title)}</strong></div>
     <div class="metric"><span>论文助手算力</span><strong>{snapshot.essay_power_remaining} / {snapshot.essay_power_total}</strong></div>
+    <div class="metric"><span>时间盒</span><strong>{total_minutes} 分钟</strong></div>
   </div>
 </section>
 <section>
@@ -608,7 +611,7 @@ def render_today(snapshot: ChekoSnapshot = DEFAULT_CHEKO_SNAPSHOT) -> str:
 <section>
   <h2>停止条件</h2>
   <ol>
-    <li>三件事全部完成后，不继续加码，转到工作台记录复习结果。</li>
+    <li>三件事全部完成或 {total_minutes} 分钟用完后，不继续加码，转到工作台记录复习结果。</li>
     <li>任一任务卡住超过 20 分钟，把卡住点记录到 Mein，不硬扛。</li>
     <li>如果今天只能做一件事，只做第 1 件：最大错题池回炉。</li>
   </ol>
@@ -629,6 +632,7 @@ def today_tasks(snapshot: ChekoSnapshot = DEFAULT_CHEKO_SNAPSHOT) -> tuple[Today
     return (
         TodayTask(
             title=f"{primary.title}错题回炉",
+            minutes=25,
             why=f"{primary.title} 是当前最大错题池，{primary.total} 题已经足够暴露结构性薄弱点。",
             action=primary.next_action,
             done_when="至少完成 10 道错题复盘，按不会/混淆/审题/表达归因。",
@@ -636,6 +640,7 @@ def today_tasks(snapshot: ChekoSnapshot = DEFAULT_CHEKO_SNAPSHOT) -> tuple[Today
         ),
         TodayTask(
             title=f"{secondary.title}对比卡",
+            minutes=15,
             why=f"{secondary.title} 错题池为 {secondary.total}，适合用对比卡降低混淆成本。",
             action=secondary.next_action,
             done_when="挑 3 个最容易混淆的概念，各写一句边界。",
@@ -643,6 +648,7 @@ def today_tasks(snapshot: ChekoSnapshot = DEFAULT_CHEKO_SNAPSHOT) -> tuple[Today
         ),
         TodayTask(
             title="论文最低触达",
+            minutes=20,
             why=snapshot.essay_past_exam_score,
             action=essay_action,
             done_when="必须产生可复用文字，不以“看了范文”作为完成。",
@@ -991,6 +997,7 @@ def _today_task_card(index: int, task: TodayTask) -> str:
   <div>
     <h3>{escape(task.title)}</h3>
     <p><strong>为什么：</strong>{escape(task.why)}</p>
+    <p class="meta">建议时长：{task.minutes} 分钟</p>
     <p class="meta">动作：{escape(task.action)}</p>
     <p class="meta">完成标准：{escape(task.done_when)}</p>
     <p class="meta">产出：{escape(task.output)}</p>

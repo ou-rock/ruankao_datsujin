@@ -122,6 +122,7 @@ def test_today_tasks_are_derived_from_cheko_weak_areas() -> None:
 
     assert len(tasks) == 3
     assert tasks[0].title == "系统架构设计错题回炉"
+    assert [task.minutes for task in tasks] == [25, 15, 20]
     assert "164" in tasks[0].why
     assert "质量属性" in tasks[0].action
     assert tasks[1].title == "软件工程对比卡"
@@ -138,6 +139,9 @@ def test_today_page_is_one_screen_action_plan() -> None:
     assert "第 1 件" in html
     assert "第 2 件" in html
     assert "第 3 件" in html
+    assert "时间盒" in html
+    assert "60 分钟" in html
+    assert "建议时长：25 分钟" in html
     assert "系统架构设计错题回炉" in html
     assert "论文最低触达" in html
     assert "如果今天只能做一件事" in html
