@@ -17,6 +17,7 @@ ENTRY_ADAPTERS = {
     "web_forms",
     "web_handlers",
     "web_page",
+    "web_page_style",
 }
 
 
@@ -90,8 +91,10 @@ EXPECTED_INTERNAL_DEPS = {
         "rag",
         "receipts",
         "route_map",
+        "web_page_style",
         "web_render",
     },
+    "web_page_style": set(),
     "web_render": {"domain", "memory", "storage"},
 }
 

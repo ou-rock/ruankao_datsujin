@@ -27,6 +27,8 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
 
     assert "<title>软考达人工作台 · D-117 · 绿灯</title>" in html
     assert "软考达人工作台" in html
+    assert "{{" not in html
+    assert "}}" not in html
     assert "D-117 · 启动诊断 · 绿灯 · 到期 0 · 积压 0%" in html
     assert "D-117 | 启动诊断 | 绿灯 | 到期=0 | 积压=0%" not in html
     assert '<div class="metric"><span>风险</span><strong>绿灯</strong></div>' in html

@@ -3651,3 +3651,44 @@ write durable state, synchronize Vault, or perform startup initialization.
 - Verified the redirected homepage showed `练习记录 #1 已保存。`, the case front
   turned green, and the temporary SQLite database contained
   `case 页面拆分案例验证 8.0/10.0`.
+
+## 2026-06-30 Round 119 - Split Workbench Home Page Style
+
+### Learner Friction
+
+After `web_page.py` took over homepage composition, it still mixed page data,
+HTML structure, forms, and the full CSS block. That made the homepage adapter
+harder to scan: a visual-only change looked the same as a state or form change.
+
+### Change
+
+- Added `ruankao_agent/web_page_style.py` for the homepage CSS constant.
+- Kept `web_page.py` responsible for page data and HTML structure, while
+  delegating CSS text to the style module.
+- Converted f-string escaped CSS braces back to real CSS braces after extraction.
+- Added a workbench test assertion that rendered HTML must not leak `{{` or
+  `}}` template braces.
+- Updated the architecture boundary contract so `web_page_style.py` is a
+  documented no-dependency L5 style module.
+
+### Architecture Rule Captured
+
+`web_page_style.py` owns homepage CSS only. It must not read learning state,
+build forms, import business modules, or decide page data.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py tests/test_architecture_boundaries.py -q`
+- `python3 -m py_compile ruankao_agent/web_page.py ruankao_agent/web_page_style.py`
+
+### BrowserAct Evidence
+
+- Started a temporary workbench root at `http://127.0.0.1:8884/`.
+- Opened the homepage through browser-act and verified the first action strip,
+  three-front radar, navigation, and today's loop still render.
+- Used browser-act `eval` to confirm the rendered `<style>` text does not
+  contain leaked `{{` or `}}` template braces.
+- Submitted a real case-practice form through the page.
+- Verified the redirected homepage showed `练习记录 #1 已保存。`, the case front
+  turned green, and the temporary SQLite database contained
+  `case 样式拆分案例验证 8.5/10.0`.
