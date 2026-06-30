@@ -5,6 +5,7 @@ from html import escape
 
 from .learning_content import FRONT_LABELS
 from .learning_style import LEARNING_PAGE_STYLE
+from .theme import THEME_HEAD_SCRIPT, THEME_SCRIPT, THEME_STYLE, THEME_TOGGLE
 
 
 def render_learning_page(title: str, body: str) -> str:
@@ -14,14 +15,18 @@ def render_learning_page(title: str, body: str) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{escape(title)}</title>
+  {THEME_HEAD_SCRIPT}
   <style>
 {LEARNING_PAGE_STYLE}
+{THEME_STYLE}
   </style>
 </head>
 <body>
+  {THEME_TOGGLE}
   <main>
     {body}
   </main>
+  {THEME_SCRIPT}
 </body>
 </html>
 """

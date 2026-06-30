@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from .receipts import write_daily_receipt
+from .theme import THEME_HEAD_SCRIPT, THEME_SCRIPT, THEME_STYLE, THEME_TOGGLE
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,6 +67,7 @@ def render_night_evolution_plan(plan: dict[str, object]) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>夜间进化草案 {escape(str(plan["as_of"]))}</title>
+  {THEME_HEAD_SCRIPT}
   <style>
     :root {{
       color-scheme: light;
@@ -163,9 +165,11 @@ def render_night_evolution_plan(plan: dict[str, object]) -> str:
       padding: 5px 8px;
       font-size: 12px;
     }}
+{THEME_STYLE}
   </style>
 </head>
 <body>
+  {THEME_TOGGLE}
   <main>
     <header>
       <h1>夜间进化草案 {escape(str(plan["as_of"]))}</h1>
@@ -180,6 +184,7 @@ def render_night_evolution_plan(plan: dict[str, object]) -> str:
       <div class="list">{_action_items(actions)}</div>
     </section>
   </main>
+  {THEME_SCRIPT}
 </body>
 </html>
 """

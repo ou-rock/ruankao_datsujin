@@ -3,6 +3,7 @@ from __future__ import annotations
 from html import escape
 
 from .route_map_style import ROUTE_MAP_STYLE
+from .theme import THEME_HEAD_SCRIPT, THEME_SCRIPT, THEME_STYLE, THEME_TOGGLE
 
 
 def render_route_map(payload: dict[str, object]) -> str:
@@ -15,11 +16,14 @@ def render_route_map(payload: dict[str, object]) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>三题型覆盖图 {escape(str(payload["as_of"]))}</title>
+  {THEME_HEAD_SCRIPT}
   <style>
 {ROUTE_MAP_STYLE}
+{THEME_STYLE}
   </style>
 </head>
 <body>
+  {THEME_TOGGLE}
   <main>
     <header>
       <h1>三题型覆盖图 {escape(str(payload["as_of"]))}</h1>
@@ -28,6 +32,7 @@ def render_route_map(payload: dict[str, object]) -> str:
     {_priority_band(priority)}
     <div class="grid">{_route_cards(routes)}</div>
   </main>
+  {THEME_SCRIPT}
 </body>
 </html>
 """

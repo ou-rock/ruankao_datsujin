@@ -16,6 +16,7 @@ from .web_page_forms import (
 from .web_page_operations import render_today_operations
 from .web_page_style import WORKBENCH_HOME_STYLE
 from .web_page_view import HomePageView
+from .theme import THEME_HEAD_SCRIPT, THEME_SCRIPT, THEME_STYLE, THEME_TOGGLE
 from .web_fronts import _front_cards
 from .web_card_lists import _card_list
 from .web_diagnostic_lists import (
@@ -37,11 +38,14 @@ def render_home_shell(view: HomePageView) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{escape(view.page_title)}</title>
+  {THEME_HEAD_SCRIPT}
   <style>
 {WORKBENCH_HOME_STYLE}
+{THEME_STYLE}
   </style>
 </head>
 <body>
+  {THEME_TOGGLE}
   <a class="skip-link" href="#today">跳到今日闭环</a>
   <header>
 <div class="top">
@@ -128,6 +132,7 @@ def render_home_shell(view: HomePageView) -> str:
   {render_vault_section(view)}
 </div>
   </main>
+  {THEME_SCRIPT}
 </body>
 </html>
 """

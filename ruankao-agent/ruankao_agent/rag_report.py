@@ -7,6 +7,7 @@ from pathlib import Path
 from .rag_observability import rag_observability_payload
 from .rag_report_style import RAG_REPORT_STYLE
 from .rag_types import RagBrief
+from .theme import THEME_HEAD_SCRIPT, THEME_SCRIPT, THEME_STYLE, THEME_TOGGLE
 
 
 def rag_brief_json_path(root: Path | str, as_of: date) -> Path:
@@ -82,11 +83,14 @@ def render_rag_brief(payload: dict[str, object]) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>RAG 记忆与进步控制 {escape(str(payload["as_of"]))}</title>
+  {THEME_HEAD_SCRIPT}
   <style>
 {RAG_REPORT_STYLE}
+{THEME_STYLE}
   </style>
 </head>
 <body>
+  {THEME_TOGGLE}
   <main>
     <header>
       <h1>RAG 记忆与进步控制</h1>
@@ -116,6 +120,7 @@ def render_rag_brief(payload: dict[str, object]) -> str:
       <div class="list">{_contract_items(contract)}</div>
     </section>
   </main>
+  {THEME_SCRIPT}
 </body>
 </html>
 """

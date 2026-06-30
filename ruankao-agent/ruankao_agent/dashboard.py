@@ -5,6 +5,8 @@ from datetime import date
 from html import escape
 from typing import Any
 
+from .theme import THEME_HEAD_SCRIPT, THEME_SCRIPT, THEME_STYLE, THEME_TOGGLE
+
 
 @dataclass(frozen=True, slots=True)
 class DashboardSnapshot:
@@ -75,6 +77,7 @@ def render_dashboard(snapshot: DashboardSnapshot) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>软考达人战役总图</title>
+  {THEME_HEAD_SCRIPT}
   <style>
     :root {{
       color-scheme: light;
@@ -177,9 +180,11 @@ def render_dashboard(snapshot: DashboardSnapshot) -> str:
       font-size: 13px;
       color: var(--muted);
     }}
+{THEME_STYLE}
   </style>
 </head>
 <body>
+  {THEME_TOGGLE}
   <main>
     <div class="hero">
       <p class="eyebrow">系统架构设计师</p>
@@ -273,6 +278,7 @@ def render_dashboard(snapshot: DashboardSnapshot) -> str:
       </div>
     </section>
   </main>
+  {THEME_SCRIPT}
 </body>
 </html>
 """
