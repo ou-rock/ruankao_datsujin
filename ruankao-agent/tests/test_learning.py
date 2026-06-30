@@ -34,15 +34,21 @@ def test_learning_resources_generate_html_study_desk(tmp_path) -> None:
     assert today.exists()
     assert snapshot.exists()
     assert "软考达人学习台" in index.read_text(encoding="utf-8")
+    assert "Learning Desk" not in index.read_text(encoding="utf-8")
     assert "芝士架构同步信号" in index.read_text(encoding="utf-8")
     assert "今日三任务" in index.read_text(encoding="utf-8")
     assert "系统架构设计" in index.read_text(encoding="utf-8")
+    assert "第 1 天" in index.read_text(encoding="utf-8")
     assert "场景先于方案" in lesson.read_text(encoding="utf-8")
+    assert "Lesson 0001" not in lesson.read_text(encoding="utf-8")
     assert "四大质量属性" in reference.read_text(encoding="utf-8")
+    assert "Reference" not in reference.read_text(encoding="utf-8")
     assert "NotebookLM" in seed.read_text(encoding="utf-8")
     assert "正确率" in cheko.read_text(encoding="utf-8")
+    assert "Cheko Sync" not in cheko.read_text(encoding="utf-8")
     assert "69.4" in cheko.read_text(encoding="utf-8")
     assert "只做这三件事" in today.read_text(encoding="utf-8")
+    assert "Today" not in today.read_text(encoding="utf-8")
     assert json.loads(snapshot.read_text(encoding="utf-8"))["wrong"] == 194
 
 
@@ -125,12 +131,13 @@ def test_today_page_is_one_screen_action_plan() -> None:
     html = render_today(DEFAULT_CHEKO_SNAPSHOT)
 
     assert "今日三任务" in html
-    assert "Task 1" in html
-    assert "Task 2" in html
-    assert "Task 3" in html
+    assert "第 1 件" in html
+    assert "第 2 件" in html
+    assert "第 3 件" in html
     assert "系统架构设计错题回炉" in html
     assert "论文最低触达" in html
     assert "如果今天只能做一件事" in html
+    assert "Task 1" not in html
 
 
 def test_cli_learning_generates_learning_desk(tmp_path) -> None:

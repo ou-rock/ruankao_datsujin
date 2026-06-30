@@ -347,7 +347,7 @@ def render_learning_index(cheko_snapshot: ChekoSnapshot = DEFAULT_CHEKO_SNAPSHOT
         title="软考达人学习台",
         body=f"""
 <header class="hero">
-  <p class="eyebrow">Learning Desk</p>
+  <p class="eyebrow">学习台</p>
   <h1>软考达人学习台</h1>
   <p class="lead">学习台负责“学什么、怎么练、沉淀成什么”。工作台负责记录和复习，学习台负责把资料变成当天可执行的课。</p>
   <div class="actions">
@@ -392,7 +392,7 @@ def render_scene_before_solution_lesson() -> str:
         title="第一课：场景先于方案",
         body=f"""
 <header class="hero">
-  <p class="eyebrow">Lesson 0001</p>
+  <p class="eyebrow">第一课</p>
   <h1>场景先于方案</h1>
   <p class="lead">架构设计不是先报技术名词，而是先把业务目标、边界、约束和质量属性场景说清楚。</p>
   <div class="actions">
@@ -458,7 +458,7 @@ def render_reference_page(page: ReferencePage) -> str:
         title=page.title,
         body=f"""
 <header class="hero">
-  <p class="eyebrow">Reference</p>
+  <p class="eyebrow">速查</p>
   <h1>{escape(page.title)}</h1>
   <p class="lead">{escape(page.purpose)}</p>
   <div class="actions">
@@ -495,7 +495,7 @@ def render_notebooklm_seed() -> str:
         title="NotebookLM 资源生成记录",
         body=f"""
 <header class="hero">
-  <p class="eyebrow">Uns</p>
+  <p class="eyebrow">Uns 外部资料</p>
   <h1>NotebookLM 资源生成记录</h1>
   <p class="lead">NotebookLM 是外部研究员，不是最终学习系统。它给出资料线索和结构，最终由本地学习台改写、执行、复习和沉淀。</p>
 </header>
@@ -525,7 +525,7 @@ def render_cheko_sync(snapshot: ChekoSnapshot = DEFAULT_CHEKO_SNAPSHOT) -> str:
         title="芝士架构同步信号",
         body=f"""
 <header class="hero">
-  <p class="eyebrow">Cheko Sync</p>
+  <p class="eyebrow">芝士同步</p>
   <h1>芝士架构同步信号</h1>
   <p class="lead">这页只保存学习信号，不保存账号、头像、邮箱或任何登录凭据。它把芝士架构里的练习状态翻译成学习台的下一步行动。</p>
   <div class="actions">
@@ -567,7 +567,7 @@ def render_today(snapshot: ChekoSnapshot = DEFAULT_CHEKO_SNAPSHOT) -> str:
         title="今日三任务",
         body=f"""
 <header class="hero">
-  <p class="eyebrow">Today</p>
+  <p class="eyebrow">今日</p>
   <h1>今日三任务</h1>
   <p class="lead">今天不追求打开所有资料。先把最大弱点、一个题型触达、一个记忆沉淀做完，让系统向前滚一格。</p>
   <div class="actions">
@@ -832,7 +832,7 @@ def _cards(items: Iterable[tuple[str, str]]) -> str:
 
 def _day_card(day: DailyLearningPlan) -> str:
     return f"""<div class="day">
-  <div class="day-index">Day {day.day}</div>
+  <div class="day-index">第 {day.day} 天</div>
   <div>
     <h3>{escape(day.title)}</h3>
     <p><strong>目标：</strong>{escape(day.goal)}</p>
@@ -891,7 +891,7 @@ def _weak_area_row(area: ChekoWeakArea) -> str:
 
 def _today_task_card(index: int, task: TodayTask) -> str:
     return f"""<div class="day">
-  <div class="day-index">Task {index}</div>
+  <div class="day-index">第 {index} 件</div>
   <div>
     <h3>{escape(task.title)}</h3>
     <p><strong>为什么：</strong>{escape(task.why)}</p>

@@ -1835,3 +1835,36 @@ tomorrow's moves.
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert night reports render localized staging and priority labels and no
   longer expose raw action IDs or `priority=`.
+
+## 2026-06-30 Round 059 - Localized Learning Desk Chrome
+
+### Learner Friction
+
+Learning desk pages still had small English UI labels: `Learning Desk`,
+`Lesson 0001`, `Reference`, `Cheko Sync`, `Today`, plus `Day` and `Task`
+sequence labels. They were not technical contracts; they were visible page
+chrome.
+
+### Change
+
+- Localized learning page eyebrows:
+  - `Learning Desk` to `学习台`
+  - `Lesson 0001` to `第一课`
+  - `Reference` to `速查`
+  - `Uns` to `Uns 外部资料`
+  - `Cheko Sync` to `芝士同步`
+  - `Today` to `今日`
+- Changed first-week path labels from `Day N` to `第 N 天`.
+- Changed today-task labels from `Task N` to `第 N 件`.
+
+### UX Rule Captured
+
+Small labels set the tone of a learning surface. Keep product and source names
+when they are meaningful, but localize generic page chrome so the study desk
+feels coherent.
+
+### Validation
+
+- `python3 -m pytest tests/test_learning.py -q`
+- Tests assert learning pages render localized chrome and no longer expose the
+  old generic English labels.
