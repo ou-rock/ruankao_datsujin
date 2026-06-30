@@ -1304,7 +1304,7 @@ def _front_checks(default_all: bool = False) -> str:
 def _message(message: str) -> str:
     if not message:
         return ""
-    return f'<div class="message">{escape(message)}</div>'
+    return f'<div class="message" role="status">{escape(message)}</div>'
 
 
 def _today_primary_action(

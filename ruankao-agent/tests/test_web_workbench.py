@@ -62,6 +62,15 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert (root / "vault" / "10-memory-war-room" / "principles" / "场景先于方案.md").exists()
 
 
+def test_workbench_message_is_announced_as_status(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+
+    html = app.render_home(message="review-saved")
+
+    assert '<div class="message" role="status">review-saved</div>' in html
+
+
 def test_workbench_home_shows_three_front_radar_with_due_state(tmp_path) -> None:
     root = tmp_path / "demo"
     app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))

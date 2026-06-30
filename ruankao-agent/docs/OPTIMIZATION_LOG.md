@@ -1201,3 +1201,26 @@ not make the learner pay for every navigation affordance on every visit.
 
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert the skip link points to the today section.
+
+## 2026-06-30 Round 037 - Status Role For Workbench Messages
+
+### Learner Friction
+
+Workbench messages confirm actions such as saved reviews, generated reports, and
+sync results. They were visible on screen, but did not carry an explicit status
+role for assistive technology.
+
+### Change
+
+- Added `role="status"` to the workbench message element.
+- Kept existing message rendering and redirect behavior unchanged.
+
+### UX Rule Captured
+
+Feedback after an action should be announced as feedback, not merely drawn as
+text. Small semantic improvements make repeated operations less ambiguous.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert message markup includes `role="status"`.
