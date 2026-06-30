@@ -55,6 +55,7 @@ def write_route_map(root: Path | str, *, as_of: date | None = None) -> RouteMapR
 def render_route_map(payload: dict[str, object]) -> str:
     routes = payload["routes"]
     assert isinstance(routes, list)
+    priority = _priority_route(routes)
     return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -103,6 +104,29 @@ def render_route_map(payload: dict[str, object]) -> str:
     .status {{
       color: var(--muted);
       margin: 8px 0 0;
+    }}
+    .priority {{
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }}
+    .priority span {{
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }}
+    .priority strong {{
+      display: block;
+      font-size: 18px;
+      line-height: 1.25;
+    }}
+    .priority p {{
+      margin: 6px 0 0;
+      color: var(--muted);
     }}
     .grid {{
       display: grid;
@@ -198,6 +222,7 @@ def render_route_map(payload: dict[str, object]) -> str:
       <h1>三题型覆盖图 {escape(str(payload["as_of"]))}</h1>
       <p class="status">选择、案例、论文三条战线的记忆库存与薄弱状态。</p>
     </header>
+    {_priority_band(priority)}
     <div class="grid">{_route_cards(routes)}</div>
   </main>
 </body>
@@ -310,6 +335,24 @@ def _route_cards(routes: list[object]) -> str:
 </section>"""
         )
     return "".join(items)
+
+
+def _priority_route(routes: list[object]) -> dict[str, object]:
+    parsed = [route for route in routes if isinstance(route, dict)]
+    if not parsed:
+        return {"label": "未标注", "action": "暂无路线数据，先生成三题型覆盖图。"}
+    severity = {"red": 0, "yellow": 1, "green": 2}
+    return min(parsed, key=lambda route: severity.get(str(route.get("status")), 3))
+
+
+def _priority_band(route: dict[str, object]) -> str:
+    label = escape(str(route.get("label", "未标注")))
+    action = escape(str(route.get("action", "维持当前节奏。")))
+    return f"""<section class="priority">
+  <span>今日先打</span>
+  <strong>{label}</strong>
+  <p>{action}</p>
+</section>"""
 
 
 def _metric(label: str, value: object) -> str:

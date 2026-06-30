@@ -63,6 +63,9 @@ def test_route_map_summarizes_choice_case_and_essay_fronts(tmp_path) -> None:
     assert "案例题" in html
     assert "论文题" in html
     assert "今日练习" in html
+    assert "今日先打" in html
+    assert "<strong>选择题</strong>" in html
+    assert "先修复薄弱卡，再追加新题。" in html
     assert "75%" in html
     assert "状态：红灯" in html
     assert "状态：黄灯" in html

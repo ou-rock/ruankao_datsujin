@@ -2753,3 +2753,30 @@ outcome first, while implementation labels stay in code and hook contracts.
 
 - Added command-doc tests that guard the learner-facing terms and reject the old
   internal labels in Codex command entrypoints.
+
+## 2026-06-30 Round 091 - Add Route Map Priority Band
+
+### Learner Friction
+
+The three-front route map showed each front's status, but the page still made
+the learner compare cards to decide what to do first. A study map should expose
+the next route decision immediately.
+
+### Change
+
+- Added a top `今日先打` priority band to the route-map HTML.
+- The band selects the highest-risk front by red/yellow/green status and shows
+  that front's action sentence.
+- Added an empty-route fallback for the renderer.
+- Kept the route JSON payload unchanged; this is a presentation improvement.
+
+### UX Rule Captured
+
+Status dashboards should collapse into an action. If a learner opens a map, the
+first screen should answer "where do I start?" before asking them to inspect
+every card.
+
+### Validation
+
+- Route-map tests assert the priority band appears and surfaces the red-front
+  action while the existing route details remain visible.
