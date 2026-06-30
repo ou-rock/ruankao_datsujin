@@ -1591,3 +1591,30 @@ programming null. Use learner-facing missing-value language in visible lists.
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert missing card and practice fields render as `未记录` and no longer
   render old visible `none` metadata.
+
+## 2026-06-30 Round 051 - Daily Receipt Missing Ratio Language
+
+### Learner Friction
+
+Daily receipts could still show `none` for the overall practice score ratio when
+there were no scored practice sessions. That one field contradicted the newer
+`未记录` convention used in workbench and receipt metadata.
+
+### Change
+
+- Changed the daily receipt HTML ratio formatter from `none` to `未记录` when no
+  scored practice exists.
+- Kept the JSON metric as `null` so automation can still distinguish missing
+  data from a real 0% score.
+
+### UX Rule Captured
+
+Missing study evidence should be visible as missing evidence, not as a
+programming sentinel. Preserve machine semantics in JSON and learner semantics
+in HTML.
+
+### Validation
+
+- `python3 -m pytest tests/test_daily_receipt.py -q`
+- Tests assert empty practice history keeps JSON `practice_score_ratio` as
+  `null` while HTML renders `练习得分率` as `未记录`.

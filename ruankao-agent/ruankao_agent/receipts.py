@@ -587,5 +587,5 @@ def _average_practice_score_ratio(sessions: list[PracticeSession]) -> float | No
 
 def _ratio_text(value: object) -> str:
     if value is None:
-        return "none"
+        return "未记录"
     return f"{float(value):.0%}"

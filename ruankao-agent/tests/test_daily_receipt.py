@@ -115,6 +115,19 @@ def test_daily_receipt_marks_repeated_low_grade_card_as_leech(tmp_path) -> None:
     assert "拆成更小卡片" in result.html_path.read_text(encoding="utf-8")
 
 
+def test_daily_receipt_renders_missing_practice_ratio_as_unrecorded(tmp_path) -> None:
+    root = tmp_path / "demo"
+
+    result = write_daily_receipt(root, as_of=date(2026, 6, 29))
+
+    payload = json.loads(result.json_path.read_text(encoding="utf-8"))
+    html = result.html_path.read_text(encoding="utf-8")
+
+    assert payload["metrics"]["practice_score_ratio"] is None
+    assert '<span>练习得分率</span><strong>未记录</strong>' in html
+    assert '<span>练习得分率</span><strong>none</strong>' not in html
+
+
 def test_cli_daily_receipt_prints_hook_friendly_paths(tmp_path) -> None:
     root = tmp_path / "demo"
     seed_cheko_cards(root, next_due=date(2026, 6, 29))
