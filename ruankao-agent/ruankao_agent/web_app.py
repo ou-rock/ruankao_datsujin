@@ -6,11 +6,10 @@ from datetime import date
 from html import escape
 from pathlib import Path
 
-from .cheko import ChekoSeedResult, seed_cheko_cards as seed_cheko_memory_cards
 from .dashboard import render_dashboard
 from .domain import CardType
-from .evolution import night_evolution_html_path, write_night_evolution_plan
-from .export_state import state_export_path, write_state_export as write_local_state_export
+from .evolution import night_evolution_html_path
+from .export_state import state_export_path
 from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
 from .memory import diagnose_memory
@@ -19,31 +18,33 @@ from .rag import (
     build_rag_brief,
     rag_brief_html_path,
     rag_brief_to_payload,
-    write_rag_brief as write_local_rag_brief,
 )
-from .receipts import daily_receipt_html_path, write_daily_receipt
-from .route_map import route_map_html_path, write_route_map
+from .receipts import daily_receipt_html_path
+from .route_map import route_map_html_path
 from .storage import RuankaoStore
-from .study import capture_study_turn as capture_learning_turn
 from .vault import (
     initialize_vault,
-    sync_memory_cards_to_vault,
-    sync_raw_records_to_vault,
     write_principle_note,
+)
+from .web_actions import (
+    WorkbenchActionContext,
+    add_memory_card as add_memory_card_action,
+    add_practice_session as add_practice_session_action,
+    add_principle_relation as add_principle_relation_action,
+    add_raw_record as add_raw_record_action,
+    capture_study_turn as capture_study_turn_action,
+    record_review as record_review_action,
+    seed_cheko_cards as seed_cheko_cards_action,
+    sync_memory_cards_to_vault_action,
+    sync_raw_records_to_vault_action,
+    write_daily_receipt_action,
+    write_night_evolution_plan_action,
+    write_rag_brief_action,
+    write_route_map_action,
+    write_state_export_action,
 )
 from .web_forms import (
     FormData,
-    next_due_date,
-    one as _one,
-    overwrite_requested,
-    parse_memory_card_form,
-    parse_practice_session_form,
-    parse_principle_relation_form,
-    parse_raw_record_form,
-    parse_review_form,
-    parse_study_turn_form,
-    query_text,
-    report_date,
 )
 from .web_render import (
     _card_list,
@@ -141,137 +142,56 @@ class WorkbenchApp:
         dashboard_path.write_text(render_dashboard(snapshot.dashboard), encoding="utf-8")
         return dashboard_path
 
-    def add_raw_record(self, form: FormData) -> int:
-        store = self.store()
-        store.initialize()
-        data = parse_raw_record_form(form)
-        return store.add_raw_record(
-            source=data.source,
-            text=data.text,
-            summary=data.summary,
-            topics=data.topics,
-            fronts=data.fronts,
-            promotion_status=data.promotion_status,
+    def _action_context(self) -> WorkbenchActionContext:
+        return WorkbenchActionContext(
+            root=self.root,
+            vault_path=self.vault_path,
+            today=self.today,
+            store=self.store,
+            write_dashboard=self.write_dashboard,
         )
+
+    def add_raw_record(self, form: FormData) -> int:
+        return add_raw_record_action(self._action_context(), form)
 
     def add_memory_card(self, form: FormData) -> int:
-        store = self.store()
-        store.initialize()
-        data = parse_memory_card_form(form)
-        card_id = store.add_memory_card(
-            card_type=data.card_type,
-            title=data.title,
-            prompt=data.prompt,
-            answer=data.answer,
-            source_record_id=data.source_record_id,
-            fronts=data.fronts,
-            next_due=data.next_due,
-        )
-        if data.card_type is CardType.PRINCIPLE:
-            applies_when = data.prompt or "待补充"
-            write_principle_note(
-                self.vault_path,
-                title=data.title,
-                core_statement=data.answer,
-                applies_when=applies_when,
-                conflicts=data.conflicts,
-            )
-        return card_id
+        return add_memory_card_action(self._action_context(), form)
 
     def add_principle_relation(self, form: FormData) -> int:
-        store = self.store()
-        store.initialize()
-        data = parse_principle_relation_form(form)
-        return store.add_principle_relation(
-            from_card_id=data.from_card_id,
-            to_card_id=data.to_card_id,
-            relation=data.relation,
-            rationale=data.rationale,
-        )
+        return add_principle_relation_action(self._action_context(), form)
 
     def add_practice_session(self, form: FormData) -> int:
-        store = self.store()
-        store.initialize()
-        data = parse_practice_session_form(form)
-        return store.add_practice_session(
-            front=data.front,
-            topic=data.topic,
-            source=data.source,
-            score=data.score,
-            max_score=data.max_score,
-            duration_minutes=data.duration_minutes,
-            summary=data.summary,
-            mistakes=data.mistakes,
-            created_on=data.created_on or self.today,
-        )
+        return add_practice_session_action(self._action_context(), form)
 
     def capture_study_turn(self, form: FormData):
-        data = parse_study_turn_form(form)
-        result = capture_learning_turn(
-            self.root,
-            topic=data.topic,
-            user_text=data.user_text,
-            assistant_text=data.assistant_text,
-            fronts=data.fronts,
-            learner_position=data.learner_position,
-            codex_position=data.codex_position,
-            destination=data.destination,
-        )
-        self.write_dashboard()
-        return result
+        return capture_study_turn_action(self._action_context(), form)
 
     def record_review(self, form: FormData) -> None:
-        store = self.store()
-        store.initialize()
-        data = parse_review_form(form)
-        store.record_review(
-            card_id=data.card_id,
-            reviewed_on=data.reviewed_on or self.today,
-            grade=data.grade,
-        )
+        return record_review_action(self._action_context(), form)
 
-    def seed_cheko_cards(self, form: FormData) -> ChekoSeedResult:
-        next_due = next_due_date(form, self.today)
-        result = seed_cheko_memory_cards(self.root, next_due=next_due)
-        self.write_dashboard()
-        return result
+    def seed_cheko_cards(self, form: FormData):
+        return seed_cheko_cards_action(self._action_context(), form)
 
     def write_daily_receipt(self, form: FormData):
-        return write_daily_receipt(self.root, as_of=report_date(form, self.today))
+        return write_daily_receipt_action(self._action_context(), form)
 
     def write_night_evolution_plan(self, form: FormData):
-        return write_night_evolution_plan(self.root, as_of=report_date(form, self.today))
+        return write_night_evolution_plan_action(self._action_context(), form)
 
     def write_route_map(self, form: FormData):
-        return write_route_map(self.root, as_of=report_date(form, self.today))
+        return write_route_map_action(self._action_context(), form)
 
     def write_rag_brief(self, form: FormData):
-        return write_local_rag_brief(
-            self.root,
-            query=query_text(form, DEFAULT_RAG_QUERY),
-            as_of=report_date(form, self.today),
-        )
+        return write_rag_brief_action(self._action_context(), form)
 
     def write_state_export(self, form: FormData):
-        return write_local_state_export(self.root, as_of=report_date(form, self.today))
+        return write_state_export_action(self._action_context(), form)
 
     def sync_memory_cards_to_vault(self, form: FormData):
-        store = self.store()
-        store.initialize()
-        return sync_memory_cards_to_vault(
-            self.vault_path,
-            store.list_memory_cards(),
-            overwrite=overwrite_requested(form),
-        )
+        return sync_memory_cards_to_vault_action(self._action_context(), form)
 
     def sync_raw_records_to_vault(self, form: FormData):
-        store = self.store()
-        store.initialize()
-        return sync_raw_records_to_vault(
-            self.vault_path,
-            store.list_raw_records(),
-            overwrite=overwrite_requested(form),
-        )
+        return sync_raw_records_to_vault_action(self._action_context(), form)
 
     def render_home(self, message: str = "") -> str:
         self.initialize()

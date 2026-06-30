@@ -3522,3 +3522,43 @@ app object it receives.
 
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - `python3 -m pytest tests/test_architecture_boundaries.py -q`
+
+## 2026-06-30 Round 116 - Split Workbench Action Layer
+
+### Learner Friction
+
+`web_app.py` still mixed page composition with state-changing actions: raw
+record capture, memory card writes, practice logging, study turn capture,
+report generation, RAG briefs, and Vault sync. That made it hard to audit which
+paths mutate the learning system.
+
+### Change
+
+- Added `ruankao_agent/web_actions.py` with `WorkbenchActionContext` and the
+  workbench action functions.
+- Kept the public `WorkbenchApp` method names stable while turning them into
+  thin delegators.
+- Moved write-heavy dependencies such as Cheko seeding, study capture, report
+  triggers, and Vault sync out of `web_app.py`.
+- Updated the architecture boundary contract so `web_actions.py` is a
+  documented L5 action adapter.
+
+### Architecture Rule Captured
+
+`web_actions.py` owns workbench side effects. It may depend on `web_forms.py`
+and inner services, but it must not handle HTTP, compose HTML, or bypass
+`RuankaoStore`.
+
+### Validation
+
+- `python3 -m pytest tests/test_architecture_boundaries.py tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+
+### BrowserAct Evidence
+
+- Started a temporary workbench root at `http://127.0.0.1:8881/`.
+- Used browser-act with the existing `github-act` Chrome browser to submit a
+  real case-practice form through the page.
+- Verified the redirected page showed `练习记录 #1 已保存。`, the case front
+  turned green, and the temporary SQLite database contained the submitted
+  record: `case 动作层拆分案例验证 9.0/10.0`.
