@@ -171,6 +171,21 @@ def test_raw_record_source_uses_segmented_radio_control(tmp_path) -> None:
     assert '<select name="source">' not in html
 
 
+def test_raw_record_status_uses_segmented_radio_control(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+
+    html = app.render_home()
+
+    assert 'class="segmented flow" aria-label="三源状态"' in html
+    assert 'type="radio" name="promotion_status" value="raw" checked' in html
+    assert 'type="radio" name="promotion_status" value="extracted"' in html
+    assert 'type="radio" name="promotion_status" value="tested"' in html
+    assert 'type="radio" name="promotion_status" value="promoted"' in html
+    assert 'type="radio" name="promotion_status" value="rejected"' in html
+    assert '<select name="promotion_status">' not in html
+
+
 def test_workbench_forms_write_store_and_principle_note(tmp_path) -> None:
     root = tmp_path / "demo"
     app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))

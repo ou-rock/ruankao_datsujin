@@ -1279,3 +1279,32 @@ Mein, Du, and Uns are learning identities, not a hidden metadata field.
   - the raw-record form renders a segmented source control;
   - all three source values are present;
   - the old source select is gone.
+
+## 2026-06-30 Round 040 - Segmented Raw Record Status Control
+
+### Learner Friction
+
+The raw-record source became visible, but promotion status still lived in a
+dropdown. The bottom layer needs quick status judgement: raw, extracted, tested,
+promoted, or rejected.
+
+### Change
+
+- Replaced the raw-record `promotion_status` select with segmented radio
+  controls.
+- Added `.segmented.flow` so five statuses wrap cleanly.
+- Kept the same submitted `promotion_status` field and values.
+
+### UX Rule Captured
+
+Workflow state should be scannable. A learner reviewing raw material should see
+whether a note is still raw, already extracted, tested, promoted, or rejected
+without opening a control.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert:
+  - all five status values are visible radio options;
+  - raw remains the default;
+  - the old status select is gone.

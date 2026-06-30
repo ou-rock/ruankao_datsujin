@@ -569,6 +569,9 @@ class WorkbenchApp:
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 6px;
     }}
+    .segmented.flow {{
+      grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+    }}
     .segmented label {{
       display: flex;
       align-items: center;
@@ -875,15 +878,16 @@ class WorkbenchApp:
                 <label><input type="radio" name="source" value="uns">Uns</label>
               </div>
             </div>
-            <label>状态
-              <select name="promotion_status">
-                <option value="raw">raw</option>
-                <option value="extracted">extracted</option>
-                <option value="tested">tested</option>
-                <option value="promoted">promoted</option>
-                <option value="rejected">rejected</option>
-              </select>
-            </label>
+            <div class="field">
+              <div class="field-label">状态</div>
+              <div class="segmented flow" aria-label="三源状态">
+                <label><input type="radio" name="promotion_status" value="raw" checked>raw</label>
+                <label><input type="radio" name="promotion_status" value="extracted">extracted</label>
+                <label><input type="radio" name="promotion_status" value="tested">tested</label>
+                <label><input type="radio" name="promotion_status" value="promoted">promoted</label>
+                <label><input type="radio" name="promotion_status" value="rejected">rejected</label>
+              </div>
+            </div>
           </div>
           <label>原文 / 灵感 / 对话摘录
             <textarea name="text" required></textarea>
