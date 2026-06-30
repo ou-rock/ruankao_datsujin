@@ -3824,3 +3824,51 @@ write actions.
 - Submitted a real case-practice form through the page.
 - Verified the redirected homepage showed `练习记录 #1 已保存。` and the temporary
   SQLite database contained `case 表单拆分案例验证 8.5/10.0`.
+
+## 2026-06-30 Round 123 - Split RAG Retrieval And Report Boundaries
+
+### Learner Friction
+
+`rag.py` had grown into a full subsystem in one file: data structures, document
+construction, chunking, tokenization, SQLite FTS5/BM25 scoring, hybrid ranking,
+progress gates, JSON payloads, and HTML rendering. That made future RAG upgrades
+risky because retrieval changes and report changes could collide.
+
+### Change
+
+- Added `ruankao_agent/rag_types.py` for RAG dataclasses.
+- Added `ruankao_agent/rag_index.py` for chunking, tokenization, SQLite FTS5,
+  BM25 scoring, snippets, and retrieval-strategy detection.
+- Added `ruankao_agent/rag_rank.py` for hybrid reranking, exam-front filtering,
+  and score breakdowns.
+- Added `ruankao_agent/rag_report.py` for JSON payload conversion, report paths,
+  and HTML rendering.
+- Kept `ruankao_agent/rag.py` as the compatibility facade and orchestration
+  layer for document construction, progress gates, and file writing.
+- Updated the architecture dependency contract and boundary documentation.
+
+### Architecture Rule Captured
+
+RAG retrieval is now a subsystem with explicit edges: types are inert, index
+builds searchable chunks, rank decides evidence order, report renders learner
+output, and `rag.py` wires them together. The retrieval core must not depend on
+Web, CLI, or report rendering.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/rag.py ruankao_agent/rag_index.py ruankao_agent/rag_rank.py ruankao_agent/rag_report.py ruankao_agent/rag_types.py`
+- `python3 -m pytest tests/test_rag.py tests/test_cli.py tests/test_daily_receipt.py tests/test_web_workbench.py tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Built a temporary RAG corpus under `/tmp/ruankao-rag-split`.
+- Generated `/reports/rag/2026-06-30.html` through the public `write_rag_brief`
+  path.
+- Served the temporary workbench at `http://127.0.0.1:8893/`.
+- Opened `http://127.0.0.1:8893/reports/rag/2026-06-30.html` through
+  browser-act.
+- Verified the rendered report still shows `RAG 记忆与进步控制`, `进步闸门`,
+  `召回证据`, `回答契约`, `sqlite-fts5-hybrid-progress`, `memory:1#c1`, and
+  `fts_bm25`.
