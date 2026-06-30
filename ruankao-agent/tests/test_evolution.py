@@ -38,6 +38,8 @@ def test_night_evolution_plan_stages_actions_from_daily_receipt(tmp_path) -> Non
     assert payload["stage_only"] is True
     assert payload["actions"][0]["id"] == "repair-memory"
     assert payload["actions"][0]["priority"] == "high"
+    assert payload["night_focus"]["title"] == "今晚先修复薄弱记忆"
+    assert "敏感点 vs 权衡点" in payload["night_focus"]["reason"]
     assert "protect-exam-practice" in action_ids
     assert "敏感点 vs 权衡点" in payload["actions"][0]["detail"]
 
@@ -45,6 +47,8 @@ def test_night_evolution_plan_stages_actions_from_daily_receipt(tmp_path) -> Non
     assert "夜间进化草案 2026-06-29" in html
     assert "仅暂存：是" in html
     assert "来源日结：" in html
+    assert "日结焦点" in html
+    assert "今晚先修复薄弱记忆" in html
     assert "修复薄弱记忆卡" in html
     assert "优先级：高" in html
     assert "stage_only=true" not in html

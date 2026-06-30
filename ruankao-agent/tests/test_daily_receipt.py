@@ -63,6 +63,8 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
     assert payload["metrics"]["practice_today"] == 1
     assert payload["metrics"]["practice_score_ratio"] == 0.7
     assert payload["metrics"]["weak_memory_cards"] == 0
+    assert payload["night_focus"]["title"] == "今晚先清空到期复习"
+    assert "到期卡 4 张" in payload["night_focus"]["reason"]
     assert payload["memory_diagnostics"][0]["status"] == "due"
     assert payload["practice_front_counts"] == {"choice": 1}
     assert payload["recent_practice"][0]["topic"] == "系统架构设计错题"
@@ -79,6 +81,8 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
     assert "错题归因完成" in html
     assert "记忆诊断" in html
     assert "最近练习" in html
+    assert "今晚焦点" in html
+    assert "今晚先清空到期复习" in html
     assert "系统架构设计错题" in html
     assert "70%" in html
     assert "最近复习" in html
@@ -116,6 +120,8 @@ def test_daily_receipt_marks_repeated_low_grade_card_as_leech(tmp_path) -> None:
 
     payload = json.loads(result.json_path.read_text(encoding="utf-8"))
     assert payload["metrics"]["weak_memory_cards"] == 1
+    assert payload["night_focus"]["title"] == "今晚先修复薄弱记忆"
+    assert "敏感点 vs 权衡点" in payload["night_focus"]["reason"]
     assert payload["memory_diagnostics"][0]["status"] == "leech"
     assert payload["memory_diagnostics"][0]["title"] == "敏感点 vs 权衡点"
     html = result.html_path.read_text(encoding="utf-8")

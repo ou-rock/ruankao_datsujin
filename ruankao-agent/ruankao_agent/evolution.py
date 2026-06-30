@@ -57,7 +57,9 @@ def write_night_evolution_plan(
 
 def render_night_evolution_plan(plan: dict[str, object]) -> str:
     actions = plan["actions"]
+    night_focus = plan.get("night_focus", {})
     assert isinstance(actions, list)
+    assert isinstance(night_focus, dict)
     return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -107,6 +109,24 @@ def render_night_evolution_plan(plan: dict[str, object]) -> str:
       color: var(--muted);
       margin: 8px 0 0;
     }}
+    .focus {{
+      border-left: 4px solid var(--accent);
+    }}
+    .focus span {{
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }}
+    .focus strong {{
+      display: block;
+      font-size: 18px;
+      line-height: 1.25;
+    }}
+    .focus p {{
+      margin: 6px 0 0;
+      color: var(--muted);
+    }}
     section {{
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -154,6 +174,7 @@ def render_night_evolution_plan(plan: dict[str, object]) -> str:
         <span>来源日结：{escape(str(plan["receipt_json"]))}</span>
       </div>
     </header>
+    {_night_focus_band(night_focus)}
     <section>
       <h2>明晚前只做这些</h2>
       <div class="list">{_action_items(actions)}</div>
@@ -167,8 +188,10 @@ def render_night_evolution_plan(plan: dict[str, object]) -> str:
 def _evolution_payload(receipt_payload: dict[str, Any], *, receipt_json: Path) -> dict[str, object]:
     metrics = receipt_payload.get("metrics", {})
     diagnostics = receipt_payload.get("memory_diagnostics", [])
+    night_focus = receipt_payload.get("night_focus", {})
     assert isinstance(metrics, dict)
     assert isinstance(diagnostics, list)
+    assert isinstance(night_focus, dict)
     actions = _build_actions(metrics, diagnostics, receipt_payload)
     return {
         "version": 1,
@@ -176,8 +199,18 @@ def _evolution_payload(receipt_payload: dict[str, Any], *, receipt_json: Path) -
         "as_of": receipt_payload["as_of"],
         "receipt_json": str(receipt_json),
         "status": receipt_payload["status"],
+        "night_focus": night_focus,
         "actions": actions,
     }
+
+
+def _night_focus_band(focus: dict[object, object]) -> str:
+    return f"""<section class="focus">
+  <span>日结焦点</span>
+  <strong>{escape(str(focus.get("title", "今晚沉淀今天的增量")))}</strong>
+  <p>{escape(str(focus.get("reason", "暂无额外风险。")))}</p>
+  <p>{escape(str(focus.get("action", "维持当前学习闭环。")))}</p>
+</section>"""
 
 
 def _build_actions(

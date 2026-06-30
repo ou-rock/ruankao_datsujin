@@ -90,7 +90,9 @@ def write_daily_receipt(root: Path | str, *, as_of: date | None = None) -> Daily
 
 def render_daily_receipt(payload: dict[str, object]) -> str:
     metrics = payload["metrics"]
+    night_focus = payload.get("night_focus", {})
     assert isinstance(metrics, dict)
+    assert isinstance(night_focus, dict)
     source_counts = payload["source_counts"]
     card_type_counts = payload["card_type_counts"]
     front_counts = payload["front_counts"]
@@ -159,6 +161,24 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
       color: var(--muted);
       margin: 8px 0 0;
     }}
+    .focus {{
+      border-left: 4px solid var(--accent);
+    }}
+    .focus span {{
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }}
+    .focus strong {{
+      display: block;
+      font-size: 18px;
+      line-height: 1.25;
+    }}
+    .focus p {{
+      margin: 6px 0 0;
+      color: var(--muted);
+    }}
     section {{
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -219,6 +239,7 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
       <h1>日结回执 {escape(str(payload["as_of"]))}</h1>
       <p class="status">{escape(str(payload["status"]))}</p>
     </header>
+    {_night_focus_band(night_focus)}
     <section>
       <h2>今日状态</h2>
       <div class="grid">
@@ -307,6 +328,21 @@ def _receipt_payload(
     cheko_cards: list[MemoryCard],
     cheko_due_cards: list[MemoryCard],
 ) -> dict[str, object]:
+    metrics = {
+        "raw_records": len(records),
+        "memory_cards": len(cards),
+        "review_logs": len(review_logs),
+        "reviews_today": len(reviews_today),
+        "practice_sessions": len(practice_sessions),
+        "practice_today": len(practice_today),
+        "practice_score_ratio": _average_practice_score_ratio(practice_sessions),
+        "weak_memory_cards": sum(
+            1 for diagnostic in diagnostics if diagnostic.status in {"leech", "unstable"}
+        ),
+        "due_cards": len(due_cards),
+        "cheko_cards": len(cheko_cards),
+        "cheko_due_cards": len(cheko_due_cards),
+    }
     return {
         "version": 1,
         "as_of": day.isoformat(),
@@ -317,21 +353,8 @@ def _receipt_payload(
         "schema_version": schema_version,
         "reserve_days_consumed": reserve_days_consumed,
         "review_backlog_ratio": review_backlog_ratio,
-        "metrics": {
-            "raw_records": len(records),
-            "memory_cards": len(cards),
-            "review_logs": len(review_logs),
-            "reviews_today": len(reviews_today),
-            "practice_sessions": len(practice_sessions),
-            "practice_today": len(practice_today),
-            "practice_score_ratio": _average_practice_score_ratio(practice_sessions),
-            "weak_memory_cards": sum(
-                1 for diagnostic in diagnostics if diagnostic.status in {"leech", "unstable"}
-            ),
-            "due_cards": len(due_cards),
-            "cheko_cards": len(cheko_cards),
-            "cheko_due_cards": len(cheko_due_cards),
-        },
+        "metrics": metrics,
+        "night_focus": _night_focus(metrics, diagnostics),
         "source_counts": _count(record.source.value for record in records),
         "card_type_counts": _count(card.card_type.value for card in cards),
         "front_counts": _count(front.value for card in cards for front in card.fronts),
@@ -418,6 +441,67 @@ def _count_cards(counts: dict[object, object], *, labeler: Callable[[object], st
     if not counts:
         return '<div class="item">暂无数据</div>'
     return "".join(_metric(labeler(key), value) for key, value in counts.items())
+
+
+def _night_focus(
+    metrics: dict[str, object],
+    diagnostics: list[MemoryDiagnostic],
+) -> dict[str, str]:
+    weak_count = int(metrics.get("weak_memory_cards", 0))
+    due_count = int(metrics.get("due_cards", 0))
+    reviews_today = int(metrics.get("reviews_today", 0))
+    practice_today = int(metrics.get("practice_today", 0))
+    memory_cards = int(metrics.get("memory_cards", 0))
+    weak_title = next(
+        (
+            diagnostic.title
+            for diagnostic in diagnostics
+            if diagnostic.status in {"leech", "unstable"}
+        ),
+        "",
+    )
+
+    if weak_count:
+        reason = f"薄弱卡 {weak_count} 张"
+        if weak_title:
+            reason = f"{reason}，先看「{weak_title}」"
+        return {
+            "title": "今晚先修复薄弱记忆",
+            "reason": reason,
+            "action": "从记忆诊断第一条开始，拆小卡、补反例或重写提示。",
+        }
+    if due_count:
+        return {
+            "title": "今晚先清空到期复习",
+            "reason": f"到期卡 {due_count} 张，先保护检索节奏。",
+            "action": "先做检索，再把低于 3 分的卡片放入明天修复。",
+        }
+    if reviews_today == 0 and memory_cards:
+        return {
+            "title": "今晚先补一次主动回忆",
+            "reason": "今天还没有复习记录，记忆闭环断了一次。",
+            "action": "挑 3 张核心卡闭卷回答，再记录评分。",
+        }
+    if practice_today == 0:
+        return {
+            "title": "今晚先补一条实战记录",
+            "reason": "今天还没有选择、案例或论文练习。",
+            "action": "选最弱题型做一次可评分练习，再记录错因。",
+        }
+    return {
+        "title": "今晚沉淀今天的增量",
+        "reason": "复习与实战都有记录，可以把材料转成长期资产。",
+        "action": "从 Mein/Du/Uns 中挑一条，升级为记忆卡或练习素材。",
+    }
+
+
+def _night_focus_band(focus: dict[object, object]) -> str:
+    return f"""<section class="focus">
+  <span>今晚焦点</span>
+  <strong>{escape(str(focus.get("title", "今晚沉淀今天的增量")))}</strong>
+  <p>{escape(str(focus.get("reason", "暂无额外风险。")))}</p>
+  <p>{escape(str(focus.get("action", "维持当前学习闭环。")))}</p>
+</section>"""
 
 
 def _recent_records(records: list[object]) -> str:

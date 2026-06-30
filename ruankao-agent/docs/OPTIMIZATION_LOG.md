@@ -2780,3 +2780,33 @@ every card.
 
 - Route-map tests assert the priority band appears and surfaces the red-front
   action while the existing route details remain visible.
+
+## 2026-06-30 Round 092 - Carry Night Focus From Receipt To Evolution
+
+### Learner Friction
+
+The daily receipt was a complete ledger, and the night evolution page generated
+actions from that ledger, but neither page exposed the one focus that ties the
+day and night loop together. The learner still had to infer the priority from
+multiple metrics.
+
+### Change
+
+- Added `night_focus` to the daily receipt JSON.
+- Rendered a `今晚焦点` band near the top of the daily receipt HTML.
+- Carried that same focus into the night evolution JSON.
+- Rendered a `日结焦点` band above the night evolution action list.
+- Used a simple priority ladder: weak memory, due reviews, missing retrieval,
+  missing practice, then material promotion.
+
+### UX Rule Captured
+
+Closed loops need a shared focal point. The daily receipt should decide the
+focus, and the night evolution plan should make that focus actionable.
+
+### Validation
+
+- Daily receipt tests assert the focus is present for due reviews and repeated
+  low-grade memory.
+- Night evolution tests assert the focus is carried into the staged plan and
+  shown in HTML.
