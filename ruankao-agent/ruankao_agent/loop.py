@@ -214,9 +214,17 @@ def status_line(snapshot: DailyLoopSnapshot) -> str:
     backlog = snapshot.dashboard.review_backlog_ratio
     due_cards = snapshot.dashboard.due_cards
     return (
-        f"{snapshot.countdown} | {snapshot.phase_name} | {snapshot.risk_text} "
-        f"| due={due_cards} | backlog={backlog:.0%}"
+        f"{snapshot.countdown} · {snapshot.phase_name} · {_risk_text_label(snapshot.risk_text)} "
+        f"· 到期 {due_cards} · 积压 {backlog:.0%}"
     )
+
+
+def _risk_text_label(value: str) -> str:
+    return {
+        "green": "绿灯",
+        "yellow": "黄灯",
+        "red": "红灯",
+    }.get(value, value)
 
 
 def write_dashboard(root: Path, *, as_of: date | None = None) -> Path:

@@ -2587,3 +2587,30 @@ not silently reintroduce old scaffolding.
 
 - `python3 -m pytest tests/test_cli.py -q`
 - Tests assert CLI init produces a localized principle note.
+
+## 2026-06-30 Round 085 - Localize Core Status Line
+
+### Learner Friction
+
+The shared daily-loop status line still returned strings like
+`D-117 | 启动诊断 | green | due=1 | backlog=100%`. This line appears in CLI status
+and daily receipts, so it should be readable as study state rather than
+internal status codes.
+
+### Change
+
+- Changed `status_line()` to use the same learner-facing style as the workbench:
+  `D-117 · 启动诊断 · 绿灯 · 到期 0 · 积压 0%`.
+- Localized risk labels from `green/yellow/red` to `绿灯/黄灯/红灯`.
+- Kept the underlying risk values and structured payloads unchanged.
+
+### UX Rule Captured
+
+Shared status text is product copy. If a string is shown to the learner, it
+should not expose internal enum values or key-value fragments.
+
+### Validation
+
+- `python3 -m pytest tests/test_cli.py -q`
+- Tests assert CLI status output now shows localized risk and natural due/backlog
+  labels, and no longer shows `green`, `red`, or `due=`.

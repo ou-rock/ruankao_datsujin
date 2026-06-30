@@ -48,7 +48,8 @@ def test_cli_init_status_and_dashboard(tmp_path) -> None:
     assert status_result.returncode == 0, status_result.stderr
     assert "D-117" in status_result.stdout
     assert "启动诊断" in status_result.stdout
-    assert "green" in status_result.stdout.lower()
+    assert "绿灯" in status_result.stdout
+    assert "green" not in status_result.stdout.lower()
 
     dashboard_result = subprocess.run(
         [sys.executable, "-m", "ruankao_agent.cli", "dashboard", "--root", str(root)],
@@ -101,9 +102,11 @@ def test_cli_status_and_dashboard_reflect_persisted_store_state(tmp_path) -> Non
     )
 
     assert status_result.returncode == 0, status_result.stderr
-    assert "due=1" in status_result.stdout
-    assert "backlog=100%" in status_result.stdout
-    assert "red" in status_result.stdout.lower()
+    assert "到期 1" in status_result.stdout
+    assert "积压 100%" in status_result.stdout
+    assert "红灯" in status_result.stdout
+    assert "due=1" not in status_result.stdout
+    assert "red" not in status_result.stdout.lower()
 
     subprocess.run(
         [
@@ -166,7 +169,8 @@ def test_cli_status_reflects_practice_front_gaps_after_practice_starts(tmp_path)
     )
 
     assert status_result.returncode == 0, status_result.stderr
-    assert "red" in status_result.stdout.lower()
+    assert "红灯" in status_result.stdout
+    assert "red" not in status_result.stdout.lower()
 
     store.add_practice_session(
         front=ExamFront.CASE,
@@ -199,7 +203,7 @@ def test_cli_status_reflects_practice_front_gaps_after_practice_starts(tmp_path)
     )
 
     assert recovered_result.returncode == 0, recovered_result.stderr
-    assert "green" in recovered_result.stdout.lower()
+    assert "绿灯" in recovered_result.stdout
 
 
 def test_cli_vault_sync_exports_memory_cards(tmp_path) -> None:
