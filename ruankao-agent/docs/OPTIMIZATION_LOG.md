@@ -3740,3 +3740,38 @@ database, build RAG briefs, handle HTTP, or write durable state.
 - Verified the redirected homepage showed `练习记录 #1 已保存。`, the case front
   turned green, and the temporary SQLite database contained
   `case 页面区块拆分案例验证 8.5/10.0`.
+
+## 2026-06-30 Round 121 - Explain Workbench Port Fallback
+
+### Learner Friction
+
+The workbench server already knew how to move from a busy requested port to the
+next available port, but the launch message did not explicitly name that
+recovery. When a learner has just seen `Address already in use`, the terminal
+should explain which port was skipped and which real URL is active.
+
+### Change
+
+- Extended the localized workbench launch message with an optional fallback
+  line.
+- Kept the existing no-conflict message byte-for-byte compatible.
+- Added a regression test for the fallback message.
+
+### UX Rule Captured
+
+Recovery behavior must be visible at the same layer where failure appeared. A
+server that silently recovers still feels broken if the terminal does not name
+the new address.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py::test_workbench_launch_message_is_localized tests/test_web_workbench.py::test_workbench_launch_message_names_fallback_port tests/test_web_workbench.py::test_workbench_server_falls_back_when_default_port_is_busy -q`
+
+### BrowserAct Evidence
+
+- Occupied `127.0.0.1:8890` with a temporary listener.
+- Started the workbench with requested port `8890`; the server printed
+  `端口 8890 已被占用，已改用 8891。`.
+- Opened `http://127.0.0.1:8891/#rag` through browser-act.
+- Verified the rendered page included the RAG control panel, the expected
+  homepage section ids, and the expected action forms.

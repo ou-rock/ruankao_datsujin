@@ -29,7 +29,14 @@ def serve_workbench(
     handler_cls = _handler_for(app)
     server = _bind_workbench_server(host, port, handler_cls)
     url = f"http://{host}:{server.server_port}/"
-    print(_workbench_launch_message(url), flush=True)
+    print(
+        _workbench_launch_message(
+            url,
+            requested_port=port,
+            actual_port=server.server_port,
+        ),
+        flush=True,
+    )
     if open_browser:
         webbrowser.open(url)
     server.serve_forever()
@@ -58,5 +65,19 @@ def _bind_workbench_server(
     raise OSError(f"Cannot bind workbench server from port {port}")
 
 
-def _workbench_launch_message(url: str) -> str:
-    return f"软考达人工作台已启动：{url}\n按 Ctrl-C 停止。"
+def _workbench_launch_message(
+    url: str,
+    *,
+    requested_port: int | None = None,
+    actual_port: int | None = None,
+) -> str:
+    lines: list[str] = []
+    if (
+        requested_port not in (None, 0)
+        and actual_port is not None
+        and actual_port != requested_port
+    ):
+        lines.append(f"端口 {requested_port} 已被占用，已改用 {actual_port}。")
+    lines.append(f"软考达人工作台已启动：{url}")
+    lines.append("按 Ctrl-C 停止。")
+    return "\n".join(lines)

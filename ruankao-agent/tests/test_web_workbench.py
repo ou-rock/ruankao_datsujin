@@ -101,6 +101,18 @@ def test_workbench_launch_message_is_localized() -> None:
     assert "Ruankao workbench" not in text
 
 
+def test_workbench_launch_message_names_fallback_port() -> None:
+    text = _workbench_launch_message(
+        "http://127.0.0.1:8766/",
+        requested_port=8765,
+        actual_port=8766,
+    )
+
+    assert "端口 8765 已被占用，已改用 8766。" in text
+    assert "软考达人工作台已启动：http://127.0.0.1:8766/" in text
+    assert "按 Ctrl-C 停止。" in text
+
+
 def test_workbench_server_falls_back_when_default_port_is_busy() -> None:
     class QuietHandler(BaseHTTPRequestHandler):
         def log_message(self, format: str, *args: object) -> None:
