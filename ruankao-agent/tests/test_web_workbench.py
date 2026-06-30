@@ -248,6 +248,7 @@ def test_workbench_forms_write_practice_session(tmp_path) -> None:
     assert sessions[0].duration_minutes == 35
     assert "质量属性效用树" in html
     assert "8/15" in html
+    assert "ratio=53%" in html
 
 
 def test_workbench_can_seed_cheko_cards_from_learning_signal_action(tmp_path) -> None:

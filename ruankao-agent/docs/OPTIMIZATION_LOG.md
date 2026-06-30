@@ -1308,3 +1308,27 @@ without opening a control.
   - all five status values are visible radio options;
   - raw remains the default;
   - the old status select is gone.
+
+## 2026-06-30 Round 041 - Practice List Score Ratio
+
+### Learner Friction
+
+The recent practice list showed raw scores such as `8/15`, but did not surface
+the score ratio. Learners should not have to mentally calculate whether a
+practice attempt was roughly half, passing, or strong.
+
+### Change
+
+- Added `ratio=<percent>` to recent practice rows.
+- Preserved the original `score/max_score` text.
+- Rendered `ratio=none` when score or max score is missing.
+
+### UX Rule Captured
+
+Practice evidence should be scannable. Raw marks are useful, but ratio makes
+quality easier to compare across fronts and exercises.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert an 8/15 practice session renders `ratio=53%`.
