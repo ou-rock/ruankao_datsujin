@@ -28,6 +28,8 @@ def test_seed_core_principles_creates_seven_principle_cards(tmp_path) -> None:
     assert result.skipped_titles == ()
     assert len(records) == 1
     assert records[0].source == SourceIdentity.DU
+    assert records[0].summary == "architect-thinking 核心七原则内核"
+    assert "Core Seven" not in records[0].summary
     assert records[0].promotion_status == "promoted"
     assert len(cards) == len(CORE_ARCHITECTURE_PRINCIPLES)
     assert all(card.card_type == CardType.PRINCIPLE for card in cards)

@@ -3130,3 +3130,27 @@ users should receive the same local URL and stop hint.
 
 - Workbench tests assert the localized launch message and reject the old English
   startup phrase.
+
+## 2026-06-30 Round 105 - Localize Core Principle Seed Summary
+
+### Learner Friction
+
+Core principle seeding wrote a Du raw record with the summary
+`architect-thinking Core Seven 原则内核`. That summary can surface in raw records,
+daily receipts, vault notes, and state exports, so the old English label should
+not leak into learner-facing material.
+
+### Change
+
+- Changed the seed summary to `architect-thinking 核心七原则内核`.
+- Kept the skill name and stored principle content unchanged.
+
+### UX Rule Captured
+
+Internal skill provenance can remain, but the visible learning label should use
+the same language as the rest of the system.
+
+### Validation
+
+- Principle tests assert the localized summary and reject `Core Seven` in the
+  raw-record summary.
