@@ -353,7 +353,8 @@ Expected modules:
 - `notebooklm.py`: local representation and CLI wrapper for NotebookLM queries.
 - `rag.py`: local retrieval and progress-control briefs from SQLite evidence.
 - `loop.py`: daily loop status, risk evaluation, next-action generation.
-- `web.py`: local workbench composition root for routes, forms, and app orchestration.
+- `web.py`: local workbench server bootstrap and backward-compatible exports.
+- `web_app.py`: workbench application orchestration, actions, files, and page composition.
 - `web_forms.py`: workbench form field adapters that return typed input objects.
 - `web_handlers.py`: local HTTP handler, route dispatch, redirects, and file responses.
 - `web_render.py`: workbench HTML fragments and display labels, with no HTTP or writes.

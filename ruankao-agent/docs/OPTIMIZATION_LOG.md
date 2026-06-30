@@ -3406,6 +3406,46 @@ and `storage`, but it must not handle HTTP, open SQLite, or write durable state.
   workbench showed `练习记录 #1 已保存。`, the case front turned green, and the
   recent practice/RAG sections reflected the submitted record.
 
+## 2026-06-30 Round 115 - Split Workbench App From Server Bootstrap
+
+### Learner Friction
+
+After extracting render helpers, form adapters, and HTTP handlers, `web.py`
+still carried the entire `WorkbenchApp` class. The filename suggested a web
+server entrypoint, but the module still owned application actions, page
+composition, file lookup, report triggering, and SQLite-backed writes.
+
+### Change
+
+- Added `ruankao_agent/web_app.py` for `WorkbenchConfig` and `WorkbenchApp`.
+- Reduced `web.py` to server bootstrap, port fallback, launch messaging, and
+  backward-compatible exports for tests and callers.
+- Preserved existing `from ruankao_agent.web import WorkbenchApp` compatibility.
+- Updated the architecture boundary contract so `web.py` has only
+  `web_app/web_handlers` dependencies, while `web_app.py` is the documented
+  workbench application orchestration hotspot.
+
+### Architecture Rule Captured
+
+`web.py` is now a thin server bootstrap module. Application writes, page
+composition, file lookup, and report orchestration belong in `web_app.py` until
+they are further split into smaller workbench application services.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/web.py ruankao_agent/web_app.py ruankao_agent/web_handlers.py`
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest tests/test_architecture_boundaries.py -q`
+
+### BrowserAct Evidence
+
+- Started a temporary workbench root at `http://127.0.0.1:8879/` through the
+  now-thin `web.py` server bootstrap.
+- Submitted a real practice form through browser-act.
+- Verified the redirected page showed `练习记录 #1 已保存。`, the case front
+  turned green, and the recent practice/RAG sections reflected the record from
+  the moved `web_app.py` orchestration path.
+
 ### BrowserAct Evidence
 
 - Started the current workbench code on `http://127.0.0.1:8875/`.
