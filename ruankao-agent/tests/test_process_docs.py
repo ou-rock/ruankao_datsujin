@@ -24,3 +24,13 @@ def test_tdd_plan_is_localized_but_keeps_red_green_refactor() -> None:
     assert "Refactor：通过后再收紧" in text
     assert "Agent 波次规则" in text
     assert "# TDD Plan" not in text
+
+
+def test_agent_orchestration_log_has_current_context_note() -> None:
+    text = (DOCS_ROOT / "AGENT_ORCHESTRATION.md").read_text(encoding="utf-8")
+
+    assert "# Agent 协作日志" in text
+    assert "3 个实现 agent" in text
+    assert "命令输出和风险文本保留" in text
+    assert "判断当前行为时以测试" in text
+    assert "工作台、日结回执和最新优化日志为准" in text

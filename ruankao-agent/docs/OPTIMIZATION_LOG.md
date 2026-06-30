@@ -3000,3 +3000,30 @@ that product voice.
 ### Validation
 
 - Added process-doc tests for localized acceptance criteria and TDD plan.
+
+## 2026-06-30 Round 100 - Add Context To Agent Orchestration Log
+
+### Learner Friction
+
+The agent orchestration log preserved early build evidence, including old
+English headings and earlier CLI status examples. Because the current product
+surface is localized, a reader could mistake historical output for the current
+interface contract.
+
+### Change
+
+- Renamed the document title to `Agent 协作日志`.
+- Added a Chinese summary of the initial multi-agent build process.
+- Added a note that historical command output and risk text are preserved as
+  evidence and may differ from current localized CLI/HTML output.
+- Pointed current-behavior judgment back to tests, the workbench, daily receipts,
+  and the latest optimization log.
+
+### UX Rule Captured
+
+Historical logs should stay faithful, but they still need current context. Good
+documentation lets future agents distinguish evidence from the latest contract.
+
+### Validation
+
+- Process-doc tests assert the orchestration log has the current-context note.
