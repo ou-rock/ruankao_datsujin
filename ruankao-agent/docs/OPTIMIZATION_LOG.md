@@ -4610,3 +4610,57 @@ now owns only generic workbench controls, status messages, and today's action.
   9 rendered sections, `main` max width `1280px`, title
   `软考达人工作台 · D-116 · 红灯`, and screenshot
   `/tmp/ruankao-web-rag-panel-workbench.png`.
+
+## 2026-06-30 Round 139 - Split Workbench Form Controls
+
+### Learner Friction
+
+After the RAG panel moved out, `web_render.py` still mixed status rendering with
+reusable form controls. The controls are used by form sections, while status
+messages and today's action are used by the page shell and view-model assembly.
+Keeping both in one module made `web_page_forms.py` depend on a generic render
+module for a narrow control concern.
+
+### Change
+
+- Added `ruankao_agent/web_controls.py` for reusable workbench form controls.
+- Moved `_front_checks`, `_promotion_status_radios`, and `_relation_radios`
+  out of `web_render.py`.
+- Updated `web_page_forms.py` to import controls directly from
+  `web_controls.py`.
+- Updated `web_page_sections.py` to import risk labels directly from
+  `web_labels.py` instead of receiving them through `web_render.py`.
+- Reduced `web_render.py` from roughly 140 lines to roughly 100 lines.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved workbench routes, form section layout, front checkboxes, promotion
+  radios, relation radios, status messages, RAG panel, and front radar output.
+
+### Architecture Rule Captured
+
+`web_controls.py` owns only reusable workbench form control HTML fragments. It
+has no internal dependencies and must not read state, process HTTP, write state,
+open SQLite, save label mappings, or own form-section layout. `web_render.py`
+now owns only workbench status messages, status summary, and today's primary
+action text.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/web_controls.py ruankao_agent/web_render.py ruankao_agent/web_page_forms.py`
+- `python3 -m pytest tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary workbench root under `/tmp/ruankao-web-controls`.
+- Initialized the root and seeded Cheko cards through public CLI commands.
+- Served the temporary workbench at `http://127.0.0.1:8909/`.
+- Opened `http://127.0.0.1:8909/` through browser-act.
+- Verified HTTP 200 and rendered DOM content for `软考达人工作台`, study-turn,
+  capture, cards, and principles sections.
+- Verified 3 front checkbox groups, 9 `fronts` inputs, 3 default checked card
+  fronts, 5 promotion status radios with default `raw`, 4 relation radios with
+  default `supports`, 4 segmented controls, 9 rendered sections, `main` max
+  width `1280px`, title `软考达人工作台 · D-116 · 红灯`, and screenshot
+  `/tmp/ruankao-web-controls-workbench.png`.

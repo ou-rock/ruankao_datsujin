@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from html import escape
 
-from .web_lists import _card_list, _practice_list
-from .web_page_view import HomePageView
-from .web_render import (
+from .web_controls import (
     _front_checks,
     _promotion_status_radios,
     _relation_radios,
 )
+from .web_lists import _card_list, _practice_list
+from .web_page_view import HomePageView
 
 
 def render_today_operations(view: HomePageView) -> str:
