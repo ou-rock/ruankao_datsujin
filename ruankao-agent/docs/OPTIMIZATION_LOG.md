@@ -1744,3 +1744,35 @@ less brittle.
 
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert ID inputs now expose browser numeric constraints.
+
+## 2026-06-30 Round 056 - Contextual Learning Placeholders
+
+### Learner Friction
+
+Several high-effort textareas were blank: practice summaries, mistakes,
+three-source raw text, card prompts, card answers, and principle relation
+rationales. Blank boxes make capture slower because the learner must remember
+what kind of evidence is worth preserving.
+
+### Change
+
+- Added contextual placeholders for:
+  - practice summary;
+  - mistake/cause notes;
+  - three-source raw text;
+  - three-source summary;
+  - memory-card prompt;
+  - memory-card answer;
+  - principle relation rationale.
+- Kept field names, storage, and validation unchanged.
+
+### UX Rule Captured
+
+Free-text fields should pull better thinking from the learner. A placeholder can
+act as a small Socratic cue without adding another instructional block to the
+page.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert the workbench renders all contextual learning placeholders.

@@ -191,6 +191,21 @@ def test_practice_numeric_fields_have_browser_constraints(tmp_path) -> None:
     assert 'type="number" name="to_card_id" min="1" step="1"' in html
 
 
+def test_workbench_textareas_have_learning_placeholders(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+
+    html = app.render_home()
+
+    assert 'placeholder="得分点、卡点、暴露出的知识边界"' in html
+    assert 'placeholder="错因、混淆项、下一次避免方式"' in html
+    assert 'placeholder="保留原话、文章摘录、对话片段或个人经验"' in html
+    assert 'placeholder="一句话写清它为什么值得留下"' in html
+    assert 'placeholder="看到什么场景时要想起这张卡？"' in html
+    assert 'placeholder="可直接检索的答案、原则或表达"' in html
+    assert 'placeholder="说明这两个原则如何支撑、制约、冲突或派生"' in html
+
+
 def test_raw_record_source_uses_segmented_radio_control(tmp_path) -> None:
     root = tmp_path / "demo"
     app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))

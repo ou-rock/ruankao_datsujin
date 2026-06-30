@@ -871,10 +871,10 @@ class WorkbenchApp:
               <input name="source" placeholder="Cheko / 真题 / 自写">
             </label>
             <label>练习摘要
-              <textarea name="summary" required></textarea>
+              <textarea name="summary" required placeholder="得分点、卡点、暴露出的知识边界"></textarea>
             </label>
             <label>错因 / 卡点
-              <textarea name="mistakes"></textarea>
+              <textarea name="mistakes" placeholder="错因、混淆项、下一次避免方式"></textarea>
             </label>
             <button type="submit">记录练习</button>
           </form>
@@ -905,10 +905,10 @@ class WorkbenchApp:
             </div>
           </div>
           <label>原文 / 灵感 / 对话摘录
-            <textarea name="text" required></textarea>
+            <textarea name="text" required placeholder="保留原话、文章摘录、对话片段或个人经验"></textarea>
           </label>
           <label>一句话摘要
-            <textarea name="summary" required></textarea>
+            <textarea name="summary" required placeholder="一句话写清它为什么值得留下"></textarea>
           </label>
           <label>主题，每行一个
             <input name="topics" placeholder="质量属性&#10;架构评估">
@@ -940,10 +940,10 @@ class WorkbenchApp:
               <input name="title" required>
             </label>
             <label>问题 / 适用场景
-              <textarea name="prompt" required></textarea>
+              <textarea name="prompt" required placeholder="看到什么场景时要想起这张卡？"></textarea>
             </label>
             <label>答案 / 核心表述
-              <textarea name="answer" required></textarea>
+              <textarea name="answer" required placeholder="可直接检索的答案、原则或表达"></textarea>
             </label>
             <label>关联原始材料 ID
               <input type="number" name="source_record_id" min="1" step="1" inputmode="numeric">
@@ -980,7 +980,7 @@ class WorkbenchApp:
               </div>
             </div>
             <label>为什么这样连接
-              <textarea name="rationale" required></textarea>
+              <textarea name="rationale" required placeholder="说明这两个原则如何支撑、制约、冲突或派生"></textarea>
             </label>
             <button type="submit">连接原则</button>
           </form>
