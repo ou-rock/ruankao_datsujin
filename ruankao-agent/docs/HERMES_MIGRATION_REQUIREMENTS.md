@@ -45,10 +45,10 @@
 ### 需求二：差分状态监视器与 Discord 级报警器 (Diff & Alert Gateway)
 *   **状态抓取**：每次同步脚本执行完成后，系统通过读库或调用 `cli.py status` 解析出 `RiskStatus`（绿/黄/红）、`due_cards`（到期卡）、`leech` 诊断清单及缺席题型。
 *   **差分判断**：设计一个“状态哨兵”服务，比对本次同步与上一次的历史指标。
-*   **阈值推送规则**：
-    1.  当 `RiskStatus` 发生退化（如 `green` -> `yellow` / `red`）时，必须将风险原因（如“论文超过 7 天未触达”）格式化输出为中文警报，发送给配置的 Discord 绑定 Channel。
-    2.  当发现存在急需被修复的 `leech`（低分积压卡）时，于清晨或触发日结时在 Discord 进行定向提醒。
-    3.  若状态仍为绿色，则保持静默，不在聊天频道灌水。
+*   **重连同步与告警路由规则（Silent Offline Sync）**：
+    1.  **静默断线重连**：当网关（Discord/Telegram）经历离线重连、或用户在本地积压了多轮 Obsidian 笔记未触发网络时，Harness 在重新连线瞬间，**仅在后台静默同步 SQLite 数据库与 Obsidian 本地文件，不向聊天频道推送任何历史补发告警（零打扰原则）**。
+    2.  **前端可见性防线**：系统的红黄绿灯及风险详细元数据应通过本地静态 HTML Dashboard 以及 Obsidian 总图进行醒目渲染。若用户不打开前端页面，可通过在 Discord 线程中主动发送 `/status` 或 `/rag-query` 指令拉取当前状态简报。
+    3.  **主动通知边界**：只有在**实时在线期间**（非离线堆积重连），当单次物理动作（如当天首次练习被判定为 `low_score` 且导致健康灯降级）引发的突变时，才在 Discord 发出单次中文预警，其余时间保持静默。
 
 ### 需求三：Obsidian 呈现面与只读契约 (Obsidian Read-Only Domain Contract)
 *   **物理编辑约束**：Obsidian 在架构上定义为**纯呈现面与只读批注层**。SQLite (`ruankao.db`) 拥有绝对权威修改权。
