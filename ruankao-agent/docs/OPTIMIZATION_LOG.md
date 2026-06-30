@@ -4458,3 +4458,56 @@ maps or formatting rules again.
   `三题型雷达`, `选择题`, `案例题`, `论文题`, `红灯`, `场景卡`, `表达卡`,
   `到期：2026-06-29`, `复习：0次`, `RAG 记忆控制`, CSS `--accent=#0f766e`,
   `main` max width `1280px`, 3 front cards, and 9 rendered sections.
+
+## 2026-06-30 Round 136 - Split Workbench Lists
+
+### Learner Friction
+
+After labels moved out, `web_render.py` still mixed several presentation
+families: control widgets, RAG panel rendering, front radar rendering, and
+workbench lists for cards, practice sessions, risk reasons, and memory
+diagnostics. The list renderers were reused by both page sections and form
+sections, so keeping them inside `web_render.py` made the module a display
+catch-all again.
+
+### Change
+
+- Added `ruankao_agent/web_lists.py` for workbench card lists, practice lists,
+  risk reason lists, memory diagnostic lists, and review grade buttons.
+- Updated `web_page_sections.py` and `web_page_forms.py` to import list
+  renderers directly from `web_lists.py`.
+- Kept `web_render.py` focused on front checks, status messages, today's
+  primary action, RAG panel rendering, front overview, front cards, and radio
+  controls.
+- Reduced `web_render.py` from roughly 365 lines to roughly 260 lines.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved workbench routes, form controls, rendered labels, card list order,
+  review buttons, Cheko card rendering, practice list behavior, diagnostics,
+  and front radar behavior.
+
+### Architecture Rule Captured
+
+`web_lists.py` owns workbench list HTML fragments and may depend on read-only
+data objects plus `web_labels.py`; it must not handle HTTP, write state, open
+SQLite, or own form section layout. `web_render.py` owns control fragments,
+RAG panel rendering, and front radar rendering, but must not absorb workbench
+list rendering again.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/web_render.py ruankao_agent/web_lists.py ruankao_agent/web_page_sections.py ruankao_agent/web_page_forms.py`
+- `python3 -m pytest tests/test_architecture_boundaries.py tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary workbench root under `/tmp/ruankao-web-lists`.
+- Initialized the root and seeded Cheko cards through public CLI commands.
+- Served the temporary workbench at `http://127.0.0.1:8906/`.
+- Opened `http://127.0.0.1:8906/` through browser-act.
+- Verified HTTP 200 and rendered DOM content for `软考达人工作台`, `到期卡片`,
+  `Cheko错题池：系统架构设计`, `场景卡`, `表达卡`, `到期：2026-06-29`,
+  `复习：0次`, `最近 Cheko 卡片`, `还没有练习记录`, 3 front cards, 9 list
+  containers, 9 rendered sections, max width `1280px`, and both review grade
+  buttons `5` and low `0`.

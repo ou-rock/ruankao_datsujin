@@ -14,14 +14,16 @@ from .web_page_forms import (
 )
 from .web_page_style import WORKBENCH_HOME_STYLE
 from .web_page_view import HomePageView
-from .web_render import (
+from .web_lists import (
     _card_list,
     _diagnostic_list,
+    _risk_reason_list,
+)
+from .web_render import (
     _front_cards,
     _message,
     _rag_panel,
     _risk_label,
-    _risk_reason_list,
     _status_summary,
 )
 

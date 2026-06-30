@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from html import escape
 
+from .web_lists import _card_list, _practice_list
 from .web_page_view import HomePageView
 from .web_render import (
-    _card_list,
     _front_checks,
-    _practice_list,
     _promotion_status_radios,
     _relation_radios,
 )
