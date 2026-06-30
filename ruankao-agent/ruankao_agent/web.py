@@ -267,6 +267,12 @@ class WorkbenchApp:
             if export_path.exists()
             else ""
         )
+        primary_action = _today_primary_action(
+            due_cards=due_cards,
+            diagnostics=active_diagnostics,
+            practice_sessions=practice_sessions,
+        )
+        primary_reason = _today_primary_reason(snapshot.risk_reasons, due_cards)
 
         return f"""<!doctype html>
 <html lang="zh-CN">
@@ -344,6 +350,42 @@ class WorkbenchApp:
       display: block;
       font-size: 18px;
       line-height: 1.25;
+    }}
+    .action-strip {{
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--accent);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px 14px;
+    }}
+    .action-strip.risk-red {{ border-left-color: var(--danger); }}
+    .action-strip.risk-yellow {{ border-left-color: var(--warn); }}
+    .action-kicker {{
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      margin-bottom: 4px;
+    }}
+    .action-title {{
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.35;
+    }}
+    .action-reason {{
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin-top: 4px;
+    }}
+    .action-buttons {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
     }}
     main {{
       max-width: 1280px;
@@ -511,6 +553,9 @@ class WorkbenchApp:
       aside {{ position: static; }}
       .top {{ padding: 18px 14px; }}
       h1 {{ font-size: 24px; }}
+      .action-strip {{ grid-template-columns: 1fr; }}
+      .action-buttons {{ justify-content: stretch; }}
+      .action-buttons .button {{ width: 100%; }}
     }}
   </style>
 </head>
@@ -528,6 +573,18 @@ class WorkbenchApp:
         <div class="metric"><span>记忆卡</span><strong>{len(cards)}</strong></div>
         <div class="metric"><span>原始材料</span><strong>{len(records)}</strong></div>
         <div class="metric"><span>风险</span><strong>{escape(snapshot.risk_text)}</strong></div>
+      </div>
+      <div class="action-strip risk-{escape(snapshot.risk_text)}">
+        <div>
+          <div class="action-kicker">今日第一动作</div>
+          <div class="action-title">{escape(primary_action)}</div>
+          <div class="action-reason">{escape(primary_reason)}</div>
+        </div>
+        <div class="action-buttons">
+          <a class="button" href="#today">处理今日闭环</a>
+          <a class="button secondary" href="#practice">记录练习</a>
+          <a class="button secondary" href="/learning/today.html">今日三任务</a>
+        </div>
       </div>
     </div>
   </header>
@@ -1101,6 +1158,30 @@ def _message(message: str) -> str:
     if not message:
         return ""
     return f'<div class="message">{escape(message)}</div>'
+
+
+def _today_primary_action(
+    *,
+    due_cards: list[MemoryCard],
+    diagnostics: list[MemoryDiagnostic],
+    practice_sessions: list[PracticeSession],
+) -> str:
+    if due_cards:
+        return f"先复习 {len(due_cards)} 张到期卡，低于 3 分立刻明天再见。"
+    if diagnostics:
+        diagnostic = diagnostics[0]
+        return f"先修复 {diagnostic.title}：{diagnostic.action}"
+    if not practice_sessions:
+        return "先记录一次选择、案例或论文练习，建立题型手感基线。"
+    return "开启一轮学习模式，把新的 Mein / Du / Uns 沉淀到底层。"
+
+
+def _today_primary_reason(reasons: tuple[str, ...], due_cards: list[MemoryCard]) -> str:
+    if reasons:
+        return reasons[0]
+    if due_cards:
+        return "到期复习是今天最稳定的提分动作。"
+    return "当前风险信号正常，继续保持最小闭环。"
 
 
 def _card_list(cards: list[MemoryCard], *, with_review: bool, today: date) -> str:

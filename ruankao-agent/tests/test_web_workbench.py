@@ -23,6 +23,8 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
 
     assert "软考达人工作台" in html
     assert "今日闭环" in html
+    assert "今日第一动作" in html
+    assert "处理今日闭环" in html
     assert "学习信号" in html
     assert "把 Cheko 弱点入队" in html
     assert "记忆诊断" in html
@@ -53,6 +55,25 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert (root / "learning" / "lessons" / "0001-scene-before-solution.html").exists()
     assert (root / "vault" / "00-map" / "原则网络.md").exists()
     assert (root / "vault" / "10-memory-war-room" / "principles" / "场景先于方案.md").exists()
+
+
+def test_workbench_home_prioritizes_due_review_in_first_action(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+    app.initialize()
+    app.add_memory_card(
+        parse_qs(
+            "card_type=concept&title=质量属性场景&prompt=六要素是什么"
+            "&answer=刺激源、刺激、环境、制品、响应、响应度量"
+            "&fronts=case&next_due=2026-06-29"
+        )
+    )
+
+    html = app.render_home()
+
+    assert "今日第一动作" in html
+    assert "先复习 1 张到期卡" in html
+    assert "risk-red" in html
 
 
 def test_workbench_forms_write_store_and_principle_note(tmp_path) -> None:

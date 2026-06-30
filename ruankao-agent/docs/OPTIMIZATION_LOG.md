@@ -1016,3 +1016,38 @@ current model, its own role, and the next reachable target before asking.
   - study turns persist the three position fields in Mein and Du records;
   - the command mentions ruankao-teach and Uns question seeding;
   - principle links are deferred to night mining.
+
+## 2026-06-30 Round 031 - Workbench First Action Strip
+
+### Learner Friction
+
+The workbench header showed counts and risk, but a learner opening it still had
+to translate those signals into a first action. Red risk should become a visible
+next step, not just a status label.
+
+### Change
+
+- Added a `今日第一动作` strip below the top metrics.
+- Prioritized the action by:
+  - due reviews;
+  - active memory diagnostics;
+  - missing practice;
+  - study-mode continuation.
+- Added three stable shortcuts:
+  - `处理今日闭环`
+  - `记录练习`
+  - `今日三任务`
+- Styled the strip with risk-colored left border and responsive stacking.
+
+### UX Rule Captured
+
+The first viewport should answer "what should I do next?" before asking the
+learner to interpret dashboards, reports, or raw counts.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert:
+  - the workbench home shows the first-action strip;
+  - due reviews become the primary action;
+  - red risk is reflected in the strip class.
