@@ -4363,3 +4363,51 @@ template functions, but must not absorb Cheko task policy again.
 - Verified HTTP 200 and rendered DOM content for `今日三任务`, `只做这三件事`,
   `系统架构设计错题回炉`, `论文最低触达`, `记录学习回合`, CSS `--accent=#0f766e`,
   `main` max width `1120px`, and 3 rendered sections.
+
+## 2026-06-30 Round 134 - Split Daily Receipt Sections
+
+### Learner Friction
+
+`receipts_render.py` still mixed the whole-page daily receipt shell with every
+section, list row, label mapper, and value formatter. That made daily receipt
+changes riskier than necessary: a small label or row change required editing
+the same module that injects the page CSS and owns the report document shell.
+
+### Change
+
+- Added `ruankao_agent/receipts_sections.py` for daily receipt sections, list
+  rows, label mappers, and value formatting.
+- Kept `ruankao_agent/receipts_render.py` as the whole-page shell for title,
+  header, CSS injection, and section assembly.
+- Reduced `receipts_render.py` from roughly 390 lines to roughly 30 lines.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved the public `render_daily_receipt` API, daily receipt CLI behavior,
+  report paths, JSON paths, and rendered report content.
+
+### Architecture Rule Captured
+
+`receipts_sections.py` owns daily receipt section fragments and presentation
+labels, but must not read SQLite, call RAG, write files, or inject whole-page
+CSS. `receipts_render.py` owns the document shell and can depend on
+`receipts_sections.py` and `receipts_style.py`, but must not absorb section
+details again.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/receipts_render.py ruankao_agent/receipts_sections.py`
+- `python3 -m pytest tests/test_daily_receipt.py tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary daily receipt root under `/tmp/ruankao-receipt-sections`.
+- Initialized the root, seeded Cheko cards, recorded a study turn, and generated
+  the report through public CLI commands.
+- Served the temporary workbench at `http://127.0.0.1:8904/`.
+- Opened `http://127.0.0.1:8904/reports/daily/2026-06-29.html` through
+  browser-act.
+- Verified HTTP 200 and rendered DOM content for `日结回执 2026-06-29`,
+  `今晚焦点`, `库存`, `记忆诊断`, `RAG 控制`, `进步闸门`, `最近材料`,
+  `Cheko 到期`, CSS `--accent=#0f766e`, `main` max width `1120px`, and
+  13 rendered sections.
