@@ -24,6 +24,12 @@
 ./start-workbench.command
 ```
 
+如果 8765 端口被占用，可以临时指定端口：
+
+```sh
+RUANKAO_WORKBENCH_PORT=8770 ./start-workbench.command
+```
+
 然后在浏览器里完成今日闭环、复习评分、练习记录、学习回合、三源材料、记忆卡、
 原则网络、学习台和 Obsidian vault 同步。在 Codex 里，`/ruankao-workbench`
 会启动同一个工作台。

@@ -31,3 +31,14 @@ def test_automation_doc_is_learner_facing() -> None:
     assert "导入 Cheko 弱区信号" in text
     assert "同步 Mein / Du / Uns 三源材料到 Obsidian" in text
     assert "This project keeps scheduled work explicit" not in text
+
+
+def test_start_workbench_script_announces_local_url() -> None:
+    script = Path(__file__).resolve().parents[2] / "start-workbench.command"
+    text = script.read_text(encoding="utf-8")
+
+    assert "软考达人工作台" in text
+    assert "地址：http://127.0.0.1:$PORT" in text
+    assert "按 Ctrl-C 停止。" in text
+    assert 'PORT="${RUANKAO_WORKBENCH_PORT:-8765}"' in text
+    assert '--port "$PORT"' in text

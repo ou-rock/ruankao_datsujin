@@ -3054,3 +3054,29 @@ work before it lists implementation components.
 
 - Process-doc tests assert the README starts from the workbench and daily loop,
   and no longer uses the old English intro.
+
+## 2026-06-30 Round 102 - Announce Workbench Launch URL
+
+### Learner Friction
+
+The workbench launcher started the server, but did not clearly tell the learner
+which local URL was opening or how to stop it. If the default port was occupied,
+the script also had no documented override.
+
+### Change
+
+- Added a startup banner to `start-workbench.command`.
+- Printed the local workbench URL before launching.
+- Printed the stop hint: `按 Ctrl-C 停止。`
+- Added `RUANKAO_WORKBENCH_PORT` as an optional port override.
+- Documented the port override in the README.
+
+### UX Rule Captured
+
+Launch scripts are part of the interface. They should confirm what is starting,
+where it lives, and what to do when the default port is unavailable.
+
+### Validation
+
+- Script tests assert the startup banner, URL, stop hint, and port override.
+- README tests assert the fallback-port command is documented.

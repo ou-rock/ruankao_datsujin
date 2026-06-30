@@ -43,6 +43,7 @@ def test_readme_starts_from_workbench_and_daily_loop() -> None:
     assert "本地优先的 Codex 陪伴式备考系统" in text
     assert "优先打开本地工作台" in text
     assert "./start-workbench.command" in text
+    assert "RUANKAO_WORKBENCH_PORT=8770 ./start-workbench.command" in text
     assert "学习回合" in text
     assert "Mein/Du/Uns 三源材料同步" in text
     assert "Local-first Codex companion agent" not in text
