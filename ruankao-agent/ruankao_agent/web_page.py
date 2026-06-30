@@ -19,11 +19,11 @@ from .rag import (
 )
 from .receipts import daily_receipt_html_path
 from .route_map import route_map_html_path
+from .web_fronts import _front_overview
+from .web_labels import _risk_label
 from .web_page_sections import render_home_shell
 from .web_page_view import HomePageView
 from .web_render import (
-    _front_overview,
-    _risk_label,
     _today_primary_action,
     _today_primary_reason,
 )

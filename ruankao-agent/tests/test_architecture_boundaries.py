@@ -119,6 +119,7 @@ EXPECTED_INTERNAL_DEPS = {
     "web_bootstrap": {"learning", "storage", "vault"},
     "web_files": set(),
     "web_forms": {"domain"},
+    "web_fronts": {"domain", "storage", "web_labels"},
     "web_handlers": {"web_forms"},
     "web_page": {
         "domain",
@@ -128,12 +129,15 @@ EXPECTED_INTERNAL_DEPS = {
         "rag",
         "receipts",
         "route_map",
+        "web_fronts",
+        "web_labels",
         "web_page_sections",
         "web_page_view",
         "web_render",
     },
     "web_page_forms": {"web_lists", "web_page_view", "web_render"},
     "web_page_sections": {
+        "web_fronts",
         "web_lists",
         "web_page_forms",
         "web_page_style",
@@ -144,7 +148,7 @@ EXPECTED_INTERNAL_DEPS = {
     "web_page_view": set(),
     "web_labels": {"domain"},
     "web_lists": {"memory", "storage", "web_labels"},
-    "web_render": {"domain", "memory", "storage", "web_labels"},
+    "web_render": {"memory", "storage", "web_labels"},
 }
 
 

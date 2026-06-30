@@ -4511,3 +4511,52 @@ list rendering again.
   `复习：0次`, `最近 Cheko 卡片`, `还没有练习记录`, 3 front cards, 9 list
   containers, 9 rendered sections, max width `1280px`, and both review grade
   buttons `5` and low `0`.
+
+## 2026-06-30 Round 137 - Split Workbench Front Radar
+
+### Learner Friction
+
+After list rendering moved out, `web_render.py` still owned the three-front
+radar calculation and front-card rendering. That made the remaining render
+module carry both global workbench controls and a domain-specific exam-front
+summary, even though the radar is a stable learning-map concept that will
+likely grow with choice, case, and essay tactics.
+
+### Change
+
+- Added `ruankao_agent/web_fronts.py` for workbench three-front overview
+  calculation and front-card rendering.
+- Updated `web_page.py` and `web_page_sections.py` to import front radar
+  helpers directly from `web_fronts.py`.
+- Kept `web_render.py` focused on front checks, status messages, today's
+  primary action, RAG panel rendering, and radio controls.
+- Reduced `web_render.py` from roughly 260 lines to roughly 195 lines.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved workbench routes, page shell, section layout, rendered labels,
+  today's action, RAG panel behavior, and front radar output.
+
+### Architecture Rule Captured
+
+`web_fronts.py` owns workbench three-front radar calculation and rendering. It
+may depend on read-only domain/storage data objects and `web_labels.py`, but
+must not handle HTTP, write state, open SQLite, own the page shell, or call RAG
+query logic.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/web_render.py ruankao_agent/web_fronts.py ruankao_agent/web_page.py ruankao_agent/web_page_sections.py`
+- `python3 -m pytest tests/test_architecture_boundaries.py tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary workbench root under `/tmp/ruankao-web-fronts`.
+- Initialized the root and seeded Cheko cards through public CLI commands.
+- Served the temporary workbench at `http://127.0.0.1:8907/`.
+- Opened `http://127.0.0.1:8907/` through browser-act.
+- Verified HTTP 200 and rendered DOM content for `软考达人工作台`,
+  `三题型雷达`, `选择题`, `案例题`, `论文题`, `红灯`, and `先清到期卡`.
+- Verified 3 front cards, 3 red front cards, 9 rendered sections, `main` max
+  width `1280px`, title `软考达人工作台 · D-116 · 红灯`, and screenshot
+  `/tmp/ruankao-web-fronts-workbench.png`.
