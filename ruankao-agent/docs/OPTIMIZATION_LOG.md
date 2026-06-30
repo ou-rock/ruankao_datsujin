@@ -2104,3 +2104,33 @@ toward fewer, stronger edges.
 
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert the principle relation form includes the new link-quality rule.
+
+## 2026-06-30 Round 068 - Localize Vault Exam Fronts
+
+### Learner Friction
+
+Generated Obsidian memory-card notes kept stable `choice / case / essay` values
+in YAML, which is good for tools, but the visible `Exam Fronts` section also
+showed those machine labels. Obsidian notes are read by the learner, so the body
+should speak study language.
+
+### Change
+
+- Kept YAML frontmatter unchanged for structured tooling.
+- Added a Markdown display mapper for exam fronts.
+- Changed memory-card note bodies to show:
+  - `选择题`
+  - `案例题`
+  - `论文题`
+- Changed empty front lists in the visible body from `none` to `未标注`.
+
+### UX Rule Captured
+
+Obsidian frontmatter is for machines; Markdown body is for learning. Preserve
+stable codes in YAML, but localize the visible note body.
+
+### Validation
+
+- `python3 -m pytest tests/test_vault_and_dashboard.py -q`
+- Tests assert frontmatter still contains `choice`, the body shows Chinese exam
+  fronts, and empty visible front lists render as `未标注`.

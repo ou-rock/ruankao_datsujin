@@ -74,6 +74,8 @@ def test_sync_memory_cards_to_vault_writes_generated_obsidian_notes(tmp_path) ->
     assert "type: memory-card" in text
     assert "card_type: concept" in text
     assert "choice" in text
+    assert "- 选择题" in text
+    assert "- 案例题" in text
     assert "刺激源、刺激、环境" in text
 
 
@@ -129,6 +131,8 @@ def test_vault_sync_renders_empty_frontmatter_lists_as_yaml_arrays(tmp_path) -> 
     raw_text = next((vault / "40-uns").glob("*.md")).read_text(encoding="utf-8")
 
     assert "fronts: []" in card_text
+    assert "- 未标注" in card_text
+    assert "- none" not in card_text
     assert "topics: []" in raw_text
     assert "fronts: []" in raw_text
 

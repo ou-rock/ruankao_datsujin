@@ -28,6 +28,12 @@ RAW_SOURCE_DIRECTORIES = {
     "uns": "40-uns",
 }
 
+FRONT_LABELS = {
+    "choice": "选择题",
+    "case": "案例题",
+    "essay": "论文题",
+}
+
 
 def initialize_vault(root: Path | str) -> Path:
     vault = Path(root)
@@ -207,7 +213,7 @@ last_reviewed: {last_reviewed}
 
 ## Exam Fronts
 
-{chr(10).join(f"- {front.value}" for front in card.fronts) or "- none"}
+{_markdown_front_list(card.fronts)}
 """
 
 
@@ -236,3 +242,10 @@ def _yaml_list(key: str, values: list[str]) -> str:
         return f"{key}: []"
     lines = "\n".join(f"  - {value}" for value in values)
     return f"{key}:\n{lines}"
+
+
+def _markdown_front_list(fronts: Iterable[object]) -> str:
+    labels = [FRONT_LABELS.get(str(front.value), str(front.value)) for front in fronts]
+    if not labels:
+        return "- 未标注"
+    return "\n".join(f"- {label}" for label in labels)
