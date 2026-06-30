@@ -6,8 +6,10 @@ import sys
 
 from ruankao_agent.learning import (
     DEFAULT_CHEKO_SNAPSHOT,
+    ReferencePage,
     ensure_learning_resources,
     render_cheko_sync,
+    render_reference_page,
     render_today,
     today_tasks,
 )
@@ -138,6 +140,27 @@ def test_today_page_is_one_screen_action_plan() -> None:
     assert "论文最低触达" in html
     assert "如果今天只能做一件事" in html
     assert "Task 1" not in html
+
+
+def test_reference_page_localizes_front_codes() -> None:
+    html = render_reference_page(
+        ReferencePage(
+            filename="demo.html",
+            title="题型映射演示",
+            purpose="验证内部题型代码不会泄漏到学习页面。",
+            outline=("先识别题型。",),
+            fronts=("choice", "case", "essay"),
+            drill="把一个质量属性场景分别映射到三种题型。",
+            cards=("概念卡：题型入口",),
+        )
+    )
+
+    assert "选择题" in html
+    assert "案例题" in html
+    assert "论文题" in html
+    assert ">choice<" not in html
+    assert ">case<" not in html
+    assert ">essay<" not in html
 
 
 def test_cli_learning_generates_learning_desk(tmp_path) -> None:

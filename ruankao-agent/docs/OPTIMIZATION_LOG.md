@@ -1868,3 +1868,34 @@ feels coherent.
 - `python3 -m pytest tests/test_learning.py -q`
 - Tests assert learning pages render localized chrome and no longer expose the
   old generic English labels.
+
+## 2026-06-30 Round 060 - Guard Learning Front Labels
+
+### Learner Friction
+
+The learning desk stores and exchanges exam fronts as compact internal codes in
+other parts of the system, such as `choice`, `case`, and `essay`. Reference pages
+were already authored with Chinese labels, but the renderer had no guardrail: a
+future resource generated from structured data could leak storage codes into the
+visible learning surface.
+
+### Change
+
+- Added a single learning-page display map from front codes to Chinese exam
+  labels:
+  - `choice` to `选择题`
+  - `case` to `案例题`
+  - `essay` to `论文题`
+- Routed reference-page chips through the display map.
+- Routed learning-index reference cards through the same display map.
+
+### UX Rule Captured
+
+Storage codes are not learner language. Keep compact codes for commands,
+records, and imports; translate them at the last visible boundary before HTML.
+
+### Validation
+
+- `python3 -m pytest tests/test_learning.py -q`
+- Added a regression test that renders a reference page with raw front codes and
+  asserts the page shows `选择题 / 案例题 / 论文题` instead.

@@ -8,6 +8,11 @@ from typing import Any, Iterable
 
 
 NOTEBOOKLM_SOURCE = "System Architecture Designer Exam Questions and Analysis"
+FRONT_LABELS = {
+    "choice": "选择题",
+    "case": "案例题",
+    "essay": "论文题",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -454,6 +459,7 @@ def render_scene_before_solution_lesson() -> str:
 
 
 def render_reference_page(page: ReferencePage) -> str:
+    fronts = _front_labels(page.fronts)
     return _page(
         title=page.title,
         body=f"""
@@ -474,7 +480,7 @@ def render_reference_page(page: ReferencePage) -> str:
 </section>
 <section>
   <h2>适用题型</h2>
-  <div class="chips">{"".join(f'<span>{escape(front)}</span>' for front in page.fronts)}</div>
+  <div class="chips">{"".join(f'<span>{escape(front)}</span>' for front in fronts)}</div>
 </section>
 <section>
   <h2>训练动作</h2>
@@ -845,12 +851,16 @@ def _day_card(day: DailyLearningPlan) -> str:
 
 
 def _reference_card(page: ReferencePage) -> str:
-    fronts = " / ".join(page.fronts)
+    fronts = " / ".join(_front_labels(page.fronts))
     return f"""<div class="panel">
   <h3><a href="/learning/reference/{escape(page.filename)}">{escape(page.title)}</a></h3>
   <p>{escape(page.purpose)}</p>
   <p class="meta">{escape(fronts)}</p>
 </div>"""
+
+
+def _front_labels(fronts: Iterable[str]) -> tuple[str, ...]:
+    return tuple(FRONT_LABELS.get(front.strip().lower(), front.strip()) for front in fronts)
 
 
 def _cheko_panel(snapshot: ChekoSnapshot) -> str:
