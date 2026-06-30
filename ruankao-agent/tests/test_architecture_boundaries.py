@@ -16,6 +16,7 @@ ENTRY_ADAPTERS = {
     "web_files",
     "web_forms",
     "web_handlers",
+    "web_page",
 }
 
 
@@ -69,25 +70,28 @@ EXPECTED_INTERNAL_DEPS = {
     },
     "web_app": {
         "dashboard",
-        "domain",
-        "evolution",
-        "export_state",
         "loop",
-        "memory",
-        "rag",
-        "receipts",
-        "route_map",
         "storage",
         "web_actions",
         "web_bootstrap",
         "web_files",
         "web_forms",
-        "web_render",
+        "web_page",
     },
     "web_bootstrap": {"learning", "storage", "vault"},
     "web_files": set(),
     "web_forms": {"domain"},
     "web_handlers": {"web_forms"},
+    "web_page": {
+        "domain",
+        "evolution",
+        "export_state",
+        "memory",
+        "rag",
+        "receipts",
+        "route_map",
+        "web_render",
+    },
     "web_render": {"domain", "memory", "storage"},
 }
 
@@ -106,6 +110,7 @@ def test_inner_modules_do_not_depend_on_entry_adapters() -> None:
             "web_app",
             "web_bootstrap",
             "web_handlers",
+            "web_page",
         }:
             continue
         assert not (deps & ENTRY_ADAPTERS)

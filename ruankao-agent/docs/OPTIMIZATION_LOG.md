@@ -3608,3 +3608,46 @@ compose the workbench home page.
   `/exports/state-2026-06-30.json`.
 - Opened `/api/status` and confirmed the status payload still reports the
   temporary root, Vault, learning path, countdown, and risk.
+
+## 2026-06-30 Round 118 - Split Workbench Home Page Composition
+
+### Learner Friction
+
+`web_app.py` was still carrying the full workbench homepage: data loading,
+page-state derivation, report links, RAG panel payload, CSS, forms, and the
+complete HTML shell. That kept the app facade visually thin in the architecture
+map but still operationally dominated by a single page method.
+
+### Change
+
+- Added `ruankao_agent/web_page.py` with `WorkbenchPageContext` and
+  `render_home_page`.
+- Moved the full `render_home()` HTML composition and page data preparation out
+  of `WorkbenchApp`.
+- Kept `WorkbenchApp.render_home(message=...)` as a compatibility wrapper.
+- Removed direct homepage dependencies from `web_app.py`; it now delegates to
+  `web_page.py`.
+- Updated the architecture boundary contract so `web_page.py` is the documented
+  workbench homepage adapter.
+
+### Architecture Rule Captured
+
+`web_page.py` owns workbench homepage composition. It may assemble read-only
+page data and call `web_render.py` snippets, but it must not handle HTTP,
+write durable state, synchronize Vault, or perform startup initialization.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/web_app.py ruankao_agent/web_page.py`
+- `python3 -m pytest tests/test_architecture_boundaries.py tests/test_web_workbench.py -q`
+
+### BrowserAct Evidence
+
+- Started a temporary workbench root at `http://127.0.0.1:8883/`.
+- Opened the homepage through browser-act and verified the first action strip,
+  three-front radar, navigation, RAG control, and study/practice sections still
+  render after the page extraction.
+- Submitted a real case-practice form through the page.
+- Verified the redirected homepage showed `练习记录 #1 已保存。`, the case front
+  turned green, and the temporary SQLite database contained
+  `case 页面拆分案例验证 8.0/10.0`.
