@@ -114,6 +114,7 @@
 
 ### 需求六：意图规整过滤层 (Semantic Parser Ingest)
 *   **物理职责与隔离**：为降低手写卡片的心智摩擦，中端挂载“语义解析规整层（Semantic Ingest Middleware）”。它位于前端输入动作之后，控制层 SQLite 写入之前。
+*   **当前本地入口（已落地）**：`python3 -m ruankao_agent.cli semantic-ingest --root <root> --text "<散装输入>"` 已提供本地物理校验与降级写库入口。该入口先以本地 parser 模拟小模型 JSON 输出，随后通过 Pydantic/Enum 校验写入 `practice_sessions`，或将低置信日常碎片降级为 `SourceIdentity.MEIN` + `promotion_status="raw"`；带打卡意图但缺失分数的输入会被拒绝，不写入 SQLite。
 *   **模型调用与数据规整（Frontend + Python -> JSON）**：
     1.  **触发阶段**：当用户在任一前端（Obsidian 保存、Webhook 事件或 Discord 回话）输入散装笔记或人话时，Harness 中的 Python 自行捕获。
     2.  **调用规整模型**：中端调用低成本、高并发的大模型（如 Gemini Flash），加载专用 Skill `ruankao-semantic-parser`。
@@ -201,5 +202,4 @@
     *   [ ] 排序权重与可解释性：混排得分中包含对 `fts_bm25` 词频的打分以及对卡片/练习进阶状态的分离与可解释 `score_breakdown` 拆分列（progress、token、fts_bm25、phrase、front、status）。
     *   [ ] 进步闸门拦截：当有任务处于高危状态（如某卡复习到期、某战线题型缺席）时，自动生成 `ProgressGate` 元素并给出强退回的 `recommended_action` 警醒。
     *   [ ] 每天闭环运行完，新生成的日结报表中应正常显示 `RAG 控制` 面板与契约指令。
-
 

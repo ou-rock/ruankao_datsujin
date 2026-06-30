@@ -22,6 +22,7 @@ def test_daily_command_docs_hide_internal_stage_labels() -> None:
     daily_close = (COMMAND_ROOT / "ruankao-daily-close.md").read_text(encoding="utf-8")
     learning = (COMMAND_ROOT / "ruankao-learning.md").read_text(encoding="utf-8")
     rag_query = (COMMAND_ROOT / "ruankao-rag-query.md").read_text(encoding="utf-8")
+    semantic_ingest = (COMMAND_ROOT / "ruankao-semantic-ingest.md").read_text(encoding="utf-8")
 
     assert "仅暂存的夜间进化草案" in daily_cycle
     assert "RAG 记忆与进步控制简报" in daily_cycle
@@ -36,6 +37,11 @@ def test_daily_command_docs_hide_internal_stage_labels() -> None:
     assert "chunk 引用和分数分解" in rag_query
     assert "可观察链路" in rag_query
     assert "向量后端暂缓原因" in rag_query
+    assert "semantic-ingest" in semantic_ingest
+    assert "SourceIdentity.MEIN" in semantic_ingest
+    assert 'promotion_status="raw"' in semantic_ingest
+    assert "rejected" in semantic_ingest
+    assert "不写入 SQLite" in semantic_ingest
     assert "stage-only" not in daily_cycle
     assert "stage-only" not in night_evolve
     assert "staged plan" not in night_evolve

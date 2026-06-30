@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sqlite3
 from datetime import date
 from pathlib import Path
@@ -18,6 +19,7 @@ from .principles import seed_core_principles
 from .rag import write_rag_brief
 from .receipts import write_daily_receipt
 from .route_map import write_route_map
+from .semantic_ingest import ingest_semantic_input
 from .study import capture_study_turn
 from .vault import sync_memory_cards_to_vault, sync_raw_records_to_vault
 from .web import serve_workbench
@@ -302,6 +304,17 @@ def cmd_rag_query(
     return 0
 
 
+def cmd_semantic_ingest(
+    root: Path,
+    *,
+    text: str,
+    as_of: date | None = None,
+) -> int:
+    result = ingest_semantic_input(root, text, as_of=as_of)
+    print(json.dumps(result.to_dict(), ensure_ascii=False))
+    return 0
+
+
 def cmd_vault_sync(root: Path, *, overwrite: bool = False) -> int:
     store = _open_store(root)
     cards = store.list_memory_cards() if store is not None else []
@@ -464,6 +477,11 @@ def build_parser() -> argparse.ArgumentParser:
         dest="fronts",
     )
 
+    semantic_parser = subparsers.add_parser("semantic-ingest")
+    semantic_parser.add_argument("--root", required=True, type=Path)
+    semantic_parser.add_argument("--text", required=True)
+    semantic_parser.add_argument("--as-of")
+
     vault_parser = subparsers.add_parser("vault-sync")
     vault_parser.add_argument("--root", required=True, type=Path)
     vault_parser.add_argument("--overwrite", action="store_true")
@@ -535,6 +553,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             as_of=_parse_date(args.as_of),
             limit=args.limit,
         )
+    if args.command == "semantic-ingest":
+        return cmd_semantic_ingest(args.root, text=args.text, as_of=_parse_date(args.as_of))
     if args.command == "vault-sync":
         return cmd_vault_sync(args.root, overwrite=args.overwrite)
     if args.command == "raw-vault-sync":

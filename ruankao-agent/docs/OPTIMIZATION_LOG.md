@@ -5069,3 +5069,46 @@ JSON/HTML.
   `存储与后端边界`, `进步闸门`, `召回证据`, `回答契约`, 20 item rows, 12
   trace items, `FTS5/BM25`, `为什么暂不引入向量库`, `Mein`, main max width
   `1120px`, and screenshot `/tmp/ruankao-rag-observability-report.png`.
+
+## 2026-06-30 Round 148 - Add Semantic Ingest Validator
+
+### Learner Friction
+
+The Hermes migration prompt requires a semantic ingest layer before SQLite
+writes. Without a local parser/validator/fallback command, scattered human
+input from Webhook, Obsidian, or Discord could not be tested against the
+physical SQLite contract.
+
+### Change
+
+- Added `ruankao_agent/semantic_ingest.py` for local semantic ingest.
+- Added Pydantic/Enum validation for practice check-ins.
+- Added `python3 -m ruankao_agent.cli semantic-ingest`.
+- Parsed the AC-1 sample `打卡案例题，灾备响应度理得了 12.5 分，满分 15`
+  into `front=case`, `score=12.5`, and `max_score=15.0`.
+- Added fallback routing for low-confidence everyday notes into
+  `SourceIdentity.MEIN` with `promotion_status="raw"`.
+- Added rejection routing for incomplete practice check-ins so missing scores
+  do not pollute `practice_sessions` or raw source records.
+- Documented the command in `.codex/commands/ruankao-semantic-ingest.md` and
+  recorded the current local entrypoint in the Hermes migration spec.
+
+### Architecture Rule Captured
+
+`semantic_ingest.py` belongs to the learning intelligence layer. It may depend
+on `domain.py` and `storage.py` to validate and write parsed facts, but it must
+not call Webhook, Discord, Gemini, browser automation, render UI, or mutate the
+SQLite schema. Future Gemini integration should replace only the parser source,
+not this physical validation boundary.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/semantic_ingest.py ruankao_agent/cli.py`
+- `python3 -m pytest tests/test_semantic_ingest.py -q`
+- `python3 -m pytest tests/test_semantic_ingest.py tests/test_architecture_boundaries.py tests/test_command_docs.py -q`
+- AC-1 local evidence:
+  - `python3 -m ruankao_agent.cli semantic-ingest --root /tmp/ruankao-semantic-ingest-ac1 --text "打卡案例题，灾备响应度理得了 12.5 分，满分 15"` returned JSON with `status=parsed`, `front=case`, `score=12.5`, `max_score=15.0`.
+  - `python3 -m ruankao_agent.cli semantic-ingest --root /tmp/ruankao-semantic-ingest-ac1 --text "今天随便看了看性能，感觉有点累，明天再说吧。"` returned `status=fallback_raw`, `source=mein`, `promotion_status=raw`.
+  - Direct SQLite readback showed one `practice_sessions` row
+    `('case', 12.5, 15.0, '案例题打卡', 'semantic-ingest')` and one raw record
+    `('mein', 'raw', '语义解析降级：日常碎片', ...)`.
