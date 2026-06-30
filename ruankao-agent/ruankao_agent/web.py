@@ -1414,7 +1414,7 @@ def _card_list(cards: list[MemoryCard], *, with_review: bool, today: date) -> st
         items.append(
             f"""<div class="item">
   <div class="item-title"><span>#{card.id} {escape(card.title)}</span><span>{escape(_card_type_label(card.card_type))}</span></div>
-  <div class="meta">fronts={escape(",".join(front.value for front in card.fronts) or "none")} | due={escape(card.next_due.isoformat() if card.next_due else "none")} | reviews={card.review_count}</div>
+  <div class="meta">题型={escape(_fronts_label(card.fronts))} | due={escape(card.next_due.isoformat() if card.next_due else "none")} | reviews={card.review_count}</div>
   <div class="meta">{escape(card.prompt[:140])}</div>
   {review_form}
 </div>"""
@@ -1494,6 +1494,12 @@ def _front_label(front: ExamFront) -> str:
         ExamFront.CASE: "案例题",
         ExamFront.ESSAY: "论文题",
     }[front]
+
+
+def _fronts_label(fronts: tuple[ExamFront, ...]) -> str:
+    if not fronts:
+        return "none"
+    return ",".join(_front_label(front) for front in fronts)
 
 
 def _diagnostic_list(diagnostics: list[MemoryDiagnostic]) -> str:

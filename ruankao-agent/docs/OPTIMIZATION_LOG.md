@@ -1388,3 +1388,26 @@ belong in data and code, not in the card scanning surface.
 
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert a concept due card renders `概念卡`.
+
+## 2026-06-30 Round 044 - Localized Card Front Metadata
+
+### Learner Friction
+
+Card rows still displayed front metadata as internal values such as `fronts=case`.
+That made the row partly learner-facing and partly implementation-facing.
+
+### Change
+
+- Changed card row metadata from `fronts=case` style to `题型=案例题`.
+- Reused the front label helper already used by practice rows.
+- Kept CLI, storage, and JSON enum values unchanged.
+
+### UX Rule Captured
+
+Metadata in a learner-facing list should use the same vocabulary as the visible
+controls. The card list should read like study material, not debug output.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert a case due card renders `题型=案例题`.
