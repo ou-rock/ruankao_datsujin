@@ -1451,7 +1451,7 @@ def _practice_list(sessions: list[PracticeSession]) -> str:
         ratio = _score_ratio_text(session.score, session.max_score)
         items.append(
             f"""<div class="item">
-  <div class="item-title"><span>#{session.id} {escape(session.topic)}</span><span>{escape(session.front.value)}</span></div>
+  <div class="item-title"><span>#{session.id} {escape(session.topic)}</span><span>{escape(_front_label(session.front))}</span></div>
   <div class="meta">score={escape(score)} | ratio={escape(ratio)} | source={escape(session.source or "none")} | duration={escape(str(session.duration_minutes or "none"))} | date={escape(session.created_on.isoformat() if session.created_on else "none")}</div>
   <div class="meta">{escape(session.summary[:140])}</div>
 </div>"""
@@ -1476,6 +1476,14 @@ def _score_ratio_text(score: float | None, max_score: float | None) -> str:
     if score is None or max_score is None or max_score <= 0:
         return "none"
     return f"{score / max_score:.0%}"
+
+
+def _front_label(front: ExamFront) -> str:
+    return {
+        ExamFront.CHOICE: "选择题",
+        ExamFront.CASE: "案例题",
+        ExamFront.ESSAY: "论文题",
+    }[front]
 
 
 def _diagnostic_list(diagnostics: list[MemoryDiagnostic]) -> str:

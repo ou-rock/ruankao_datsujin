@@ -247,6 +247,7 @@ def test_workbench_forms_write_practice_session(tmp_path) -> None:
     assert sessions[0].max_score == 15
     assert sessions[0].duration_minutes == 35
     assert "质量属性效用树" in html
+    assert "<span>#1 质量属性效用树</span><span>案例题</span>" in html
     assert "8/15" in html
     assert "ratio=53%" in html
 

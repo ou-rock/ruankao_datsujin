@@ -1332,3 +1332,30 @@ quality easier to compare across fronts and exercises.
 
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert an 8/15 practice session renders `ratio=53%`.
+
+## 2026-06-30 Round 042 - Localized Practice Front Labels
+
+### Learner Friction
+
+Recent practice rows displayed internal front values such as `case`. The rest of
+the workbench speaks in choice, case, and essay as exam fronts, so the practice
+list should not require translating enum values.
+
+### Change
+
+- Added a small front-label helper for workbench display.
+- Changed recent practice rows to show:
+  - 选择题
+  - 案例题
+  - 论文题
+- Kept stored values and submitted form values unchanged.
+
+### UX Rule Captured
+
+Internal enums are for code. Learners should see the exam language they use
+while deciding what to practice next.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert a case practice row renders `案例题`.
