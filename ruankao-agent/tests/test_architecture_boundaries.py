@@ -141,7 +141,8 @@ EXPECTED_INTERNAL_DEPS = {
     },
     "web_page_style": set(),
     "web_page_view": set(),
-    "web_render": {"domain", "memory", "storage"},
+    "web_labels": {"domain"},
+    "web_render": {"domain", "memory", "storage", "web_labels"},
 }
 
 

@@ -4411,3 +4411,50 @@ details again.
   `今晚焦点`, `库存`, `记忆诊断`, `RAG 控制`, `进步闸门`, `最近材料`,
   `Cheko 到期`, CSS `--accent=#0f766e`, `main` max width `1120px`, and
   13 rendered sections.
+
+## 2026-06-30 Round 135 - Split Workbench Labels
+
+### Learner Friction
+
+`web_render.py` had become a mixed workbench presentation module. It rendered
+HTML fragments, but also owned risk labels, RAG status labels, card type labels,
+front labels, score formatting, date formatting, duration formatting, and
+missing-value text. That meant a wording change and an HTML structure change
+landed in the same module, making the workbench display boundary less clear.
+
+### Change
+
+- Added `ruankao_agent/web_labels.py` for workbench Chinese labels and display
+  value formatting.
+- Updated `ruankao_agent/web_render.py` to import label and formatting helpers
+  from `web_labels.py` while preserving the existing private helper API used by
+  `web_page.py`, `web_page_sections.py`, and `web_page_forms.py`.
+- Reduced `web_render.py` from roughly 450 lines to roughly 365 lines.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved workbench routes, form controls, rendered labels, action messages,
+  card lists, practice lists, diagnostics, and front radar behavior.
+
+### Architecture Rule Captured
+
+`web_labels.py` owns workbench labels and display value formatting, but must
+not render HTML, read state, open SQLite, or write files. `web_render.py` owns
+HTML fragments and can depend on `web_labels.py`, but must not absorb label
+maps or formatting rules again.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/web_render.py ruankao_agent/web_labels.py`
+- `python3 -m pytest tests/test_web_workbench.py tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary workbench root under `/tmp/ruankao-web-labels`.
+- Initialized the root and seeded Cheko cards through public CLI commands.
+- Served the temporary workbench at `http://127.0.0.1:8905/`.
+- Opened `http://127.0.0.1:8905/` through browser-act.
+- Verified HTTP 200 and rendered DOM content for `软考达人工作台`,
+  `三题型雷达`, `选择题`, `案例题`, `论文题`, `红灯`, `场景卡`, `表达卡`,
+  `到期：2026-06-29`, `复习：0次`, `RAG 记忆控制`, CSS `--accent=#0f766e`,
+  `main` max width `1280px`, 3 front cards, and 9 rendered sections.
