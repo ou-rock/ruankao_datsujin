@@ -17,8 +17,10 @@ ENTRY_ADAPTERS = {
     "web_forms",
     "web_handlers",
     "web_page",
+    "web_page_forms",
     "web_page_sections",
     "web_page_style",
+    "web_page_view",
 }
 
 
@@ -93,10 +95,18 @@ EXPECTED_INTERNAL_DEPS = {
         "receipts",
         "route_map",
         "web_page_sections",
+        "web_page_view",
         "web_render",
     },
-    "web_page_sections": {"web_page_style", "web_render"},
+    "web_page_forms": {"web_page_view", "web_render"},
+    "web_page_sections": {
+        "web_page_forms",
+        "web_page_style",
+        "web_page_view",
+        "web_render",
+    },
     "web_page_style": set(),
+    "web_page_view": set(),
     "web_render": {"domain", "memory", "storage"},
 }
 
@@ -116,7 +126,9 @@ def test_inner_modules_do_not_depend_on_entry_adapters() -> None:
             "web_bootstrap",
             "web_handlers",
             "web_page",
+            "web_page_forms",
             "web_page_sections",
+            "web_page_view",
         }:
             continue
         assert not (deps & ENTRY_ADAPTERS)

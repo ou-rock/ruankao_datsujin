@@ -3775,3 +3775,52 @@ the new address.
 - Opened `http://127.0.0.1:8891/#rag` through browser-act.
 - Verified the rendered page included the RAG control panel, the expected
   homepage section ids, and the expected action forms.
+
+## 2026-06-30 Round 122 - Split Workbench Home Page Forms
+
+### Learner Friction
+
+`web_page_sections.py` had already separated homepage structure from data
+assembly, but it still mixed the page shell with every write-oriented form:
+practice, study turns, raw records, memory cards, principle relations, Cheko
+intake, report generation, and Vault sync. That made small form changes require
+opening the whole homepage shell.
+
+### Change
+
+- Added `ruankao_agent/web_page_view.py` for the shared `HomePageView` view
+  model.
+- Added `ruankao_agent/web_page_forms.py` for homepage form sections and daily
+  operation forms.
+- Reduced `web_page_sections.py` to the homepage shell, navigation, today
+  layout, RAG panel placement, and section composition.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved all existing form actions, section ids, field names, and URLs.
+
+### Architecture Rule Captured
+
+`web_page_sections.py` owns page layout composition. `web_page_forms.py` owns
+homepage form HTML. `web_page_view.py` owns only the read-only shape passed
+between them. None of these modules may read SQLite, parse HTTP, or trigger
+write actions.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/web_page.py ruankao_agent/web_page_sections.py ruankao_agent/web_page_forms.py ruankao_agent/web_page_view.py`
+- `python3 -m pytest tests/test_web_workbench.py tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Started a temporary workbench root at `http://127.0.0.1:8892/`.
+- Opened the homepage through browser-act and verified the section ids stayed:
+  `today`, `rag`, `cheko`, `practice`, `study-turn`, `capture`, `cards`,
+  `principles`, and `vault`.
+- Verified the rendered form actions stayed:
+  `/daily/receipt`, `/night/evolve`, `/routes/map`, `/rag/brief`,
+  `/state/export`, `/cheko/cards`, `/practice`, `/study-turn`, `/records`,
+  `/cards`, `/relations`, `/vault/sync`, and `/vault/sync-raw`.
+- Submitted a real case-practice form through the page.
+- Verified the redirected homepage showed `练习记录 #1 已保存。` and the temporary
+  SQLite database contained `case 表单拆分案例验证 8.5/10.0`.

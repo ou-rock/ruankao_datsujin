@@ -19,7 +19,8 @@ from .rag import (
 )
 from .receipts import daily_receipt_html_path
 from .route_map import route_map_html_path
-from .web_page_sections import HomePageView, render_home_shell
+from .web_page_sections import render_home_shell
+from .web_page_view import HomePageView
 from .web_render import (
     _front_overview,
     _risk_label,
@@ -125,4 +126,3 @@ def render_home_page(context: WorkbenchPageContext, message: str = "") -> str:
         rag_query=DEFAULT_RAG_QUERY,
     )
     return render_home_shell(view)
-
