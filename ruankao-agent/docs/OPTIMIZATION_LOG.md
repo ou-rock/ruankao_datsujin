@@ -2696,3 +2696,30 @@ readable sentence first, then preserve the stable hook contract.
 
 - Tests now assert the human-readable confirmation appears while the old
   hook-friendly fragments remain present.
+
+## 2026-06-30 Round 089 - Localize Automation Guide
+
+### Learner Friction
+
+The automation guide was still written as an English engineering note. A learner
+setting up the nightly loop needs to see the study closure: what runs, why it
+runs, and how to start or stop it locally.
+
+### Change
+
+- Rewrote `docs/AUTOMATION.md` in Chinese.
+- Reframed the cycle as `每日闭环` instead of a generic daily cycle.
+- Kept all shell commands and launchd paths unchanged.
+- Added explicit learner-facing descriptions for Cheko import, core principles,
+  daily receipts, route maps, night evolution, Obsidian sync, and state export.
+
+### UX Rule Captured
+
+Operational docs are part of the product surface. If a learner uses the file to
+set up a routine, it should explain the learning loop rather than only list
+implementation tasks.
+
+### Validation
+
+- Added a test that asserts the automation guide uses learner-facing Chinese
+  wording and no longer contains the old English project intro.
