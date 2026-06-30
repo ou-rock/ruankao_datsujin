@@ -4771,3 +4771,57 @@ page shell.
   values, the default RAG query, 9 rendered sections, `main` max width
   `1280px`, title `软考达人工作台 · D-116 · 红灯`, and screenshot
   `/tmp/ruankao-web-operations-workbench.png`.
+
+## 2026-06-30 Round 142 - Split Workbench Learning Forms
+
+### Learner Friction
+
+`web_page_forms.py` still carried two form families with different learning
+roles: the active learning-entry surface for Cheko signals, practice sessions
+and Socratic study turns, plus the slower memory/principle/Vault surface for
+knowledge retention. Keeping both in one adapter made the learning-mode loop
+harder to recognize as a first-class workbench area.
+
+### Change
+
+- Added `ruankao_agent/web_page_learning_forms.py` for Cheko learning signals,
+  practice records, and study-turn forms.
+- Kept `ruankao_agent/web_page_forms.py` focused on three-source capture,
+  memory cards, principle links, and Vault sync.
+- Updated `web_page_sections.py` to compose learning forms and memory forms
+  from separate adapters.
+- Reduced `web_page_forms.py` from roughly 279 lines to roughly 166 lines.
+- Added the new adapter to the architecture dependency contract and boundary
+  documentation.
+- Preserved workbench routes, section IDs, form actions, front controls, Cheko
+  card lists, practice lists, RAG panel, status strip, and front radar output.
+
+### Architecture Rule Captured
+
+`web_page_learning_forms.py` owns only the workbench learning-entry form HTML:
+Cheko learning signals, practice records, and study turns. It may depend on
+`HomePageView`, shared form controls, and list rendering, but must not parse
+HTTP, trigger write actions, read SQLite, render memory/principle/Vault forms,
+or own the page shell.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/web_page_forms.py ruankao_agent/web_page_learning_forms.py ruankao_agent/web_page_sections.py`
+- `python3 -m pytest tests/test_architecture_boundaries.py tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary workbench root under `/tmp/ruankao-web-learning-forms`.
+- Initialized the root and seeded Cheko cards through public CLI commands.
+- Served the temporary workbench at `http://127.0.0.1:8912/`.
+- Opened `http://127.0.0.1:8912/` through browser-act.
+- Verified HTTP 200 and rendered DOM content for `软考达人工作台`, Cheko,
+  practice, and study-turn sections.
+- Verified Cheko action `/cheko/cards`, Cheko button `把 Cheko 弱点入队`,
+  practice action `/practice`, 3 practice front radios, study-turn action
+  `/study-turn`, 3 study-turn front checkboxes, `最近练习`, `最近 Cheko 卡片`,
+  9 rendered sections, `main` max width `1280px`, title
+  `软考达人工作台 · D-116 · 红灯`, and screenshot
+  `/tmp/ruankao-web-learning-forms-workbench.png`.

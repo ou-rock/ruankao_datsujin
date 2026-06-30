@@ -2,13 +2,15 @@ from __future__ import annotations
 
 from html import escape
 
+from .web_page_learning_forms import (
+    render_cheko_section,
+    render_practice_section,
+    render_study_turn_section,
+)
 from .web_page_forms import (
     render_capture_section,
     render_cards_section,
-    render_cheko_section,
-    render_practice_section,
     render_principles_section,
-    render_study_turn_section,
     render_vault_section,
 )
 from .web_page_operations import render_today_operations
