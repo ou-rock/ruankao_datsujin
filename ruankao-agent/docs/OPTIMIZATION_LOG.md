@@ -2271,3 +2271,32 @@ as study context, not as a debug line.
 - `python3 -m pytest tests/test_daily_receipt.py -q`
 - Tests assert the receipt shows `状态：原始` and no longer renders the old
   `状态=原始` metadata format.
+
+## 2026-06-30 Round 074 - Humanize Receipt Card Metadata
+
+### Learner Friction
+
+The daily receipt's recent-card entries still displayed memory metadata as
+`类型=... | 题型=... | 到期=... | 复习=...`. These cards are the memory strategy
+surface, so the metadata should be easy to scan under fatigue.
+
+### Change
+
+- Reused the daily receipt `meta-row` chip style.
+- Changed recent-card metadata into separate chips:
+  - type
+  - exam fronts
+  - next due date
+  - review count
+- Kept JSON payload and card data unchanged.
+
+### UX Rule Captured
+
+Memory status should read like a review dashboard, not a serialized key-value
+string.
+
+### Validation
+
+- `python3 -m pytest tests/test_daily_receipt.py -q`
+- Tests assert the receipt shows `类型：概念卡` and no longer renders
+  `类型=概念卡`.

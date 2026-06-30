@@ -464,7 +464,12 @@ def _recent_cards(cards: list[object]) -> str:
         items.append(
             f"""<div class="item">
   <strong>#{escape(str(item["id"]))} {escape(str(item["title"]))}</strong>
-  <div class="meta">类型={escape(_card_type_label(item["card_type"]))} | 题型={escape(_fronts_label(item["fronts"]))} | 到期={escape(_value_text(item["next_due"]))} | 复习={escape(str(item["review_count"]))}次</div>
+  <div class="meta-row">
+    <span>类型：{escape(_card_type_label(item["card_type"]))}</span>
+    <span>题型：{escape(_fronts_label(item["fronts"]))}</span>
+    <span>到期：{escape(_value_text(item["next_due"]))}</span>
+    <span>复习：{escape(str(item["review_count"]))}次</span>
+  </div>
 </div>"""
         )
     return "".join(items)
