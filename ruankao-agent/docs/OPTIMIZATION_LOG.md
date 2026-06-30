@@ -1963,3 +1963,33 @@ minimum loop beats a heroic, vague study plan.
 - `python3 -m pytest tests/test_learning.py -q`
 - Tests assert the three tasks carry `25 / 15 / 20` minute budgets and the today
   page shows a 60-minute timebox.
+
+## 2026-06-30 Round 063 - Clarify Workbench Output Actions
+
+### Learner Friction
+
+The workbench had four important generation buttons under the daily loop, but
+they appeared as a plain vertical stack. The actions were technically available,
+yet a tired learner still had to remember why each artifact mattered.
+
+### Change
+
+- Grouped the daily output actions into a `今日产物生成` operation stack.
+- Kept the existing POST routes unchanged:
+  - daily receipt
+  - night evolution draft
+  - three-front route map
+  - local state export
+- Added one short purpose hint under each button.
+- Added responsive grid styling so the actions scan as a compact tool group.
+
+### UX Rule Captured
+
+Command surfaces should explain their learning consequence at the point of use.
+A button that changes study state deserves a one-line reason, not a memory test.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert the workbench exposes `今日产物生成` and the new purpose hints while
+  preserving all original form actions.

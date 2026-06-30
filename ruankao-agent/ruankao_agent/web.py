@@ -712,6 +712,28 @@ class WorkbenchApp:
       gap: 8px;
       margin-top: 10px;
     }}
+    .operation-stack {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }}
+    .operation-form {{
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--band);
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }}
+    .operation-form button {{
+      width: 100%;
+    }}
+    .operation-hint {{
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }}
     @media (max-width: 820px) {{
       main {{ grid-template-columns: 1fr; padding: 14px 14px 40px; }}
       aside {{ position: static; }}
@@ -790,22 +812,28 @@ class WorkbenchApp:
             {_risk_reason_list(snapshot.risk_reasons)}
             <h3 style="margin-top:14px;">记忆诊断</h3>
             {_diagnostic_list(active_diagnostics)}
-            <form method="post" action="/daily/receipt" style="margin-top:10px;">
-              <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
-              <button type="submit">生成日结回执</button>
-            </form>
-            <form method="post" action="/night/evolve" style="margin-top:10px;">
-              <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
-              <button type="submit">生成夜间进化草案</button>
-            </form>
-            <form method="post" action="/routes/map" style="margin-top:10px;">
-              <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
-              <button type="submit">生成三题型覆盖图</button>
-            </form>
-            <form method="post" action="/state/export" style="margin-top:10px;">
-              <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
-              <button type="submit">导出本地状态 JSON</button>
-            </form>
+            <div class="operation-stack" aria-label="今日产物生成">
+              <form class="operation-form" method="post" action="/daily/receipt">
+                <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
+                <button type="submit">生成日结回执</button>
+                <div class="operation-hint">收束完成、缺口和明日最低动作。</div>
+              </form>
+              <form class="operation-form" method="post" action="/night/evolve">
+                <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
+                <button type="submit">生成夜间进化草案</button>
+                <div class="operation-hint">让系统在晚上整理卡片、风险和下一步。</div>
+              </form>
+              <form class="operation-form" method="post" action="/routes/map">
+                <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
+                <button type="submit">生成三题型覆盖图</button>
+                <div class="operation-hint">检查选择、案例、论文是否失衡。</div>
+              </form>
+              <form class="operation-form" method="post" action="/state/export">
+                <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
+                <button type="submit">导出本地状态 JSON</button>
+                <div class="operation-hint">保存本地状态，方便迁移、审计和回滚。</div>
+              </form>
+            </div>
             <div class="footer-actions">{receipt_link}{evolution_link}{route_link}{export_link}</div>
           </div>
         </div>

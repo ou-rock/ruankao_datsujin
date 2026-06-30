@@ -36,11 +36,14 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert "学习信号" in html
     assert "把 Cheko 弱点入队" in html
     assert "记忆诊断" in html
+    assert "今日产物生成" in html
     assert "风险原因" in html
     assert "生成日结回执" in html
     assert "生成夜间进化草案" in html
     assert "生成三题型覆盖图" in html
     assert "导出本地状态 JSON" in html
+    assert "收束完成、缺口和明日最低动作" in html
+    assert "检查选择、案例、论文是否失衡" in html
     assert "练习记录" in html
     assert "三源录入" in html
     assert "记忆卡" in html
