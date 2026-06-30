@@ -89,6 +89,7 @@ def test_cli_cheko_seed_cards(tmp_path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
+    assert "已导入 Cheko 信号：原始记录 1，新增卡 4，跳过 0。" in result.stdout
     assert "raw=1 created=4 skipped=0" in result.stdout
 
     store = RuankaoStore(root / "data" / "ruankao.db")

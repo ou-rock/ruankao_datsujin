@@ -96,6 +96,7 @@ def test_cli_route_map_prints_report_paths(tmp_path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
+    assert "三题型路线图已生成：" in result.stdout
     assert "html=" in result.stdout
     assert "json=" in result.stdout
     assert (root / "reports" / "routes" / "2026-06-29.html").exists()

@@ -74,6 +74,7 @@ def test_cli_night_evolve_prints_staged_plan_paths(tmp_path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
+    assert "夜间进化计划已生成：" in result.stdout
     assert "html=" in result.stdout
     assert "json=" in result.stdout
     assert "stage_only=true" in result.stdout

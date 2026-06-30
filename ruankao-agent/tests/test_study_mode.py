@@ -77,6 +77,7 @@ def test_cli_study_turn_prints_record_ids(tmp_path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
+    assert "学习回合已记录：Mein 1，Du 2，题型 选择题、案例题。" in result.stdout
     assert "mein=1" in result.stdout
     assert "du=2" in result.stdout
     assert "topic=ATAM" in result.stdout

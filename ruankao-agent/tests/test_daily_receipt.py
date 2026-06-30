@@ -160,6 +160,7 @@ def test_cli_daily_receipt_prints_hook_friendly_paths(tmp_path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
+    assert "日结回执已生成：" in result.stdout
     assert "html=" in result.stdout
     assert "json=" in result.stdout
     assert "status=D-117" in result.stdout

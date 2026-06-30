@@ -78,5 +78,6 @@ def test_cli_seed_principles(tmp_path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
+    assert "核心原则已种入记忆系统：原始记录 1，新增卡 7" in result.stdout
     assert "created=7" in result.stdout
     assert "relations=6" in result.stdout

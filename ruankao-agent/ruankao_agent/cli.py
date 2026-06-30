@@ -236,6 +236,12 @@ def cmd_learning(root: Path, *, overwrite: bool = False) -> int:
 def cmd_cheko_seed_cards(root: Path, *, next_due: date | None = None) -> int:
     result = seed_cheko_cards(root, next_due=next_due)
     print(
+        "已导入 Cheko 信号："
+        f"原始记录 {result.raw_record_id}，"
+        f"新增卡 {len(result.created_card_ids)}，"
+        f"跳过 {len(result.skipped_titles)}。"
+    )
+    print(
         f"raw={result.raw_record_id} "
         f"created={len(result.created_card_ids)} "
         f"skipped={len(result.skipped_titles)}"
@@ -245,12 +251,18 @@ def cmd_cheko_seed_cards(root: Path, *, next_due: date | None = None) -> int:
 
 def cmd_daily_receipt(root: Path, *, as_of: date | None = None) -> int:
     result = write_daily_receipt(root, as_of=as_of)
+    print(f"日结回执已生成：{result.html_path}（状态 {result.status}）。")
     print(f"html={result.html_path} json={result.json_path} status={result.status}")
     return 0
 
 
 def cmd_night_evolve(root: Path, *, as_of: date | None = None) -> int:
     result = write_night_evolution_plan(root, as_of=as_of)
+    stage_text = "是" if result.stage_only else "否"
+    print(
+        f"夜间进化计划已生成：{result.html_path}"
+        f"（动作 {result.action_count}，仅暂存 {stage_text}）。"
+    )
     print(
         f"html={result.html_path} json={result.json_path} "
         f"actions={result.action_count} stage_only={str(result.stage_only).lower()}"
@@ -260,6 +272,7 @@ def cmd_night_evolve(root: Path, *, as_of: date | None = None) -> int:
 
 def cmd_route_map(root: Path, *, as_of: date | None = None) -> int:
     result = write_route_map(root, as_of=as_of)
+    print(f"三题型路线图已生成：{result.html_path}。")
     print(f"html={result.html_path} json={result.json_path}")
     return 0
 
@@ -268,6 +281,11 @@ def cmd_vault_sync(root: Path, *, overwrite: bool = False) -> int:
     store = _open_store(root)
     cards = store.list_memory_cards() if store is not None else []
     result = sync_memory_cards_to_vault(root / "vault", cards, overwrite=overwrite)
+    print(
+        "记忆卡已同步到 Obsidian："
+        f"写入 {len(result.written_paths)} 个，"
+        f"跳过 {len(result.skipped_paths)} 个。"
+    )
     print(
         f"written={len(result.written_paths)} "
         f"skipped={len(result.skipped_paths)} "
@@ -281,6 +299,11 @@ def cmd_raw_vault_sync(root: Path, *, overwrite: bool = False) -> int:
     records = store.list_raw_records() if store is not None else []
     result = sync_raw_records_to_vault(root / "vault", records, overwrite=overwrite)
     print(
+        "三源材料已同步到 Obsidian："
+        f"写入 {len(result.written_paths)} 个，"
+        f"跳过 {len(result.skipped_paths)} 个。"
+    )
+    print(
         f"written={len(result.written_paths)} "
         f"skipped={len(result.skipped_paths)} "
         f"vault={root / 'vault'}"
@@ -290,6 +313,13 @@ def cmd_raw_vault_sync(root: Path, *, overwrite: bool = False) -> int:
 
 def cmd_seed_principles(root: Path, *, next_due: date | None = None) -> int:
     result = seed_core_principles(root, next_due=next_due)
+    print(
+        "核心原则已种入记忆系统："
+        f"原始记录 {result.raw_record_id}，"
+        f"新增卡 {len(result.created_card_ids)}，"
+        f"跳过 {len(result.skipped_titles)}，"
+        f"关系 {len(result.created_relation_ids)}。"
+    )
     print(
         f"raw={result.raw_record_id} "
         f"created={len(result.created_card_ids)} "
@@ -302,6 +332,10 @@ def cmd_seed_principles(root: Path, *, next_due: date | None = None) -> int:
 
 def cmd_export_state(root: Path, *, as_of: date | None = None) -> int:
     result = write_state_export(root, as_of=as_of)
+    print(
+        f"状态快照已导出：{result.json_path}"
+        f"（材料 {result.raw_records}，卡片 {result.memory_cards}，练习 {result.practice_sessions}）。"
+    )
     print(
         f"json={result.json_path} "
         f"raw={result.raw_records} "
@@ -333,6 +367,12 @@ def cmd_study_turn(
         destination=destination,
     )
     front_text = "、".join(_front_display(front) for front in result.fronts) or "未标注"
+    print(
+        "学习回合已记录："
+        f"Mein {result.mein_record_id}，"
+        f"Du {result.du_record_id}，"
+        f"题型 {front_text}。"
+    )
     print(
         f"mein={result.mein_record_id} "
         f"du={result.du_record_id} "

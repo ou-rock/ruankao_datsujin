@@ -101,6 +101,7 @@ def test_cli_export_state_prints_backup_path(tmp_path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
+    assert "状态快照已导出：" in result.stdout
     assert "json=" in result.stdout
     assert "cards=1" in result.stdout
     assert (root / "exports" / "state-2026-06-29.json").exists()

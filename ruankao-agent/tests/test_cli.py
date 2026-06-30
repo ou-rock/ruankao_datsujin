@@ -242,6 +242,7 @@ def test_cli_vault_sync_exports_memory_cards(tmp_path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
+    assert "记忆卡已同步到 Obsidian：写入 1 个，跳过 0 个。" in result.stdout
     assert "written=1" in result.stdout
     assert (root / "vault" / "10-memory-war-room" / "concepts" / "质量属性场景.md").exists()
 
@@ -282,5 +283,6 @@ def test_cli_raw_vault_sync_exports_source_records(tmp_path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
+    assert "三源材料已同步到 Obsidian：写入 1 个，跳过 0 个。" in result.stdout
     assert "written=1" in result.stdout
     assert len(list((root / "vault" / "30-du").glob("*.md"))) == 1

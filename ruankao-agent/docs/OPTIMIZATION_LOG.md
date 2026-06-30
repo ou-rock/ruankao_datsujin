@@ -2663,3 +2663,36 @@ needs "where am I in the campaign?", not "what is the enum key?".
 
 - `python3 -m pytest tests/test_vault_and_dashboard.py -q`
 - Tests assert the dashboard shows `第 0-2 天` and no longer shows `stage-0`.
+
+## 2026-06-30 Round 088 - Humanize CLI Operation Results
+
+### Learner Friction
+
+The CLI commands were reliable for hooks, but the terminal confirmations still
+read like implementation logs: `html=... json=...`, `written=1 skipped=0`, or
+`raw=1 created=4 skipped=0`. Since these commands are also daily learning
+operations, the first visible line should tell the learner what happened.
+
+### Change
+
+- Added a learner-facing confirmation line before hook-friendly output for:
+  - Cheko card seeding;
+  - daily receipt generation;
+  - night evolution plans;
+  - route maps;
+  - memory-card and raw-material vault sync;
+  - core principle seeding;
+  - state export;
+  - live study-turn capture.
+- Kept the existing machine-readable output as the final line for scripts,
+  cron jobs, loops, and hooks.
+
+### UX Rule Captured
+
+Human-facing confirmations and machine-facing receipts can coexist. Put the
+readable sentence first, then preserve the stable hook contract.
+
+### Validation
+
+- Tests now assert the human-readable confirmation appears while the old
+  hook-friendly fragments remain present.
