@@ -1150,3 +1150,30 @@ dropdown makes the learner do unnecessary work before recording evidence.
   - the practice form renders a segmented control;
   - all three front radio values are present;
   - the old front select is gone.
+
+## 2026-06-30 Round 035 - Practice Numeric Input Constraints
+
+### Learner Friction
+
+Practice score, max score, and duration were rendered as unconstrained text
+inputs. The backend could parse them, but the browser did not help prevent
+obvious input mistakes.
+
+### Change
+
+- Changed score to `type="number" min="0" step="0.5"`.
+- Changed max score to `type="number" min="1" step="0.5"`.
+- Changed duration to `type="number" min="1" step="1"`.
+- Kept existing field names and backend parsing unchanged.
+
+### UX Rule Captured
+
+The interface should make valid evidence easier to enter than invalid evidence.
+Practice logs are later used for risk and route decisions, so small data quality
+guards matter.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert all three practice numeric fields expose browser-level
+  constraints.

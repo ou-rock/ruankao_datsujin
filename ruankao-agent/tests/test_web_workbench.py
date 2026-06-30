@@ -136,6 +136,17 @@ def test_practice_front_uses_segmented_radio_control(tmp_path) -> None:
     assert '<select name="front">' not in html
 
 
+def test_practice_numeric_fields_have_browser_constraints(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+
+    html = app.render_home()
+
+    assert 'type="number" name="score" min="0" step="0.5"' in html
+    assert 'type="number" name="max_score" min="1" step="0.5"' in html
+    assert 'type="number" name="duration_minutes" min="1" step="1"' in html
+
+
 def test_workbench_forms_write_store_and_principle_note(tmp_path) -> None:
     root = tmp_path / "demo"
     app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))

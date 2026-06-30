@@ -817,13 +817,13 @@ class WorkbenchApp:
             </label>
             <div class="grid">
               <label>得分
-                <input name="score" inputmode="decimal">
+                <input type="number" name="score" min="0" step="0.5" inputmode="decimal">
               </label>
               <label>满分
-                <input name="max_score" inputmode="decimal">
+                <input type="number" name="max_score" min="1" step="0.5" inputmode="decimal">
               </label>
               <label>耗时分钟
-                <input name="duration_minutes" inputmode="numeric">
+                <input type="number" name="duration_minutes" min="1" step="1" inputmode="numeric">
               </label>
             </div>
             <label>来源
