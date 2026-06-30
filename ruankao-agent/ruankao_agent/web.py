@@ -1223,10 +1223,14 @@ def serve_workbench(
     handler_cls = _handler_for(app)
     server = ThreadingHTTPServer((host, port), handler_cls)
     url = f"http://{host}:{server.server_port}/"
-    print(f"Ruankao workbench: {url}", flush=True)
+    print(_workbench_launch_message(url), flush=True)
     if open_browser:
         webbrowser.open(url)
     server.serve_forever()
+
+
+def _workbench_launch_message(url: str) -> str:
+    return f"软考达人工作台已启动：{url}\n按 Ctrl-C 停止。"
 
 
 def _handler_for(app: WorkbenchApp):

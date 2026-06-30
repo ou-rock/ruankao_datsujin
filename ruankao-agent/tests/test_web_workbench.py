@@ -12,6 +12,7 @@ from ruankao_agent.web import (
     _learning_relative_path,
     _report_relative_path,
     _vault_relative_path,
+    _workbench_launch_message,
 )
 
 
@@ -83,6 +84,13 @@ def test_workbench_message_is_announced_as_status(tmp_path) -> None:
 
     assert '<div class="message" role="status">复习评分已记录。</div>' in html
     assert "review-saved" not in html
+
+
+def test_workbench_launch_message_is_localized() -> None:
+    text = _workbench_launch_message("http://127.0.0.1:8765/")
+
+    assert text == "软考达人工作台已启动：http://127.0.0.1:8765/\n按 Ctrl-C 停止。"
+    assert "Ruankao workbench" not in text
 
 
 def test_workbench_messages_translate_common_action_slugs(tmp_path) -> None:

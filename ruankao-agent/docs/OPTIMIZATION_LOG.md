@@ -3104,3 +3104,29 @@ Concrete examples beat abstract parameter notes.
 
 - Command-doc tests assert the default URL, fallback port example, and port
   conflict wording.
+
+## 2026-06-30 Round 104 - Localize Workbench Server Launch Message
+
+### Learner Friction
+
+The shell launcher now prints a Chinese URL hint, but the underlying web server
+still printed `Ruankao workbench: ...`. Direct CLI users would still see the old
+English startup message.
+
+### Change
+
+- Added a reusable workbench launch-message helper.
+- Changed `serve_workbench()` to print:
+  `软考达人工作台已启动：<url>`
+  followed by `按 Ctrl-C 停止。`
+- Kept server behavior and browser opening unchanged.
+
+### UX Rule Captured
+
+Every launch path should speak the same product language. CLI users and script
+users should receive the same local URL and stop hint.
+
+### Validation
+
+- Workbench tests assert the localized launch message and reject the old English
+  startup phrase.
