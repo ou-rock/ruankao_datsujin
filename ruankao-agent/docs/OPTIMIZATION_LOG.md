@@ -3959,3 +3959,55 @@ compose that content into generated HTML resources but still must not write
 - Clicked `今日三任务` and verified navigation to
   `http://127.0.0.1:8895/learning/today.html` with the workbench action links
   for learning turns, memory cards, and practice sessions.
+
+## 2026-06-30 Round 126 - Split Learning Desk Template Boundary
+
+### Learner Friction
+
+`learning.py` had been reduced, but it still mixed two different concerns:
+resource persistence and HTML template construction. That meant a future
+change to one learning page could still collide with Cheko snapshot loading and
+overwrite behavior.
+
+### Change
+
+- Added `ruankao_agent/learning_templates.py` for learning desk HTML page
+  templates, shared page fragments, campaign rail rendering, Cheko panels, and
+  today-task rendering.
+- Kept `ruankao_agent/learning.py` as the learning-resource entry point:
+  directory creation, generated file writes, Cheko snapshot JSON serialization,
+  and public compatibility re-exports.
+- Reduced `learning.py` from roughly 560 lines to roughly 100 lines.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved generated learning URLs, public imports, Cheko snapshot behavior,
+  page text, and overwrite semantics.
+
+### Architecture Rule Captured
+
+`learning_templates.py` may depend on learning content, learning CSS, and the
+campaign domain model to produce HTML strings. It must not write files, read
+SQLite, parse HTTP, or become the learning-resource entry point. `learning.py`
+may write generated learning files but must not grow page templates again.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/learning.py ruankao_agent/learning_templates.py ruankao_agent/learning_content.py ruankao_agent/learning_style.py`
+- `python3 -m pytest tests/test_learning.py tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest -q`
+
+### BrowserAct Evidence
+
+- Generated a temporary learning desk under `/tmp/ruankao-learning-templates`.
+- Served the temporary workbench at `http://127.0.0.1:8896/`.
+- Tried the registered current-Chrome `chrome-direct` browser first; CDP
+  permission timed out.
+- Verified `today.html` once through browser-act `stealth-extract`; the homepage
+  stealth attempt later failed at browser IPC startup.
+- Opened `http://127.0.0.1:8896/learning/` through an existing Chrome browser
+  used for verification.
+- Verified the rendered page still shows `软考达人学习台`, the four primary
+  buttons, `战役导航`, `芝士架构同步信号`, `今日三任务`, `四大质量属性与架构战术映射表`,
+  and `--accent: #0f766e`.
+- Clicked `今日三任务` and verified navigation to
+  `http://127.0.0.1:8896/learning/today.html` with the workbench action links
+  for learning turns, memory cards, and practice sessions.
