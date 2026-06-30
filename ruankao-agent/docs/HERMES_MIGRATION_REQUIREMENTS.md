@@ -131,18 +131,15 @@
         1.  中端的 RAG 检索引擎：提供最高相关度及需要最急迫处理的Leach/到期 `RagChunks` 证据。
         2.  本地的 `domain.py` 计算出的 countdown、`RiskStatus`、进步闸门（`ProgressGate`）和推荐动作。
         3.  语义解析规整层（RAG Parser）刚才整理好的最新输入 JSON。
-    *   **单回合推理协议（Brain API Completion）**：Harness 将以上装料打包为标准的 System/User 消息报文发给 Codex。Codex 只接收自包含 Payload，输出符合回答契约（Answer Contract）的结构化文本：
-        - `[Mein]`：用户卡点与原句复述。
-        - `[Du]`：AI 架构原理级修正与对齐。
-        - `[追问]`：下一步定向探索问题。
+    *   **单回合推理协议（Brain API Completion）**：Harness 将以上装料打包为标准的 System/User 消息报文发给 Codex。为降低系统复杂度并兼容 1M 级别的超大上下文模型，**会话不进行过度的滑动截断和数据库大改动，直接以极简方式将当下对话记录与 RAG 召回 Chunks 发送给大模型**。当上下文接近限额或用户体验产生偏差时，由用户手动通过 `/new` 或换窗口进行清除与重置。
     *   **双向反馈流路由（Response Pathway）**：
         1.  **后端落盘**：中脑响应一经生成，Harness Shell 立即拉起 `storage.py` 将 Mein & Du 写入 SQLite 及 Obsidian 对应的 Mein/Du 本地 Vault 文件中。
         2.  **状态图更新**：重新执行 `dashboard.py` / `receipts.py`，更新 HTML 仪表盘以及当日 RAG 简报。
         3.  **前端网关投递**：如果是从 Discord 会话发起的请求，Harness 通过 Discord 适配器（Gateway Platforms）将追问和风险状态渲染为 Discord Rich Embed 卡片投递回聊天线程；如果是网页端，流式投递回网页学习控制台。
 
-    ---
+---
 
-    ## 3. 验收标准与测试用例 (Acceptance Criteria & Test Plan)
+## 3. 验收标准与测试用例 (Acceptance Criteria & Test Plan)
 
     此验收测试由我（Antigravity / Hermes QA）在你的实现完成后自动或半自动运行。
 
