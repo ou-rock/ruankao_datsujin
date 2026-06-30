@@ -123,6 +123,19 @@ def test_due_card_review_uses_one_tap_grade_buttons(tmp_path) -> None:
     assert "<select name=\"grade\">" not in html
 
 
+def test_practice_front_uses_segmented_radio_control(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+
+    html = app.render_home()
+
+    assert 'class="segmented" aria-label="练习题型"' in html
+    assert 'type="radio" name="front" value="choice" checked' in html
+    assert 'type="radio" name="front" value="case"' in html
+    assert 'type="radio" name="front" value="essay"' in html
+    assert '<select name="front">' not in html
+
+
 def test_workbench_forms_write_store_and_principle_note(tmp_path) -> None:
     root = tmp_path / "demo"
     app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))

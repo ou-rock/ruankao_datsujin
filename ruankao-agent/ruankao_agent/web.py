@@ -507,6 +507,15 @@ class WorkbenchApp:
       color: var(--muted);
       font-weight: 600;
     }}
+    .field {{
+      display: grid;
+      gap: 5px;
+    }}
+    .field-label {{
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }}
     input, textarea, select {{
       width: 100%;
       border: 1px solid var(--line);
@@ -537,6 +546,30 @@ class WorkbenchApp:
       background: var(--band);
     }}
     .checks input {{ width: auto; }}
+    .segmented {{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }}
+    .segmented label {{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--accent-ink);
+      cursor: pointer;
+      font-size: 13px;
+      text-align: center;
+    }}
+    .segmented input {{
+      width: auto;
+      margin: 0;
+      accent-color: var(--accent);
+    }}
     button, .button {{
       appearance: none;
       border: 1px solid var(--accent);
@@ -767,13 +800,14 @@ class WorkbenchApp:
         <div class="split">
           <form method="post" action="/practice">
             <div class="grid">
-              <label>题型
-                <select name="front">
-                  <option value="choice">选择题</option>
-                  <option value="case">案例题</option>
-                  <option value="essay">论文题</option>
-                </select>
-              </label>
+              <div class="field">
+                <div class="field-label">题型</div>
+                <div class="segmented" aria-label="练习题型">
+                  <label><input type="radio" name="front" value="choice" checked>选择题</label>
+                  <label><input type="radio" name="front" value="case">案例题</label>
+                  <label><input type="radio" name="front" value="essay">论文题</label>
+                </div>
+              </div>
               <label>日期
                 <input type="date" name="created_on" value="{escape(self.today.isoformat())}">
               </label>

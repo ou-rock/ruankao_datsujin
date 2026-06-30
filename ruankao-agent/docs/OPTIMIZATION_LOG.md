@@ -1120,3 +1120,33 @@ dashboard should make imbalance between choice, case, and essay hard to miss.
   - all three fronts appear in the header radar;
   - a front with due cards is red;
   - a front practiced today is green.
+
+## 2026-06-30 Round 034 - Segmented Practice Front Control
+
+### Learner Friction
+
+The practice form treated the exam front as a dropdown. Choice, case, and essay
+are not a long option list; they are the three core modes of the campaign and
+should be visible at the point of logging practice.
+
+### Change
+
+- Replaced the practice `front` select with a segmented radio control.
+- Kept the same submitted `front` field and values:
+  - `choice`
+  - `case`
+  - `essay`
+- Added reusable `.segmented`, `.field`, and `.field-label` styles.
+
+### UX Rule Captured
+
+Primary modes should be visible and one-tap. Hiding choice/case/essay in a
+dropdown makes the learner do unnecessary work before recording evidence.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert:
+  - the practice form renders a segmented control;
+  - all three front radio values are present;
+  - the old front select is gone.
