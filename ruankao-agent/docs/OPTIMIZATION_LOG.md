@@ -2562,3 +2562,28 @@ to build. English scaffold text should not leak into long-term Obsidian notes.
 - `python3 -m pytest tests/test_vault_and_dashboard.py -q`
 - Tests assert generated principle notes contain the localized headings and no
   longer contain `Core Statement` or `Choice:`.
+
+## 2026-06-30 Round 084 - Localize CLI Fallback Principle Note
+
+### Learner Friction
+
+The normal principle-note renderer had been localized, but the CLI fallback
+principle note still contained English headings and `Choice / Case / Essay`
+labels. Fallback paths matter because they define what happens when a module is
+unavailable or initialization runs in a thinner environment.
+
+### Change
+
+- Localized the CLI fallback principle-note text to match the main renderer.
+- Added CLI init coverage that reads the generated principle note and asserts it
+  contains `核心表述` and no longer contains `Choice:`.
+
+### UX Rule Captured
+
+Fallback content should still honor the product language. Degraded paths should
+not silently reintroduce old scaffolding.
+
+### Validation
+
+- `python3 -m pytest tests/test_cli.py -q`
+- Tests assert CLI init produces a localized principle note.

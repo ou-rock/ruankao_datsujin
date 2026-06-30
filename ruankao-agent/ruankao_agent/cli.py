@@ -83,27 +83,27 @@ last_reviewed:
 
 # 场景先于方案
 
-## Core Statement
+## 核心表述
 
 先确认业务目标、边界和约束，再谈技术方案。
 
-## Applies When
+## 适用场景
 
 任何架构设计、案例题、论文题。
 
-## Does Not Apply When
+## 不适用场景
 
 仅做纯语言或纯格式修改时。
 
-## Conflicts
+## 冲突原则
 
 - [[技术先行]]
 
-## Exam Mapping
+## 考试映射
 
-Choice:
-Case:
-Essay:
+选择题：
+案例题：
+论文题：
 """
 
 

@@ -22,7 +22,11 @@ def test_cli_init_status_and_dashboard(tmp_path) -> None:
     assert (root / "data" / "ruankao.db").exists()
     assert (root / "dashboard.html").exists()
     assert (root / "vault" / "00-map" / "战役总图.md").exists()
-    assert (root / "vault" / "10-memory-war-room" / "principles" / "场景先于方案.md").exists()
+    principle_note = root / "vault" / "10-memory-war-room" / "principles" / "场景先于方案.md"
+    assert principle_note.exists()
+    principle_text = principle_note.read_text(encoding="utf-8")
+    assert "## 核心表述" in principle_text
+    assert "Choice:" not in principle_text
 
     status_result = subprocess.run(
         [
