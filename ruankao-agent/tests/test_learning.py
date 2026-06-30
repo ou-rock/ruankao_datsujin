@@ -145,6 +145,11 @@ def test_today_page_is_one_screen_action_plan() -> None:
     assert "系统架构设计错题回炉" in html
     assert "论文最低触达" in html
     assert "如果今天只能做一件事" in html
+    assert 'href="/#study-turn"' in html
+    assert 'href="/#cards"' in html
+    assert 'href="/#practice"' in html
+    assert "记录学习回合" in html
+    assert "创建记忆卡" in html
     assert "Task 1" not in html
 
 

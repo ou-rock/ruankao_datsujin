@@ -2866,3 +2866,30 @@ field.
 
 - Workbench tests assert the multiline controls are rendered and the old
   single-line inputs are gone.
+
+## 2026-06-30 Round 095 - Link Today Tasks Back To Capture
+
+### Learner Friction
+
+The `今日三任务` page told the learner to stop after the timebox and record the
+result, but it did not provide the next click. That left a gap between doing
+the task and turning the result into durable study state.
+
+### Change
+
+- Added bottom actions on `learning/today.html`:
+  - record a study turn;
+  - create a memory card;
+  - record practice.
+- Linked those actions directly to the matching workbench anchors.
+- Reused existing learning-page button styles.
+
+### UX Rule Captured
+
+Task pages should end in capture, not in advice. If the learner has just done
+work, the interface should provide the shortest path to record the evidence.
+
+### Validation
+
+- Learning-page tests assert the three workbench anchor links and labels appear
+  on the one-screen action plan.

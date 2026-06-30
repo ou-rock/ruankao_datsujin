@@ -615,6 +615,11 @@ def render_today(snapshot: ChekoSnapshot = DEFAULT_CHEKO_SNAPSHOT) -> str:
     <li>任一任务卡住超过 20 分钟，把卡住点记录到 Mein，不硬扛。</li>
     <li>如果今天只能做一件事，只做第 1 件：最大错题池回炉。</li>
   </ol>
+  <div class="actions">
+    <a class="button" href="/#study-turn">记录学习回合</a>
+    <a class="button secondary" href="/#cards">创建记忆卡</a>
+    <a class="button secondary" href="/#practice">记录练习</a>
+  </div>
 </section>
 """,
     )
