@@ -58,7 +58,9 @@ EXPECTED_INTERNAL_DEPS = {
         "storage",
         "study",
         "vault",
+        "web_render",
     },
+    "web_render": {"domain", "memory", "storage"},
 }
 
 

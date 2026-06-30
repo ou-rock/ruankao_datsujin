@@ -3366,3 +3366,41 @@ modules, but inner modules must not depend back on them.
 
 - Architecture boundary tests assert the current dependency graph and document
   coverage.
+
+## 2026-06-30 Round 112 - Split Workbench Render Helpers
+
+### Learner Friction
+
+The workbench remained the largest coupling hotspot after the architecture map:
+`web.py` mixed HTTP routing, form parsing, app orchestration, and many small
+HTML rendering helpers. That made later workbench changes harder to reason
+about safely.
+
+### Change
+
+- Added `ruankao_agent/web_render.py` for workbench HTML fragments, display
+  labels, RAG panel snippets, card/practice lists, and status text.
+- Kept `web.py` as the workbench composition root for routes, forms, file
+  serving, and app orchestration.
+- Reduced `web.py` from about 1900 lines to about 1500 lines while preserving
+  public imports used by the existing tests.
+- Updated the architecture boundary contract so `web_render.py` is a documented
+  L4 presentation module.
+
+### Architecture Rule Captured
+
+`web_render.py` may depend on read-only data objects from `domain`, `memory`,
+and `storage`, but it must not handle HTTP, open SQLite, or write durable state.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest tests/test_architecture_boundaries.py -q`
+
+### BrowserAct Evidence
+
+- Started the current workbench code on `http://127.0.0.1:8875/`.
+- Opened it with browser-act using the existing `github-act` Chrome browser.
+- Verified the rendered DOM still exposes the workbench title, three-front
+  radar, review grade buttons, RAG control panel, study turn form, and Obsidian
+  links after the `web_render.py` extraction.
