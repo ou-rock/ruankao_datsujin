@@ -3692,3 +3692,51 @@ build forms, import business modules, or decide page data.
 - Verified the redirected homepage showed `练习记录 #1 已保存。`, the case front
   turned green, and the temporary SQLite database contained
   `case 样式拆分案例验证 8.5/10.0`.
+
+## 2026-06-30 Round 120 - Split Workbench Home Page Sections
+
+### Learner Friction
+
+After the style split, `web_page.py` was smaller but still mixed two different
+concerns: collecting read-only data from the store and composing the homepage
+HTML shell, navigation, sections, and forms. That made future page-section work
+too likely to touch data retrieval.
+
+### Change
+
+- Added `ruankao_agent/web_page_sections.py` with `HomePageView` and
+  `render_home_shell`.
+- Kept `web_page.py` focused on initializing the page, reading store data,
+  deriving display state, and building `HomePageView`.
+- Moved the homepage HTML shell, navigation, section layout, forms, and
+  footer actions into `web_page_sections.py`.
+- Fixed mechanical extraction mistakes caught by tests, including preserved
+  `/records`, `/cards`, `/cheko/cards`, and `#cards` routes/anchors.
+- Updated the architecture boundary contract so `web_page_sections.py` is a
+  documented homepage structure adapter.
+
+### Architecture Rule Captured
+
+`web_page.py` owns homepage view model assembly. `web_page_sections.py` owns
+homepage HTML structure from that view model. The sections module may call
+`web_render.py` snippets and use `web_page_style.py`, but it must not read the
+database, build RAG briefs, handle HTTP, or write durable state.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/web_page.py ruankao_agent/web_page_sections.py`
+- `python3 -m pytest tests/test_web_workbench.py tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest -q`
+
+### BrowserAct Evidence
+
+- Started a temporary workbench root at `http://127.0.0.1:8885/`.
+- Opened the homepage through browser-act and verified the first action strip,
+  three-front radar, navigation, and today's loop still render.
+- Used browser-act `eval` to confirm all form actions and section ids stayed
+  intact after extraction, including `/records`, `/cards`, `/cheko/cards`, and
+  `#cards`.
+- Submitted a real case-practice form through the page.
+- Verified the redirected homepage showed `练习记录 #1 已保存。`, the case front
+  turned green, and the temporary SQLite database contained
+  `case 页面区块拆分案例验证 8.5/10.0`.
