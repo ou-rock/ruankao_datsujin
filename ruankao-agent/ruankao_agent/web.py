@@ -973,14 +973,12 @@ class WorkbenchApp:
                 <input name="to_card_id" inputmode="numeric" required>
               </label>
             </div>
-            <label>关系
-              <select name="relation">
-                <option value="supports">supports 支撑</option>
-                <option value="constrains">constrains 制约</option>
-                <option value="conflicts_with">conflicts_with 冲突</option>
-                <option value="derived_from">derived_from 派生</option>
-              </select>
-            </label>
+            <div class="field">
+              <div class="field-label">关系</div>
+              <div class="segmented flow" aria-label="原则关系">
+                {_relation_radios()}
+              </div>
+            </div>
             <label>为什么这样连接
               <textarea name="rationale" required></textarea>
             </label>
@@ -1486,6 +1484,22 @@ def _promotion_status_radios() -> str:
         checked_attr = " checked" if checked else ""
         buttons.append(
             f'<label><input type="radio" name="promotion_status" value="{value}"{checked_attr}>{escape(label)}</label>'
+        )
+    return "\n                ".join(buttons)
+
+
+def _relation_radios() -> str:
+    relations = (
+        ("supports", "支撑", True),
+        ("constrains", "制约", False),
+        ("conflicts_with", "冲突", False),
+        ("derived_from", "派生", False),
+    )
+    buttons = []
+    for value, label, checked in relations:
+        checked_attr = " checked" if checked else ""
+        buttons.append(
+            f'<label><input type="radio" name="relation" value="{value}"{checked_attr}>{escape(label)}</label>'
         )
     return "\n                ".join(buttons)
 

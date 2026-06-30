@@ -216,6 +216,20 @@ def test_raw_record_status_uses_segmented_radio_control(tmp_path) -> None:
     assert '<select name="promotion_status">' not in html
 
 
+def test_principle_relation_uses_segmented_radio_control(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+
+    html = app.render_home()
+
+    assert 'class="segmented flow" aria-label="原则关系"' in html
+    assert 'type="radio" name="relation" value="supports" checked>支撑' in html
+    assert 'type="radio" name="relation" value="constrains">制约' in html
+    assert 'type="radio" name="relation" value="conflicts_with">冲突' in html
+    assert 'type="radio" name="relation" value="derived_from">派生' in html
+    assert '<select name="relation">' not in html
+
+
 def test_workbench_forms_write_store_and_principle_note(tmp_path) -> None:
     root = tmp_path / "demo"
     app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))

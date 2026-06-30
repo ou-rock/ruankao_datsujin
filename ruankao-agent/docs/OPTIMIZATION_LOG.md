@@ -1685,3 +1685,35 @@ status.
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert the workbench title, header status, risk metric, and front radar
   render localized traffic-light labels.
+
+## 2026-06-30 Round 054 - Segmented Principle Relation Control
+
+### Learner Friction
+
+The principle network form still used a dropdown for relation type and exposed
+enum-like labels such as `supports 支撑` and `conflicts_with 冲突`. Principle
+relations are a core architecture-thinking move, so the four choices should be
+immediately visible.
+
+### Change
+
+- Replaced the principle relation select with a segmented radio control.
+- Kept stored relation values unchanged:
+  - `supports`
+  - `constrains`
+  - `conflicts_with`
+  - `derived_from`
+- Localized visible labels to `支撑`, `制约`, `冲突`, and `派生`.
+- Kept `supports` as the default relation.
+
+### UX Rule Captured
+
+Core thinking moves should be visible, not hidden in menus. Keep the graph
+contract stable underneath, but let the learner choose relationships in domain
+language.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert the principle relation field renders as segmented radios with
+  stable values and no longer renders the relation select.
