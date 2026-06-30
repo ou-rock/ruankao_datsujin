@@ -158,6 +158,19 @@ def test_practice_numeric_fields_have_browser_constraints(tmp_path) -> None:
     assert 'type="number" name="duration_minutes" min="1" step="1"' in html
 
 
+def test_raw_record_source_uses_segmented_radio_control(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+
+    html = app.render_home()
+
+    assert 'class="segmented" aria-label="三源来源"' in html
+    assert 'type="radio" name="source" value="mein" checked' in html
+    assert 'type="radio" name="source" value="du"' in html
+    assert 'type="radio" name="source" value="uns"' in html
+    assert '<select name="source">' not in html
+
+
 def test_workbench_forms_write_store_and_principle_note(tmp_path) -> None:
     root = tmp_path / "demo"
     app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))

@@ -1249,3 +1249,33 @@ and the state that matters when the user returns.
 
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert the title includes `D-117` and `green` in the empty demo state.
+
+## 2026-06-30 Round 039 - Segmented Mein Du Uns Source Control
+
+### Learner Friction
+
+The raw-record capture form hid Mein, Du, and Uns inside a dropdown. These are
+not incidental options; they are the bottom-layer identity model of the whole
+learning system.
+
+### Change
+
+- Replaced the raw-record `source` select with a segmented radio control.
+- Kept the same submitted `source` field and values:
+  - `mein`
+  - `du`
+  - `uns`
+- Defaulted the capture path to Mein, matching learner-first entry.
+
+### UX Rule Captured
+
+Core mental models should be visible where the learner makes the decision.
+Mein, Du, and Uns are learning identities, not a hidden metadata field.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert:
+  - the raw-record form renders a segmented source control;
+  - all three source values are present;
+  - the old source select is gone.

@@ -867,13 +867,14 @@ class WorkbenchApp:
         <h2>三源录入</h2>
         <form method="post" action="/records">
           <div class="grid">
-            <label>来源
-              <select name="source">
-                <option value="mein">Mein 我的理解</option>
-                <option value="du">Du 你的分析</option>
-                <option value="uns">Uns 外界证据</option>
-              </select>
-            </label>
+            <div class="field">
+              <div class="field-label">来源</div>
+              <div class="segmented" aria-label="三源来源">
+                <label><input type="radio" name="source" value="mein" checked>Mein</label>
+                <label><input type="radio" name="source" value="du">Du</label>
+                <label><input type="radio" name="source" value="uns">Uns</label>
+              </div>
+            </div>
             <label>状态
               <select name="promotion_status">
                 <option value="raw">raw</option>
