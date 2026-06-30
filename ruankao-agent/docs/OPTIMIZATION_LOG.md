@@ -4560,3 +4560,53 @@ query logic.
 - Verified 3 front cards, 3 red front cards, 9 rendered sections, `main` max
   width `1280px`, title `软考达人工作台 · D-116 · 红灯`, and screenshot
   `/tmp/ruankao-web-fronts-workbench.png`.
+
+## 2026-06-30 Round 138 - Split Workbench RAG Panel
+
+### Learner Friction
+
+`web_render.py` had already shed labels, lists, and the three-front radar, but
+it still owned the RAG control panel. That panel is not a generic workbench
+fragment: it displays recommended action, progress gates, and retrieved
+evidence. Keeping it inside the shared render module blurred the line between
+ordinary form/message fragments and RAG-specific learning-control UI.
+
+### Change
+
+- Added `ruankao_agent/web_rag_panel.py` for workbench RAG panel rendering.
+- Moved `_rag_panel`, `_rag_gate_item`, and `_rag_hit_item` out of
+  `web_render.py`.
+- Updated `web_page_sections.py` to import the RAG panel directly from
+  `web_rag_panel.py`.
+- Reduced `web_render.py` from roughly 195 lines to roughly 140 lines.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved workbench routes, page shell, RAG section placement, RAG panel
+  wording, front radar output, and form controls.
+
+### Architecture Rule Captured
+
+`web_rag_panel.py` owns only the workbench RAG control panel HTML fragments. It
+may depend on `web_labels.py`, but must not execute retrieval, read state, write
+state, open SQLite, generate a RAG brief, or own the page shell. `web_render.py`
+now owns only generic workbench controls, status messages, and today's action.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/web_render.py ruankao_agent/web_rag_panel.py ruankao_agent/web_page_sections.py`
+- `python3 -m pytest tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary workbench root under `/tmp/ruankao-web-rag-panel`.
+- Initialized the root and seeded Cheko cards through public CLI commands.
+- Served the temporary workbench at `http://127.0.0.1:8908/`.
+- Opened `http://127.0.0.1:8908/` through browser-act.
+- Verified HTTP 200 and rendered DOM content for `软考达人工作台`,
+  `RAG 记忆控制`, `建议动作`, `最高召回证据`, and `查询：`.
+- Verified 3 RAG items, 2 RAG lists, 1 RAG split layout, 3 front cards,
+  9 rendered sections, `main` max width `1280px`, title
+  `软考达人工作台 · D-116 · 红灯`, and screenshot
+  `/tmp/ruankao-web-rag-panel-workbench.png`.

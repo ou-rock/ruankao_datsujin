@@ -20,9 +20,9 @@ from .web_lists import (
     _diagnostic_list,
     _risk_reason_list,
 )
+from .web_rag_panel import _rag_panel
 from .web_render import (
     _message,
-    _rag_panel,
     _risk_label,
     _status_summary,
 )
