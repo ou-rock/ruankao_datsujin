@@ -2975,3 +2975,28 @@ created it.
 
 - Design-contract tests now assert the Chinese overview and key strategy phrases
   while preserving the original non-negotiable English anchors.
+
+## 2026-06-30 Round 099 - Localize Process Contract Docs
+
+### Learner Friction
+
+The acceptance criteria and TDD plan were still written as early English process
+docs. Future maintenance agents and the learner should read them in the same
+language as the workbench, learning desk, and design overview.
+
+### Change
+
+- Rewrote `docs/ACCEPTANCE_CRITERIA.md` in Chinese.
+- Rewrote `docs/TDD_PLAN.md` in Chinese.
+- Preserved commands, file paths, `Red / Green / Refactor`, and technical names.
+- Added tests that reject the old English document titles.
+
+### UX Rule Captured
+
+Process contracts shape product behavior. If the system is a Chinese learning
+companion, its validation and development rituals should also be readable in
+that product voice.
+
+### Validation
+
+- Added process-doc tests for localized acceptance criteria and TDD plan.

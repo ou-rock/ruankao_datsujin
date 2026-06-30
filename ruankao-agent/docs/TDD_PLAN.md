@@ -1,42 +1,42 @@
-# TDD Plan
+# TDD 计划
 
-## Red
+## Red：先写会失败的测试
 
-Write tests for the design contract before implementation:
+实现前先为设计契约写测试：
 
-- campaign countdown and phase
-- risk rules
-- Mein/Du/Uns persistence
-- memory card types and scheduling
-- principle graph relations
-- Obsidian vault generation
-- dashboard generation
-- NotebookLM metadata representation
-- CLI smoke flow
+- 战役倒计时与阶段。
+- 风险规则。
+- Mein/Du/Uns 持久化。
+- 记忆卡类型与排程。
+- 原则图谱关系。
+- Obsidian vault 生成。
+- dashboard 生成。
+- NotebookLM 元数据表达。
+- CLI 冒烟流程。
 
-## Green
+## Green：实现最小闭环
 
-Implement the smallest coherent local system:
+实现一个最小但自洽的本地系统：
 
-- standard-library Python
-- SQLite through `sqlite3`
-- static HTML generation
-- Markdown files for Obsidian
-- no live NotebookLM dependency in unit tests
+- 标准库 Python。
+- 通过 `sqlite3` 使用 SQLite。
+- 生成静态 HTML。
+- 为 Obsidian 生成 Markdown 文件。
+- 单元测试不依赖实时 NotebookLM 网络。
 
-## Refactor
+## Refactor：通过后再收紧
 
-After tests pass:
+测试通过后：
 
-- remove duplication in storage repositories
-- tighten module boundaries
-- add docstrings only where behavior is not obvious
-- keep generated files deterministic
+- 移除存储仓储里的重复。
+- 收紧模块边界。
+- 只在行为不明显处添加 docstring。
+- 保持生成文件可预测、可重复。
 
-## Agent Wave Rules
+## Agent 波次规则
 
-- Maximum 3 implementation agents in the first wave.
-- Each agent owns a disjoint write set.
-- No agent may revert another agent's work.
-- Every agent returns changed files and verification commands.
-- Central integration reruns the full test suite.
+- 第一轮最多 3 个实现 agent。
+- 每个 agent 拥有互不重叠的写入范围。
+- 任何 agent 不得回滚其他 agent 的工作。
+- 每个 agent 都要返回变更文件和验证命令。
+- 中央集成必须重新运行完整测试套件。
