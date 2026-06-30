@@ -1462,7 +1462,7 @@ def _practice_list(sessions: list[PracticeSession]) -> str:
         items.append(
             f"""<div class="item">
   <div class="item-title"><span>#{session.id} {escape(session.topic)}</span><span>{escape(_front_label(session.front))}</span></div>
-  <div class="meta">score={escape(score)} | ratio={escape(ratio)} | source={escape(session.source or "none")} | duration={escape(str(session.duration_minutes or "none"))} | date={escape(session.created_on.isoformat() if session.created_on else "none")}</div>
+  <div class="meta">得分={escape(score)} | 得分率={escape(ratio)} | 来源={escape(session.source or "none")} | 耗时={escape(_duration_text(session.duration_minutes))} | 日期={escape(session.created_on.isoformat() if session.created_on else "none")}</div>
   <div class="meta">{escape(session.summary[:140])}</div>
 </div>"""
         )
@@ -1486,6 +1486,12 @@ def _score_ratio_text(score: float | None, max_score: float | None) -> str:
     if score is None or max_score is None or max_score <= 0:
         return "none"
     return f"{score / max_score:.0%}"
+
+
+def _duration_text(duration_minutes: int | None) -> str:
+    if duration_minutes is None:
+        return "none"
+    return f"{duration_minutes}分钟"
 
 
 def _front_label(front: ExamFront) -> str:

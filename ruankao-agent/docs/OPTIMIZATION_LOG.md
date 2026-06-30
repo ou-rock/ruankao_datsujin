@@ -1436,3 +1436,32 @@ should not alternate between learner language and implementation labels.
 
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert due cards render localized due date and review count labels.
+
+## 2026-06-30 Round 046 - Localized Practice Metadata
+
+### Learner Friction
+
+Recent practice rows had Chinese titles but English metadata labels such as
+`score`, `ratio`, `source`, `duration`, and `date`. That made the row feel like a
+debug readout instead of a learning record.
+
+### Change
+
+- Changed recent practice metadata labels:
+  - `score` to `得分`
+  - `ratio` to `得分率`
+  - `source` to `来源`
+  - `duration` to `耗时`
+  - `date` to `日期`
+- Rendered duration as `N分钟` when present.
+
+### UX Rule Captured
+
+Practice evidence should read like the learner's own logbook. English field
+names are useful internally, but repeated review surfaces should use study
+language.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert a practice row renders `得分率=53%` and `耗时=35分钟`.
