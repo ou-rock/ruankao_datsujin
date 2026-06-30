@@ -3080,3 +3080,27 @@ where it lives, and what to do when the default port is unavailable.
 
 - Script tests assert the startup banner, URL, stop hint, and port override.
 - README tests assert the fallback-port command is documented.
+
+## 2026-06-30 Round 103 - Document Workbench Port Recovery
+
+### Learner Friction
+
+The launcher now supports port overrides, but the Codex `/ruankao-workbench`
+command doc still only said to pass arguments. A learner whose default port is
+busy needs a concrete recovery example.
+
+### Change
+
+- Added the default local workbench URL to the command doc.
+- Added a port-conflict example: `/ruankao-workbench --port 8770`.
+- Kept the underlying command unchanged.
+
+### UX Rule Captured
+
+Recovery paths should be visible exactly where the user starts the action.
+Concrete examples beat abstract parameter notes.
+
+### Validation
+
+- Command-doc tests assert the default URL, fallback port example, and port
+  conflict wording.

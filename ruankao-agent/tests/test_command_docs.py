@@ -30,3 +30,11 @@ def test_daily_command_docs_hide_internal_stage_labels() -> None:
     assert "stage-only" not in night_evolve
     assert "staged plan" not in night_evolve
     assert "live skill" not in night_evolve
+
+
+def test_workbench_command_documents_port_recovery() -> None:
+    text = (COMMAND_ROOT / "ruankao-workbench.md").read_text(encoding="utf-8")
+
+    assert "http://127.0.0.1:8765" in text
+    assert "/ruankao-workbench --port 8770" in text
+    assert "如果端口占用" in text
