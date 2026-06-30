@@ -274,13 +274,14 @@ class WorkbenchApp:
         )
         primary_reason = _today_primary_reason(snapshot.risk_reasons, due_cards)
         front_overview = _front_overview(cards, due_cards, practice_sessions, self.today)
+        page_title = f"软考达人工作台 · {snapshot.countdown} · {snapshot.risk_text}"
 
         return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>软考达人工作台</title>
+  <title>{escape(page_title)}</title>
   <style>
     :root {{
       color-scheme: light;

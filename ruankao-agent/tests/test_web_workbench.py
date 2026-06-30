@@ -21,6 +21,7 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
 
     html = app.render_home()
 
+    assert "<title>软考达人工作台 · D-117 · green</title>" in html
     assert "软考达人工作台" in html
     assert 'class="skip-link" href="#today"' in html
     assert "今日闭环" in html

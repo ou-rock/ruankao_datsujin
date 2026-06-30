@@ -1224,3 +1224,28 @@ text. Small semantic improvements make repeated operations less ambiguous.
 
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert message markup includes `role="status"`.
+
+## 2026-06-30 Round 038 - Dynamic Workbench Page Title
+
+### Learner Friction
+
+The browser tab title stayed generic even though the workbench knows the current
+countdown and risk state. With Cheko, NotebookLM, local reports, and the
+workbench open together, the tab should identify the current campaign status.
+
+### Change
+
+- Changed the workbench `<title>` to include:
+  - page name;
+  - countdown;
+  - risk status.
+
+### UX Rule Captured
+
+Context should survive tab switching. A useful app title names the work surface
+and the state that matters when the user returns.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert the title includes `D-117` and `green` in the empty demo state.
