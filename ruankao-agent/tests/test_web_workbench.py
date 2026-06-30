@@ -322,9 +322,11 @@ def test_workbench_forms_write_practice_session(tmp_path) -> None:
     assert sessions[0].duration_minutes == 35
     assert "质量属性效用树" in html
     assert "<span>#1 质量属性效用树</span><span>案例题</span>" in html
-    assert "8/15" in html
-    assert "得分率=53%" in html
-    assert "耗时=35分钟" in html
+    assert "得分：8/15" in html
+    assert "得分率：53%" in html
+    assert "耗时：35分钟" in html
+    assert "得分率=53%" not in html
+    assert "耗时=35分钟" not in html
 
 
 def test_workbench_lists_render_missing_values_as_unrecorded(tmp_path) -> None:
@@ -347,7 +349,12 @@ def test_workbench_lists_render_missing_values_as_unrecorded(tmp_path) -> None:
     assert "到期：未记录" in html
     assert "复习：0次" in html
     assert "题型=未记录 | 到期=未记录 | 复习=0次" not in html
-    assert "得分=未记录 | 得分率=未记录 | 来源=未记录 | 耗时=未记录 | 日期=2026-06-29" in html
+    assert "得分：未记录" in html
+    assert "得分率：未记录" in html
+    assert "来源：未记录" in html
+    assert "耗时：未记录" in html
+    assert "日期：2026-06-29" in html
+    assert "得分=未记录 | 得分率=未记录 | 来源=未记录 | 耗时=未记录 | 日期=2026-06-29" not in html
     assert "到期=none" not in html
     assert "得分=none" not in html
     assert "来源=none" not in html

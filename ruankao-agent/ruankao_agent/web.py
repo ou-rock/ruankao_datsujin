@@ -1653,7 +1653,13 @@ def _practice_list(sessions: list[PracticeSession]) -> str:
         items.append(
             f"""<div class="item">
   <div class="item-title"><span>#{session.id} {escape(session.topic)}</span><span>{escape(_front_label(session.front))}</span></div>
-  <div class="meta">得分={escape(score)} | 得分率={escape(ratio)} | 来源={escape(_value_text(session.source))} | 耗时={escape(_duration_text(session.duration_minutes))} | 日期={escape(_date_text(session.created_on))}</div>
+  <div class="meta-row">
+    <span>得分：{escape(score)}</span>
+    <span>得分率：{escape(ratio)}</span>
+    <span>来源：{escape(_value_text(session.source))}</span>
+    <span>耗时：{escape(_duration_text(session.duration_minutes))}</span>
+    <span>日期：{escape(_date_text(session.created_on))}</span>
+  </div>
   <div class="meta">{escape(session.summary[:140])}</div>
 </div>"""
         )

@@ -2470,3 +2470,34 @@ parse punctuation to find due dates and review counts.
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert card metadata shows `题型：... / 到期：... / 复习：...` and no
   longer shows the old key-value pipe format.
+
+## 2026-06-30 Round 081 - Humanize Workbench Practice Metadata
+
+### Learner Friction
+
+Workbench practice entries still rendered as
+`得分=... | 得分率=... | 来源=... | 耗时=... | 日期=...`. Practice history is a
+diagnostic surface, so the learner should be able to scan score, ratio, source,
+time, and date independently.
+
+### Change
+
+- Reused the workbench `meta-row` chip style.
+- Changed practice-list metadata into chips:
+  - score
+  - score ratio
+  - source
+  - duration
+  - date
+- Kept practice storage and rendering order unchanged.
+
+### UX Rule Captured
+
+Practice history is evidence. Evidence should be chunked by meaning, not packed
+into a single punctuation-heavy line.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert practice entries show `得分：... / 得分率：...` and no longer show
+  the old key-value pipe format.
