@@ -4266,3 +4266,51 @@ and HTML rendering.
   `检索策略：sqlite-fts5-hybrid-progress`, `进步闸门`, `召回证据`,
   `回答契约`, CSS `--accent=#0f766e`, `main` max width `1120px`, and 3
   rendered sections.
+
+## 2026-06-30 Round 132 - Split Route Map Style Boundary
+
+### Learner Friction
+
+`route_map_render.py` still mixed the三题型覆盖 HTML structure with the page CSS.
+The route-map facade and payload boundary were already clean, but future visual
+changes still had to edit the renderer that owns labels, priority band, route
+cards, and metric rendering.
+
+### Change
+
+- Added `ruankao_agent/route_map_style.py` for the三题型覆盖报告 CSS constant.
+- Updated `ruankao_agent/route_map_render.py` to import the style constant and
+  keep only HTML structure, labels, card helpers, and value formatting.
+- Reduced `route_map_render.py` from roughly 260 lines to roughly 110 lines.
+- Captured `route_map_render -> route_map_style` in the architecture dependency
+  test and documented `route_map_style.py` as a CSS-only leaf module.
+- Preserved generated report paths, payload shape, rendered text, CLI/Web entry
+  points, and command output.
+
+### Architecture Rule Captured
+
+`route_map_style.py` may contain only三题型覆盖报告 CSS constants. It must not
+save payload, render HTML, read storage, or generate files. `route_map_render.py`
+may depend on `route_map_style.py`, but it must stay pure presentation over a
+route-map payload.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/route_map_render.py ruankao_agent/route_map_style.py`
+- `python3 -m pytest tests/test_route_map.py tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary route-map root under `/tmp/ruankao-route-map-style`.
+- Created choice/case weak cards and one essay practice session through public
+  store APIs.
+- Generated `/reports/routes/2026-06-29.html` through the public `route-map`
+  CLI path.
+- Served the temporary workbench at `http://127.0.0.1:8902/`.
+- Opened `http://127.0.0.1:8902/reports/routes/2026-06-29.html` through
+  browser-act.
+- Verified HTTP 200 and rendered DOM content for `三题型覆盖图 2026-06-29`,
+  `今日先打`, `选择题`, `案例题`, `论文题`, CSS `--accent=#0f766e`, `main`
+  max width `1120px`, and 4 rendered sections.
