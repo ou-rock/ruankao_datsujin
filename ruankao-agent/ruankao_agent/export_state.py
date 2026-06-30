@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+from collections import Counter
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
+from typing import Iterable
 
 from .storage import RuankaoStore
 
@@ -64,6 +66,10 @@ def _state_payload(store: RuankaoStore, as_of: date) -> dict[str, object]:
             "practice_sessions": len(practice_sessions),
             "principle_relations": len(relations),
         },
+        "source_counts": _count(record.source.value for record in raw_records),
+        "front_counts": _count(front.value for card in cards for front in card.fronts),
+        "card_type_counts": _count(card.card_type.value for card in cards),
+        "promotion_status_counts": _count(record.promotion_status for record in raw_records),
         "raw_records": [
             {
                 "id": record.id,
@@ -131,3 +137,7 @@ def _state_payload(store: RuankaoStore, as_of: date) -> dict[str, object]:
             for relation in relations
         ],
     }
+
+
+def _count(values: Iterable[str]) -> dict[str, int]:
+    return dict(sorted(Counter(values).items()))

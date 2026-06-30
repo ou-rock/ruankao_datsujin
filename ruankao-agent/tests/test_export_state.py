@@ -66,6 +66,10 @@ def test_state_export_captures_store_tables_as_json(tmp_path) -> None:
         "principle_relations": 1,
     }
     assert payload["raw_records"][0]["source"] == "mein"
+    assert payload["source_counts"] == {"mein": 1}
+    assert payload["front_counts"] == {"case": 1, "essay": 1}
+    assert payload["card_type_counts"] == {"principle": 2}
+    assert payload["promotion_status_counts"] == {"raw": 1}
     assert payload["memory_cards"][0]["title"] == "质量属性可度量"
     assert payload["review_logs"][0]["grade"] == 4
     assert payload["practice_sessions"][0]["score"] == 8

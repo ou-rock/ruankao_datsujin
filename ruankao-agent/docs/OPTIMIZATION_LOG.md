@@ -2893,3 +2893,29 @@ work, the interface should provide the shortest path to record the evidence.
 
 - Learning-page tests assert the three workbench anchor links and labels appear
   on the one-screen action plan.
+
+## 2026-06-30 Round 096 - Add Distribution Counts To State Export
+
+### Learner Friction
+
+The local state export was a complete backup, but it required reading full rows
+to understand whether the system was balanced across Mein/Du/Uns, exam fronts,
+card types, and raw-material promotion states.
+
+### Change
+
+- Added top-level `source_counts` to the state export.
+- Added top-level `front_counts` for memory-card exam coverage.
+- Added top-level `card_type_counts`.
+- Added top-level `promotion_status_counts`.
+- Kept the full row exports unchanged.
+
+### UX Rule Captured
+
+Backups should be auditable at a glance. A durable export can serve both machine
+restore and human inspection if it includes compact distribution summaries.
+
+### Validation
+
+- State-export tests assert the new distribution counts while preserving the
+  existing full table data.
