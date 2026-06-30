@@ -4664,3 +4664,55 @@ action text.
   default `supports`, 4 segmented controls, 9 rendered sections, `main` max
   width `1280px`, title `软考达人工作台 · D-116 · 红灯`, and screenshot
   `/tmp/ruankao-web-controls-workbench.png`.
+
+## 2026-06-30 Round 140 - Rename Workbench Status Module
+
+### Learner Friction
+
+After controls moved out, `web_render.py` no longer described what the module
+actually did. It had become a status-focused module containing message
+translation, today's primary action, primary reason, and the compact status
+summary. Keeping the vague historical name in the current architecture map made
+the workbench page layer harder to read.
+
+### Change
+
+- Added `ruankao_agent/web_status.py` for workbench status rendering.
+- Moved `_message`, `_message_text`, `_today_primary_action`,
+  `_today_primary_reason`, and `_status_summary` from `web_render.py`.
+- Updated `web_page.py` and `web_page_sections.py` to import status helpers
+  from `web_status.py`.
+- Removed `web_render.py` from the current module graph.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved workbench routes, message wording, status summary, today's first
+  action, RAG panel, form controls, lists, and front radar output.
+
+### Architecture Rule Captured
+
+`web_status.py` owns only workbench status messages, compact status summary, and
+today's primary action/reason text. It may depend on read-only data objects and
+`web_labels.py`, but must not process HTTP, write state, save label mappings,
+render form controls, render lists, render the RAG panel, calculate front
+radar, or own the page shell.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/web_status.py ruankao_agent/web_page.py ruankao_agent/web_page_sections.py`
+- `python3 -m pytest tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- `rg "web_render" -n ruankao_agent tests docs/ARCHITECTURE_BOUNDARIES.md`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary workbench root under `/tmp/ruankao-web-status`.
+- Initialized the root and seeded Cheko cards through public CLI commands.
+- Served the temporary workbench at `http://127.0.0.1:8910/`.
+- Opened `http://127.0.0.1:8910/?message=review-saved` through browser-act.
+- Verified HTTP 200 and rendered DOM content for `软考达人工作台`,
+  `复习评分已记录。`, `D-116 · 启动诊断 · 红灯 · 到期 4 · 积压 100%`,
+  `先复习 4 张到期卡，低于 3 分立刻明天再见。`, and `复习积压超过 40%`.
+- Verified 3 front cards, 9 rendered sections, `main` max width `1280px`,
+  title `软考达人工作台 · D-116 · 红灯`, and screenshot
+  `/tmp/ruankao-web-status-workbench.png`.

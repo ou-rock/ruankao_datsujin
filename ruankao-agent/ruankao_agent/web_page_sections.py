@@ -22,7 +22,7 @@ from .web_lists import (
 )
 from .web_labels import _risk_label
 from .web_rag_panel import _rag_panel
-from .web_render import (
+from .web_status import (
     _message,
     _status_summary,
 )

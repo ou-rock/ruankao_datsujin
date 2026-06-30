@@ -23,7 +23,7 @@ from .web_fronts import _front_overview
 from .web_labels import _risk_label
 from .web_page_sections import render_home_shell
 from .web_page_view import HomePageView
-from .web_render import (
+from .web_status import (
     _today_primary_action,
     _today_primary_reason,
 )
