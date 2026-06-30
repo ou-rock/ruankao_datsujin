@@ -104,7 +104,7 @@
 *   **计算内核逻辑**：
     1.  **文本切块 (Chunking)**：支持对三源长资料进行物理切块（支持重叠字符与自适应段落拆分），每个切块分配唯一 `chunk_ref` 标识（如 `raw:14#c1`）。
     2.  **全文检索索引 (SQLite FTS5)**：基于内存中建立的临时虚拟表 `fts5`，利用 SQLite 自带的 `bm25` 函数计算词频密度和相关性排名评分。
-    3.  **分词与分段重排 (Hybrid Rerank)**：结合 FTS5 BM25 词频、词项字面匹配、完整短语命中、题型对齐（Front alignment）、状态奖励和物理进步权重（Progressive Weight，如 Leach 反复低分卡与 unstable 待回忆卡有大额提权 3.0~6.0 分）进行混合计算。
+    3.  **严格字面分词与混合重排 (Strict Hybrid Rerank)**：结合 FTS5 BM25 词频、词项字面匹配、完整短语命中、题型对齐（Front alignment）、状态奖励和物理进步权重。**检索采用严格字面对齐规则，不为拼音、同音词或输入错别字执行后台转译降级，以防止造成倒排索引语义污染。** 跨概念模糊匹配在未来直接通过可插拔的本地轻量级向量嵌（Embedding）后端执行。
     4.  **排序透明度 (Explained Rerank)**：返回的 Brief 结果中需携带分数分解列表（fts_bm25、progress、token 等）和检索策略说明。
     5.  **进步闸门拦截 (Progress Gates)**：在每一次 RAG 命令被触发时，除了输出语义近端切块，还必须同步输出最高风险的“进步闸门”（根据 `leech` -> `unstable` -> `due-review` -> `low-practice` 优先级向下检索）。
     6.  **动作引导契约 (Answer Contract)**：返回的 brief payload 必须携带 `recommended_action`（建议动作）和交互契约（如强制引用 Mein/Du/Uns），以便在引导用户学习时直接建立回答规范。
