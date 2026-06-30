@@ -197,6 +197,20 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
       font-size: 12px;
       margin-top: 4px;
     }}
+    .meta-row {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }}
+    .meta-row span {{
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      padding: 4px 7px;
+      font-size: 12px;
+    }}
   </style>
 </head>
 <body>
@@ -479,8 +493,13 @@ def _recent_practice(sessions: list[object]) -> str:
             f"""<div class="item">
   <strong>#{escape(str(item["id"]))} {escape(_front_label(item["front"]))} {escape(str(item["topic"]))}</strong>
   <div>{escape(str(item["summary"]))}</div>
-  <div class="meta">得分={escape(score)} | 来源={escape(_value_text(item["source"]))} | 耗时={escape(_duration_text(item["duration_minutes"]))} | 日期={escape(_value_text(item["created_on"]))}</div>
-  <div class="meta">错因={escape(_value_text(item["mistakes"]))}</div>
+  <div class="meta-row">
+    <span>得分：{escape(score)}</span>
+    <span>来源：{escape(_value_text(item["source"]))}</span>
+    <span>耗时：{escape(_duration_text(item["duration_minutes"]))}</span>
+    <span>日期：{escape(_value_text(item["created_on"]))}</span>
+  </div>
+  <div class="meta">错因：{escape(_value_text(item["mistakes"]))}</div>
 </div>"""
         )
     return "".join(items)

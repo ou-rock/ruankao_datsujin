@@ -2215,3 +2215,32 @@ fact in learner language.
 - `python3 -m pytest tests/test_daily_receipt.py -q`
 - Tests assert the daily receipt shows `数据版本` and no longer shows `Schema` in
   the HTML report.
+
+## 2026-06-30 Round 072 - Humanize Receipt Practice Metadata
+
+### Learner Friction
+
+The daily receipt's recent-practice entries still displayed practice metadata as
+`得分=... | 来源=... | 耗时=... | 日期=...`. That reads like a serialized string,
+even though it is one of the most important end-of-day review surfaces.
+
+### Change
+
+- Added a compact `meta-row` chip style to daily receipt HTML.
+- Changed recent-practice metadata into separate chips:
+  - score
+  - source
+  - duration
+  - date
+- Changed the mistake label from `错因=` to `错因：`.
+
+### UX Rule Captured
+
+End-of-day reports should optimize for tired scanning. Practice metadata should
+be chunked into visual units, not packed into a pipe-delimited line.
+
+### Validation
+
+- `python3 -m pytest tests/test_daily_receipt.py -q`
+- Tests assert the receipt shows `得分：7/10` and no longer renders the old
+  `得分=7/10` practice metadata format.
