@@ -1411,3 +1411,28 @@ controls. The card list should read like study material, not debug output.
 
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert a case due card renders `题型=案例题`.
+
+## 2026-06-30 Round 045 - Localized Card Review Metadata
+
+### Learner Friction
+
+After localizing card type and fronts, card rows still showed `due` and
+`reviews`. These English debug-style labels stood out in an otherwise Chinese
+learning surface.
+
+### Change
+
+- Changed card row metadata:
+  - `due=` to `到期=`
+  - `reviews=` to `复习=...次`
+- Kept dates and counts unchanged.
+
+### UX Rule Captured
+
+Microcopy consistency matters in repeated scanning surfaces. A review queue
+should not alternate between learner language and implementation labels.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert due cards render localized due date and review count labels.

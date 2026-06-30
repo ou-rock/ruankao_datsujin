@@ -1414,7 +1414,7 @@ def _card_list(cards: list[MemoryCard], *, with_review: bool, today: date) -> st
         items.append(
             f"""<div class="item">
   <div class="item-title"><span>#{card.id} {escape(card.title)}</span><span>{escape(_card_type_label(card.card_type))}</span></div>
-  <div class="meta">题型={escape(_fronts_label(card.fronts))} | due={escape(card.next_due.isoformat() if card.next_due else "none")} | reviews={card.review_count}</div>
+  <div class="meta">题型={escape(_fronts_label(card.fronts))} | 到期={escape(card.next_due.isoformat() if card.next_due else "none")} | 复习={card.review_count}次</div>
   <div class="meta">{escape(card.prompt[:140])}</div>
   {review_form}
 </div>"""
