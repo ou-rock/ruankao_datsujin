@@ -881,11 +881,7 @@ class WorkbenchApp:
             <div class="field">
               <div class="field-label">状态</div>
               <div class="segmented flow" aria-label="三源状态">
-                <label><input type="radio" name="promotion_status" value="raw" checked>raw</label>
-                <label><input type="radio" name="promotion_status" value="extracted">extracted</label>
-                <label><input type="radio" name="promotion_status" value="tested">tested</label>
-                <label><input type="radio" name="promotion_status" value="promoted">promoted</label>
-                <label><input type="radio" name="promotion_status" value="rejected">rejected</label>
+                {_promotion_status_radios()}
               </div>
             </div>
           </div>
@@ -1393,6 +1389,23 @@ def _front_cards(rows: list[dict[str, object]]) -> str:
 </div>"""
         )
     return "".join(cards)
+
+
+def _promotion_status_radios() -> str:
+    statuses = (
+        ("raw", "原始", True),
+        ("extracted", "已提炼", False),
+        ("tested", "已检验", False),
+        ("promoted", "已升格", False),
+        ("rejected", "已淘汰", False),
+    )
+    buttons = []
+    for value, label, checked in statuses:
+        checked_attr = " checked" if checked else ""
+        buttons.append(
+            f'<label><input type="radio" name="promotion_status" value="{value}"{checked_attr}>{escape(label)}</label>'
+        )
+    return "\n                ".join(buttons)
 
 
 def _card_list(cards: list[MemoryCard], *, with_review: bool, today: date) -> str:

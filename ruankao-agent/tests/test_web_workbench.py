@@ -182,11 +182,11 @@ def test_raw_record_status_uses_segmented_radio_control(tmp_path) -> None:
     html = app.render_home()
 
     assert 'class="segmented flow" aria-label="三源状态"' in html
-    assert 'type="radio" name="promotion_status" value="raw" checked' in html
-    assert 'type="radio" name="promotion_status" value="extracted"' in html
-    assert 'type="radio" name="promotion_status" value="tested"' in html
-    assert 'type="radio" name="promotion_status" value="promoted"' in html
-    assert 'type="radio" name="promotion_status" value="rejected"' in html
+    assert 'type="radio" name="promotion_status" value="raw" checked>原始' in html
+    assert 'type="radio" name="promotion_status" value="extracted">已提炼' in html
+    assert 'type="radio" name="promotion_status" value="tested">已检验' in html
+    assert 'type="radio" name="promotion_status" value="promoted">已升格' in html
+    assert 'type="radio" name="promotion_status" value="rejected">已淘汰' in html
     assert '<select name="promotion_status">' not in html
 
 

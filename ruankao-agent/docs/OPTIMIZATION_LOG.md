@@ -1465,3 +1465,35 @@ language.
 
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert a practice row renders `得分率=53%` and `耗时=35分钟`.
+
+## 2026-06-30 Round 047 - Localized Capture Status Choices
+
+### Learner Friction
+
+The three-source capture form used a segmented control for material status, but
+the visible labels were still raw enum values: `raw`, `extracted`, `tested`,
+`promoted`, and `rejected`. That made the bottom layer feel like a database
+field rather than a material-evolution workflow.
+
+### Change
+
+- Kept the stored `promotion_status` values unchanged for compatibility.
+- Localized visible status choices:
+  - `raw` to `原始`
+  - `extracted` to `已提炼`
+  - `tested` to `已检验`
+  - `promoted` to `已升格`
+  - `rejected` to `已淘汰`
+- Extracted status radio rendering into a small helper so the vocabulary can be
+  iterated later without editing the main HTML block.
+
+### UX Rule Captured
+
+Capture controls should speak in the learner's workflow language. Internal
+state names can remain stable underneath, but the surface should describe how a
+note moves through the learning pyramid.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert status radio values remain stable while labels render in Chinese.
