@@ -4117,3 +4117,50 @@ logic again.
   browser-act.
 - Verified HTTP 200 and rendered DOM content for `三题型覆盖图 2026-06-29`,
   `今日先打`, `选择题`, `案例题`, `论文题`, `敏感点 vs 权衡点`, and `75%`.
+
+## 2026-06-30 Round 129 - Split Daily Receipt Style Boundary
+
+### Learner Friction
+
+`receipts_render.py` still mixed two presentation concerns: the日结 HTML
+structure and the page CSS. The payload boundary was already clean, but future
+visual changes could still force edits inside the long HTML renderer.
+
+### Change
+
+- Added `ruankao_agent/receipts_style.py` for the日结报告 CSS constant.
+- Updated `ruankao_agent/receipts_render.py` to import the style constant and
+  keep only HTML structure, escaping, labels, and section helpers.
+- Reduced `receipts_render.py` from roughly 500 lines to roughly 390 lines.
+- Captured `receipts_render -> receipts_style` in the architecture dependency
+  test and documented `receipts_style.py` as a CSS-only leaf module.
+- Preserved generated report paths, payload shape, rendered text, and command
+  output.
+
+### Architecture Rule Captured
+
+`receipts_style.py` may contain only日结报告 CSS constants. It must not save
+payload, render HTML, write files, read state, or import business modules.
+`receipts_render.py` may depend on `receipts_style.py`, but it must stay pure
+presentation over a payload.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/receipts_render.py ruankao_agent/receipts_style.py`
+- `python3 -m pytest tests/test_daily_receipt.py tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary report root under `/tmp/ruankao-receipts-style`.
+- Created Cheko cards, one Mein record, one memory review, and one
+  choice-practice session through public CLI / store APIs.
+- Generated `/reports/daily/2026-06-29.html` through the public
+  `daily-receipt` CLI path.
+- Served the temporary workbench at `http://127.0.0.1:8899/`.
+- Opened `http://127.0.0.1:8899/reports/daily/2026-06-29.html` through
+  browser-act.
+- Verified HTTP 200 and rendered DOM content for `日结回执 2026-06-29`,
+  `今晚焦点`, `RAG 控制`, `最近练习`, `得分：7/10`, CSS `--accent=#0f766e`,
+  `main` max width `1120px`, and 13 rendered sections.
