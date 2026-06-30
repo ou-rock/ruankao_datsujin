@@ -4011,3 +4011,56 @@ may write generated learning files but must not grow page templates again.
 - Clicked `今日三任务` and verified navigation to
   `http://127.0.0.1:8896/learning/today.html` with the workbench action links
   for learning turns, memory cards, and practice sessions.
+
+## 2026-06-30 Round 127 - Split Daily Receipt Payload And Render Boundary
+
+### Learner Friction
+
+`receipts.py` had become a second workbench-like file: it opened SQLite,
+computed daily loop state, embedded RAG, built JSON payloads, rendered a large
+HTML page, and wrote files. That made a visual report change risky because it
+could accidentally affect memory diagnostics or RAG evidence collection.
+
+### Change
+
+- Added `ruankao_agent/receipts_payload.py` for日结 payload construction:
+  store reads, loop snapshot, memory diagnostics, Cheko/due-card counts,
+  practice score ratios, RAG brief embedding, and tonight-focus decisions.
+- Added `ruankao_agent/receipts_render.py` for日结 HTML rendering and label
+  formatting only.
+- Kept `ruankao_agent/receipts.py` as the public facade and file writer:
+  report paths, JSON/HTML writes, `DailyReceiptResult`, and compatibility
+  re-export of `render_daily_receipt`.
+- Reduced `receipts.py` from roughly 780 lines to roughly 45 lines.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved CLI/Web entry points, generated paths, JSON payload shape, rendered
+  text, and hook-friendly command output.
+
+### Architecture Rule Captured
+
+`receipts_payload.py` may depend on loop, memory, RAG, and storage to construct
+facts, but it must not render HTML or write files. `receipts_render.py` must be
+pure presentation over a payload and must not depend on internal modules.
+`receipts.py` writes JSON/HTML files but must not grow payload or template logic
+again.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/receipts.py ruankao_agent/receipts_payload.py ruankao_agent/receipts_render.py`
+- `python3 -m pytest tests/test_daily_receipt.py -q`
+- `python3 -m pytest tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary report root under `/tmp/ruankao-receipts-split`.
+- Created Cheko cards, one Mein record, and one choice-practice session through
+  public CLI / store APIs.
+- Generated `/reports/daily/2026-06-29.html` through the public
+  `daily-receipt` CLI path.
+- Served the temporary workbench at `http://127.0.0.1:8897/`.
+- Opened `http://127.0.0.1:8897/reports/daily/2026-06-29.html` through
+  browser-act.
+- Verified HTTP 200 and rendered DOM content for `日结回执 2026-06-29`,
+  `今晚焦点`, `RAG 控制`, `最近练习`, `得分：7/10`, and `D-117 · 启动诊断`.
