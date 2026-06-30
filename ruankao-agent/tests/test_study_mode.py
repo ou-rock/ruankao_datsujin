@@ -80,7 +80,8 @@ def test_cli_study_turn_prints_record_ids(tmp_path) -> None:
     assert "mein=1" in result.stdout
     assert "du=2" in result.stdout
     assert "topic=ATAM" in result.stdout
-    assert "fronts=choice,case" in result.stdout
+    assert "fronts=选择题、案例题" in result.stdout
+    assert "fronts=choice,case" not in result.stdout
 
 
 def test_study_mode_command_documents_dialogue_protocol() -> None:

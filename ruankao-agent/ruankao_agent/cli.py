@@ -332,7 +332,7 @@ def cmd_study_turn(
         codex_position=codex_position,
         destination=destination,
     )
-    front_text = ",".join(front.value for front in result.fronts) or "none"
+    front_text = "、".join(_front_display(front) for front in result.fronts) or "未标注"
     print(
         f"mein={result.mein_record_id} "
         f"du={result.du_record_id} "
@@ -340,6 +340,14 @@ def cmd_study_turn(
         f"fronts={front_text}"
     )
     return 0
+
+
+def _front_display(front: ExamFront) -> str:
+    return {
+        ExamFront.CHOICE: "选择题",
+        ExamFront.CASE: "案例题",
+        ExamFront.ESSAY: "论文题",
+    }[front]
 
 
 def build_parser() -> argparse.ArgumentParser:

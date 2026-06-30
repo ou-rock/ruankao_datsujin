@@ -2614,3 +2614,28 @@ should not expose internal enum values or key-value fragments.
 - `python3 -m pytest tests/test_cli.py -q`
 - Tests assert CLI status output now shows localized risk and natural due/backlog
   labels, and no longer shows `green`, `red`, or `due=`.
+
+## 2026-06-30 Round 086 - Localize Study Turn Front Output
+
+### Learner Friction
+
+The `study-turn` command recorded fronts correctly, but printed them back as
+`choice,case` or `none`. This command is part of the live learning loop, so its
+confirmation output should reflect the learner-facing题型 names.
+
+### Change
+
+- Added a CLI display mapper for `ExamFront`.
+- Changed `study-turn` output to show `选择题、案例题、论文题`.
+- Changed empty front output from `none` to `未标注`.
+- Kept command arguments and stored enum values unchanged.
+
+### UX Rule Captured
+
+Learning-loop confirmations should confirm in study language, not storage codes.
+
+### Validation
+
+- `python3 -m pytest tests/test_study_mode.py -q`
+- Tests assert `study-turn` prints localized fronts and no longer prints
+  `fronts=choice,case`.
