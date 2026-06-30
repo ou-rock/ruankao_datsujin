@@ -301,6 +301,23 @@ class WorkbenchApp:
       color: var(--ink);
       background: #fbfcfb;
     }}
+    .skip-link {{
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      transform: translateY(-160%);
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--accent-ink);
+      padding: 8px 10px;
+      font-weight: 750;
+      text-decoration: none;
+      z-index: 10;
+    }}
+    .skip-link:focus {{
+      transform: translateY(0);
+    }}
     header {{
       border-bottom: 1px solid var(--line);
       background: var(--paper);
@@ -685,6 +702,7 @@ class WorkbenchApp:
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#today">跳到今日闭环</a>
   <header>
     <div class="top">
       <div class="title-row">

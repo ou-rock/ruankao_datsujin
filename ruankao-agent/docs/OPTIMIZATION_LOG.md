@@ -1177,3 +1177,27 @@ guards matter.
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert all three practice numeric fields expose browser-level
   constraints.
+
+## 2026-06-30 Round 036 - Workbench Skip Link
+
+### Learner Friction
+
+The workbench now has a richer header and side navigation. Keyboard users would
+otherwise have to tab through that chrome before reaching today's actual study
+loop.
+
+### Change
+
+- Added a focus-visible skip link at the top of the workbench.
+- The link jumps directly to `#today`.
+- Styled it to stay hidden until focused.
+
+### UX Rule Captured
+
+Useful dashboards still need a fast path to the task. Keyboard navigation should
+not make the learner pay for every navigation affordance on every visit.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert the skip link points to the today section.
