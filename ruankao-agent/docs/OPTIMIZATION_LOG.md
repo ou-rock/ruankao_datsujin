@@ -4164,3 +4164,56 @@ presentation over a payload.
 - Verified HTTP 200 and rendered DOM content for `日结回执 2026-06-29`,
   `今晚焦点`, `RAG 控制`, `最近练习`, `得分：7/10`, CSS `--accent=#0f766e`,
   `main` max width `1120px`, and 13 rendered sections.
+
+## 2026-06-30 Round 130 - Split RAG Documents And Progress Boundaries
+
+### Learner Friction
+
+`rag.py` still carried too many RAG responsibilities in one facade: store
+orchestration, document construction, progress gates, recommendation wording,
+retrieval delegation, and report writes. That made future NotebookLM/Cheko
+source growth and gate-rule growth likely to land in the same file.
+
+### Change
+
+- Added `ruankao_agent/rag_documents.py` for RAG corpus construction from raw
+  records, memory cards, practice sessions, and memory diagnostics.
+- Added `ruankao_agent/rag_progress.py` for progress gates and recommended
+  action selection.
+- Kept `ruankao_agent/rag.py` as the public facade and file writer:
+  store reads, diagnostics, document/gate/retrieval/report orchestration,
+  compatibility re-exports, and JSON/HTML writes.
+- Reduced `rag.py` from roughly 390 lines to roughly 130 lines.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved public imports, CLI/Web entry points, generated paths, payload
+  shape, rendered text, and command output.
+
+### Architecture Rule Captured
+
+`rag_documents.py` owns corpus construction and must not retrieve, rank, render,
+or write files. `rag_progress.py` owns progress gates and recommended action
+wording and must not construct retrieval documents, execute retrieval, render,
+or write files. `rag.py` may orchestrate these modules but must not absorb their
+rules again.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/rag.py ruankao_agent/rag_documents.py ruankao_agent/rag_progress.py`
+- `python3 -m pytest tests/test_rag.py tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary RAG root under `/tmp/ruankao-rag-boundary`.
+- Created one Mein record, one repeatedly low-graded memory card, and one
+  low-score case-practice session through public store APIs.
+- Generated `/reports/rag/2026-06-29.html` through the public `rag-query` CLI
+  path.
+- Served the temporary workbench at `http://127.0.0.1:8900/`.
+- Opened `http://127.0.0.1:8900/reports/rag/2026-06-29.html` through
+  browser-act.
+- Verified HTTP 200 and rendered DOM content for `RAG 记忆与进步控制`,
+  `检索策略：sqlite-fts5-hybrid-progress`, `进步闸门`, `召回证据`,
+  `回答契约`, `先处理「可用性 vs 可靠性」`, `高并发订单案例`, and 3 rendered
+  sections.
