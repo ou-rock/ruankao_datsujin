@@ -2639,3 +2639,27 @@ Learning-loop confirmations should confirm in study language, not storage codes.
 - `python3 -m pytest tests/test_study_mode.py -q`
 - Tests assert `study-turn` prints localized fronts and no longer prints
   `fronts=choice,case`.
+
+## 2026-06-30 Round 087 - Replace Dashboard Phase Key
+
+### Learner Friction
+
+The static total map showed the current phase name and then the internal key
+`stage-0`. The phase key is useful for data, but the map should tell the learner
+where they are in the campaign timeline.
+
+### Change
+
+- Replaced the visible phase key with a phase-day window such as `第 0-2 天`.
+- Added a helper that renders open-ended reserve phases as `第 N 天后`.
+- Kept campaign phase keys unchanged in the domain model.
+
+### UX Rule Captured
+
+Strategic maps should show time position, not internal identifiers. The learner
+needs "where am I in the campaign?", not "what is the enum key?".
+
+### Validation
+
+- `python3 -m pytest tests/test_vault_and_dashboard.py -q`
+- Tests assert the dashboard shows `第 0-2 天` and no longer shows `stage-0`.

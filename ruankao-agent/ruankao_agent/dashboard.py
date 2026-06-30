@@ -42,8 +42,9 @@ def render_dashboard(snapshot: DashboardSnapshot) -> str:
     exam_date = campaign.exam_date
     days_remaining = campaign.days_remaining(snapshot.as_of)
     countdown = f"D-{days_remaining}" if days_remaining >= 0 else f"D+{-days_remaining}"
+    phase = campaign.phase_for(snapshot.as_of)
     phase_name = _phase_name(campaign, snapshot.as_of)
-    phase_key = getattr(campaign.phase_for(snapshot.as_of), "key", "")
+    phase_window = _phase_window(phase)
     reserve_days_consumed = campaign.reserve_days_consumed(snapshot.as_of)
     elapsed_days = max(0, (snapshot.as_of - campaign.start_date).days)
     main_battle_weeks_done = min(14, elapsed_days // 7)
@@ -194,7 +195,7 @@ def render_dashboard(snapshot: DashboardSnapshot) -> str:
         <div class="metric">
           <span class="label">当前阶段</span>
           <span class="value">{escape(phase_name)}</span>
-          <div class="small">{escape(phase_key)}</div>
+          <div class="small">{escape(phase_window)}</div>
         </div>
         <div class="metric">
           <span class="label">风险</span>
@@ -282,3 +283,13 @@ def _risk_label(value: str) -> str:
         "yellow": "黄灯",
         "green": "绿灯",
     }.get(value, value)
+
+
+def _phase_window(phase: object) -> str:
+    start = getattr(phase, "start_day", None)
+    end = getattr(phase, "end_day", None)
+    if start is None or end is None:
+        return ""
+    if int(end) >= 9999:
+        return f"第 {start} 天后"
+    return f"第 {start}-{end} 天"

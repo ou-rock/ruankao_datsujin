@@ -168,6 +168,8 @@ def test_dashboard_renders_total_map() -> None:
     assert "2026-10-24" in html
     assert "D-117" in html
     assert "启动诊断" in html
+    assert "第 0-2 天" in html
+    assert "stage-0" not in html
     assert "主战进度" in html
     assert "0 / 14 周" in html
     assert "冗余池" in html
