@@ -4314,3 +4314,52 @@ route-map payload.
 - Verified HTTP 200 and rendered DOM content for `三题型覆盖图 2026-06-29`,
   `今日先打`, `选择题`, `案例题`, `论文题`, CSS `--accent=#0f766e`, `main`
   max width `1120px`, and 4 rendered sections.
+
+## 2026-06-30 Round 133 - Split Learning Cheko And Layout Templates
+
+### Learner Friction
+
+`learning_templates.py` had become a mixed learning-page module: homepage,
+first lesson, reference pages, NotebookLM seed page, Cheko sync page, today
+task policy, shared page shell, cards, and Cheko panels all lived together.
+That made the learning desk harder to evolve because visual shell changes,
+Cheko-derived task rules, and static lesson pages all touched the same file.
+
+### Change
+
+- Added `ruankao_agent/learning_layout.py` for the common learning page shell,
+  reusable cards, and front-code localization.
+- Added `ruankao_agent/learning_cheko_templates.py` for Cheko sync rendering,
+  today-page rendering, Cheko panels, and `today_tasks`.
+- Kept `ruankao_agent/learning_templates.py` as the public template facade for
+  the learning index, first lesson, reference pages, NotebookLM seed page, and
+  compatibility re-exports of Cheko/today rendering.
+- Reduced `learning_templates.py` from roughly 480 lines to roughly 285 lines.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved learning resource paths, generated HTML text, CLI/Web entry points,
+  public imports, and Cheko snapshot behavior.
+
+### Architecture Rule Captured
+
+`learning_layout.py` owns only shared learning-page layout fragments.
+`learning_cheko_templates.py` owns Cheko snapshot rendering and today-task
+derivation, but must not read Cheko, write SQLite, write files, or handle HTTP.
+`learning_templates.py` may orchestrate page templates and re-export public
+template functions, but must not absorb Cheko task policy again.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/learning_templates.py ruankao_agent/learning_layout.py ruankao_agent/learning_cheko_templates.py`
+- `python3 -m pytest tests/test_learning.py tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary learning root under `/tmp/ruankao-learning-boundary`.
+- Generated learning resources through the public `learning` CLI path.
+- Served the temporary workbench at `http://127.0.0.1:8903/`.
+- Opened `http://127.0.0.1:8903/learning/today.html` through browser-act.
+- Verified HTTP 200 and rendered DOM content for `今日三任务`, `只做这三件事`,
+  `系统架构设计错题回炉`, `论文最低触达`, `记录学习回合`, CSS `--accent=#0f766e`,
+  `main` max width `1120px`, and 3 rendered sections.
