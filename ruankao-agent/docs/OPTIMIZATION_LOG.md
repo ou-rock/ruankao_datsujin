@@ -2358,3 +2358,28 @@ spot "反复低分" and the low-grade count without parsing punctuation.
 - `python3 -m pytest tests/test_daily_receipt.py -q`
 - Tests assert repeated-low-grade diagnostics show `状态：反复低分` and no longer
   show `状态=反复低分`.
+
+## 2026-06-30 Round 077 - Humanize Night Evolution Metadata
+
+### Learner Friction
+
+The night evolution report still had two visible implementation-style markers:
+the header joined status with a pipe, and each action showed `优先级=高`. This is
+a nightly planning surface, so it should feel like next-step guidance rather
+than structured logs.
+
+### Change
+
+- Replaced the header pipe-delimited status with compact status chips.
+- Changed visible action priority from `优先级=高` to `优先级：高`.
+- Kept staged JSON and CLI output unchanged.
+
+### UX Rule Captured
+
+Night reports should speak in operating instructions. Keep machine-friendly
+fields in JSON/CLI; make HTML calm and readable.
+
+### Validation
+
+- `python3 -m pytest tests/test_evolution.py -q`
+- Tests assert the HTML shows `优先级：高` and no longer shows `优先级=高`.

@@ -129,13 +129,30 @@ def render_night_evolution_plan(plan: dict[str, object]) -> str:
       font-size: 12px;
       margin-top: 4px;
     }}
+    .status-row {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }}
+    .status-row span {{
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      padding: 5px 8px;
+      font-size: 12px;
+    }}
   </style>
 </head>
 <body>
   <main>
     <header>
       <h1>夜间进化草案 {escape(str(plan["as_of"]))}</h1>
-      <p class="status">仅暂存：{escape(_yes_no(plan["stage_only"]))} | 来源日结：{escape(str(plan["receipt_json"]))}</p>
+      <div class="status-row">
+        <span>仅暂存：{escape(_yes_no(plan["stage_only"]))}</span>
+        <span>来源日结：{escape(str(plan["receipt_json"]))}</span>
+      </div>
     </header>
     <section>
       <h2>明晚前只做这些</h2>
@@ -276,7 +293,7 @@ def _action_items(actions: list[object]) -> str:
             f"""<div class="item">
   <strong>{escape(str(action["title"]))}</strong>
   <div>{escape(str(action["detail"]))}</div>
-  <div class="meta">优先级={escape(_priority_label(action["priority"]))}</div>
+  <div class="meta">优先级：{escape(_priority_label(action["priority"]))}</div>
 </div>"""
         )
     return "".join(items)
