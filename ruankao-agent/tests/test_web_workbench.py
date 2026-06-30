@@ -69,7 +69,31 @@ def test_workbench_message_is_announced_as_status(tmp_path) -> None:
 
     html = app.render_home(message="review-saved")
 
-    assert '<div class="message" role="status">review-saved</div>' in html
+    assert '<div class="message" role="status">复习评分已记录。</div>' in html
+    assert "review-saved" not in html
+
+
+def test_workbench_messages_translate_common_action_slugs(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+
+    messages = {
+        "raw-record-3-saved": "三源材料 #3 已沉淀。",
+        "memory-card-5-saved": "记忆卡 #5 已创建。",
+        "practice-session-7-saved": "练习记录 #7 已保存。",
+        "cheko-cards-created-4-skipped-1": "Cheko 弱点已入队：新增 4 张，跳过 1 张。",
+        "daily-receipt-2026-06-29-written": "2026-06-29 日结回执已生成。",
+        "night-evolution-2026-06-29-actions-3-staged": "2026-06-29 夜间进化草案已生成，包含 3 个动作。",
+        "route-map-2026-06-29-written": "2026-06-29 三题型覆盖图已生成。",
+        "state-export-2026-06-29-written": "2026-06-29 本地状态 JSON 已导出。",
+        "vault-sync-written-2-skipped-1": "记忆卡已同步到 Obsidian：写入 2 个，跳过 1 个。",
+        "raw-vault-sync-written-1-skipped-0": "三源材料已同步到 Obsidian：写入 1 个，跳过 0 个。",
+    }
+
+    for slug, text in messages.items():
+        html = app.render_home(message=slug)
+        assert f'<div class="message" role="status">{text}</div>' in html
+        assert slug not in html
 
 
 def test_workbench_home_shows_three_front_radar_with_due_state(tmp_path) -> None:

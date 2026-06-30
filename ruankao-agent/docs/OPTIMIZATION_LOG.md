@@ -1618,3 +1618,40 @@ in HTML.
 - `python3 -m pytest tests/test_daily_receipt.py -q`
 - Tests assert empty practice history keeps JSON `practice_score_ratio` as
   `null` while HTML renders `练习得分率` as `未记录`.
+
+## 2026-06-30 Round 052 - Learner-Facing Action Feedback
+
+### Learner Friction
+
+Workbench action feedback was technically announced with `role="status"`, but
+the message itself still exposed internal URL slugs such as `review-saved` and
+`daily-receipt-2026-06-29-written`. After a learner clicks a button, the system
+should acknowledge the action in human language.
+
+### Change
+
+- Added a message translation helper for common workbench action slugs.
+- Localized feedback for:
+  - reviews;
+  - three-source records;
+  - memory cards;
+  - practice sessions;
+  - Cheko card seeding;
+  - daily receipts;
+  - night evolution drafts;
+  - route maps;
+  - state exports;
+  - memory-card and raw-material Obsidian sync.
+- Kept unknown messages as escaped raw text for future diagnostics.
+
+### UX Rule Captured
+
+A successful action should close the loop in the learner's language. Technical
+event names can remain in URLs, but visible feedback should describe the result
+and quantity created or skipped.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert common action slugs render as localized status messages and the
+  raw slugs are not visible.

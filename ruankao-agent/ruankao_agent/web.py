@@ -1306,7 +1306,51 @@ def _front_checks(default_all: bool = False) -> str:
 def _message(message: str) -> str:
     if not message:
         return ""
-    return f'<div class="message" role="status">{escape(message)}</div>'
+    return f'<div class="message" role="status">{escape(_message_text(message))}</div>'
+
+
+def _message_text(message: str) -> str:
+    if message == "review-saved":
+        return "复习评分已记录。"
+    if message.startswith("raw-record-") and message.endswith("-saved"):
+        record_id = message.removeprefix("raw-record-").removesuffix("-saved")
+        return f"三源材料 #{record_id} 已沉淀。"
+    if message.startswith("memory-card-") and message.endswith("-saved"):
+        card_id = message.removeprefix("memory-card-").removesuffix("-saved")
+        return f"记忆卡 #{card_id} 已创建。"
+    if message.startswith("principle-relation-") and message.endswith("-saved"):
+        relation_id = message.removeprefix("principle-relation-").removesuffix("-saved")
+        return f"原则链接 #{relation_id} 已连接。"
+    if message.startswith("practice-session-") and message.endswith("-saved"):
+        session_id = message.removeprefix("practice-session-").removesuffix("-saved")
+        return f"练习记录 #{session_id} 已保存。"
+    if message.startswith("cheko-cards-created-"):
+        rest = message.removeprefix("cheko-cards-created-")
+        created, _, skipped = rest.partition("-skipped-")
+        return f"Cheko 弱点已入队：新增 {created} 张，跳过 {skipped or '0'} 张。"
+    if message.startswith("daily-receipt-") and message.endswith("-written"):
+        day = message.removeprefix("daily-receipt-").removesuffix("-written")
+        return f"{day} 日结回执已生成。"
+    if message.startswith("night-evolution-"):
+        rest = message.removeprefix("night-evolution-")
+        day, _, tail = rest.partition("-actions-")
+        actions = tail.removesuffix("-staged") if tail else "0"
+        return f"{day} 夜间进化草案已生成，包含 {actions} 个动作。"
+    if message.startswith("route-map-") and message.endswith("-written"):
+        day = message.removeprefix("route-map-").removesuffix("-written")
+        return f"{day} 三题型覆盖图已生成。"
+    if message.startswith("state-export-") and message.endswith("-written"):
+        day = message.removeprefix("state-export-").removesuffix("-written")
+        return f"{day} 本地状态 JSON 已导出。"
+    if message.startswith("vault-sync-written-"):
+        rest = message.removeprefix("vault-sync-written-")
+        written, _, skipped = rest.partition("-skipped-")
+        return f"记忆卡已同步到 Obsidian：写入 {written} 个，跳过 {skipped or '0'} 个。"
+    if message.startswith("raw-vault-sync-written-"):
+        rest = message.removeprefix("raw-vault-sync-written-")
+        written, _, skipped = rest.partition("-skipped-")
+        return f"三源材料已同步到 Obsidian：写入 {written} 个，跳过 {skipped or '0'} 个。"
+    return message
 
 
 def _today_primary_action(
