@@ -2840,3 +2840,29 @@ conversation is the unit of growth, the UI should capture that unit directly.
 - Workbench tests assert the new section and action are visible.
 - Tests assert a submitted study turn creates both Mein and Du records with
   positioning context and题型 mapping.
+
+## 2026-06-30 Round 094 - Use Multiline Fields For Lists
+
+### Learner Friction
+
+The workbench labels said `每行一个` for raw-record topics and principle-card
+conflicts, but the controls were single-line inputs. That made the UI ask for a
+list while only giving the learner a one-line box.
+
+### Change
+
+- Changed raw-record `topics` from a text input to a textarea.
+- Changed principle-card `conflicts` from a text input to a textarea.
+- Added a second conflict placeholder example to make line separation obvious.
+- Kept the existing `_split_lines()` parsing path unchanged.
+
+### UX Rule Captured
+
+Controls should match the shape of the data. If the data is a list, especially
+one the system already parses line by line, the form should provide a multiline
+field.
+
+### Validation
+
+- Workbench tests assert the multiline controls are rendered and the old
+  single-line inputs are gone.

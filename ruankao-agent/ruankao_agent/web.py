@@ -1032,7 +1032,7 @@ class WorkbenchApp:
             <textarea name="summary" required placeholder="一句话写清它为什么值得留下"></textarea>
           </label>
           <label>主题，每行一个
-            <input name="topics" placeholder="质量属性&#10;架构评估">
+            <textarea name="topics" placeholder="质量属性&#10;架构评估"></textarea>
           </label>
           {_front_checks()}
           <button type="submit">沉淀到三源库</button>
@@ -1071,7 +1071,7 @@ class WorkbenchApp:
               <input type="number" name="source_record_id" min="1" step="1" inputmode="numeric">
             </label>
             <label>冲突原则，每行一个。仅原则卡使用
-              <input name="conflicts" placeholder="技术先行">
+              <textarea name="conflicts" placeholder="技术先行&#10;性能优先"></textarea>
             </label>
             {_front_checks(default_all=True)}
             <button type="submit">创建记忆卡</button>

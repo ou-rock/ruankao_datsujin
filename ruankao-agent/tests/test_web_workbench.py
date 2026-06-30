@@ -213,9 +213,13 @@ def test_workbench_textareas_have_learning_placeholders(tmp_path) -> None:
     assert 'placeholder="错因、混淆项、下一次避免方式"' in html
     assert 'placeholder="保留原话、文章摘录、对话片段或个人经验"' in html
     assert 'placeholder="一句话写清它为什么值得留下"' in html
+    assert 'textarea name="topics" placeholder="质量属性&#10;架构评估"' in html
     assert 'placeholder="看到什么场景时要想起这张卡？"' in html
     assert 'placeholder="可直接检索的答案、原则或表达"' in html
+    assert 'textarea name="conflicts" placeholder="技术先行&#10;性能优先"' in html
     assert 'placeholder="说明这两个原则如何支撑、制约、冲突或派生"' in html
+    assert '<input name="topics"' not in html
+    assert '<input name="conflicts"' not in html
 
 
 def test_raw_record_source_uses_segmented_radio_control(tmp_path) -> None:
