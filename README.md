@@ -35,12 +35,15 @@ Daily close and night evolution can run from Codex:
 /ruankao-daily-close 2026-06-29
 /ruankao-night-evolve 2026-06-29
 /ruankao-architect-review <question-or-draft>
+/ruankao-study-mode <topic-or-front>
 ```
 
 The daily cycle command runs Cheko weak-area seeding, core principle seeding,
 daily receipt generation, route map generation, a stage-only night evolution
 plan, Obsidian vault sync for memory cards and raw Mein/Du/Uns material, and a
 local JSON state export.
+The study mode command runs a one-question-at-a-time dialogue and records each
+learner answer as Mein plus each Codex refinement as Du.
 The night evolution command does not directly mutate live skills or learning rules.
 
 For scheduled nightly runs, see `ruankao-agent/docs/AUTOMATION.md`.

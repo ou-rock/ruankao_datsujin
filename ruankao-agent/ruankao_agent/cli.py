@@ -8,6 +8,7 @@ from typing import Sequence
 
 from .cheko import seed_cheko_cards
 from .dashboard import render_dashboard
+from .domain import ExamFront
 from .evolution import write_night_evolution_plan
 from .export_state import write_state_export
 from .learning import ensure_learning_resources
@@ -16,6 +17,7 @@ from .notebooklm import DEFAULT_NOTEBOOK_SOURCE
 from .principles import seed_core_principles
 from .receipts import write_daily_receipt
 from .route_map import write_route_map
+from .study import capture_study_turn
 from .vault import sync_memory_cards_to_vault, sync_raw_records_to_vault
 from .web import serve_workbench
 
@@ -149,6 +151,10 @@ def _ensure_vault(root: Path) -> Path:
 
 def _parse_date(value: str | None) -> date | None:
     return date.fromisoformat(value) if value else None
+
+
+def _parse_fronts(values: Sequence[str] | None) -> tuple[ExamFront, ...]:
+    return tuple(ExamFront(value) for value in values or ())
 
 
 def _dashboard_snapshot(root: Path, *, as_of: date | None = None):
@@ -305,6 +311,31 @@ def cmd_export_state(root: Path, *, as_of: date | None = None) -> int:
     return 0
 
 
+def cmd_study_turn(
+    root: Path,
+    *,
+    topic: str,
+    user_text: str,
+    assistant_text: str,
+    fronts: Sequence[str] = (),
+) -> int:
+    result = capture_study_turn(
+        root,
+        topic=topic,
+        user_text=user_text,
+        assistant_text=assistant_text,
+        fronts=_parse_fronts(fronts),
+    )
+    front_text = ",".join(front.value for front in result.fronts) or "none"
+    print(
+        f"mein={result.mein_record_id} "
+        f"du={result.du_record_id} "
+        f"topic={result.topic} "
+        f"fronts={front_text}"
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ruankao-agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -357,6 +388,19 @@ def build_parser() -> argparse.ArgumentParser:
     export_parser.add_argument("--root", required=True, type=Path)
     export_parser.add_argument("--as-of")
 
+    study_parser = subparsers.add_parser("study-turn")
+    study_parser.add_argument("--root", required=True, type=Path)
+    study_parser.add_argument("--topic", required=True)
+    study_parser.add_argument("--user", required=True, dest="user_text")
+    study_parser.add_argument("--assistant", required=True, dest="assistant_text")
+    study_parser.add_argument(
+        "--front",
+        choices=("choice", "case", "essay"),
+        action="append",
+        default=[],
+        dest="fronts",
+    )
+
     return parser
 
 
@@ -396,6 +440,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_seed_principles(args.root, next_due=_parse_date(args.next_due))
     if args.command == "export-state":
         return cmd_export_state(args.root, as_of=_parse_date(args.as_of))
+    if args.command == "study-turn":
+        return cmd_study_turn(
+            args.root,
+            topic=args.topic,
+            user_text=args.user_text,
+            assistant_text=args.assistant_text,
+            fronts=args.fronts,
+        )
     raise AssertionError(f"Unsupported command: {args.command}")
 
 

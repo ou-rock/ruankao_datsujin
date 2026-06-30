@@ -949,3 +949,35 @@ night-evolution staging.
 - `python3 -m pytest -q`
 - Tests assert `export-state` is part of the daily cycle and runs after raw
   vault sync.
+
+## 2026-06-30 Round 029 - Interactive Study Mode For Mein And Du
+
+### Learner Friction
+
+Uns can grow from Cheko, NotebookLM, and other external sources, but Mein and Du
+need live dialogue. The system needed a mode where the learner speaks first,
+Codex refines second, and both sides are recorded instead of lost in chat.
+
+### Change
+
+- Added `study.py` with `capture_study_turn()`.
+- Added CLI command:
+  - `python3 -m ruankao_agent.cli study-turn --root <root> --topic <topic> --user <text> --assistant <text> --front case`
+- Added `/ruankao-study-mode` Codex command with a one-question-at-a-time
+  protocol.
+- Updated README daily-use commands.
+
+### Learning Rule Captured
+
+Mein is not polished knowledge; it is the learner's current model. Du is not a
+lecture; it is the agent's refinement that pushes the learner one step further.
+Both must be recorded turn by turn.
+
+### Validation
+
+- `python3 -m pytest tests/test_study_mode.py -q`
+- Tests assert:
+  - each learning turn creates one Mein raw record and one Du raw record;
+  - topic, fronts, and promotion status are preserved;
+  - the CLI prints hook-friendly record IDs;
+  - the Codex command documents the one-question-at-a-time protocol.
