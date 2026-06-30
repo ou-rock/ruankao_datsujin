@@ -273,6 +273,7 @@ class WorkbenchApp:
             practice_sessions=practice_sessions,
         )
         primary_reason = _today_primary_reason(snapshot.risk_reasons, due_cards)
+        front_overview = _front_overview(cards, due_cards, practice_sessions, self.today)
 
         return f"""<!doctype html>
 <html lang="zh-CN">
@@ -386,6 +387,63 @@ class WorkbenchApp:
       flex-wrap: wrap;
       gap: 8px;
       justify-content: flex-end;
+    }}
+    .front-strip {{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }}
+    .front-card {{
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 10px 12px;
+      display: grid;
+      gap: 8px;
+      min-height: 116px;
+    }}
+    .front-card.red {{ border-top: 4px solid var(--danger); }}
+    .front-card.yellow {{ border-top: 4px solid var(--warn); }}
+    .front-card.green {{ border-top: 4px solid var(--accent); }}
+    .front-head {{
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: baseline;
+      font-weight: 800;
+    }}
+    .front-state {{
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }}
+    .front-metrics {{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }}
+    .front-mini {{
+      background: var(--band);
+      border-radius: 6px;
+      padding: 6px;
+      min-height: 46px;
+    }}
+    .front-mini span {{
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.1;
+    }}
+    .front-mini strong {{
+      display: block;
+      font-size: 15px;
+      line-height: 1.35;
+    }}
+    .front-action {{
+      color: var(--accent-ink);
+      font-size: 12px;
+      font-weight: 750;
+      line-height: 1.35;
     }}
     main {{
       max-width: 1280px;
@@ -589,6 +647,7 @@ class WorkbenchApp:
       .action-strip {{ grid-template-columns: 1fr; }}
       .action-buttons {{ justify-content: stretch; }}
       .action-buttons .button {{ width: 100%; }}
+      .front-strip {{ grid-template-columns: 1fr; }}
     }}
   </style>
 </head>
@@ -618,6 +677,9 @@ class WorkbenchApp:
           <a class="button secondary" href="#practice">记录练习</a>
           <a class="button secondary" href="/learning/today.html">今日三任务</a>
         </div>
+      </div>
+      <div class="front-strip" aria-label="三题型雷达">
+        {_front_cards(front_overview)}
       </div>
     </div>
   </header>
@@ -1215,6 +1277,64 @@ def _today_primary_reason(reasons: tuple[str, ...], due_cards: list[MemoryCard])
     if due_cards:
         return "到期复习是今天最稳定的提分动作。"
     return "当前风险信号正常，继续保持最小闭环。"
+
+
+def _front_overview(
+    cards: list[MemoryCard],
+    due_cards: list[MemoryCard],
+    practice_sessions: list[PracticeSession],
+    today: date,
+) -> list[dict[str, object]]:
+    labels = {
+        ExamFront.CHOICE: "选择题",
+        ExamFront.CASE: "案例题",
+        ExamFront.ESSAY: "论文题",
+    }
+    rows: list[dict[str, object]] = []
+    for front in (ExamFront.CHOICE, ExamFront.CASE, ExamFront.ESSAY):
+        front_cards = [card for card in cards if front in card.fronts]
+        front_due = [card for card in due_cards if front in card.fronts]
+        front_practice = [session for session in practice_sessions if session.front == front]
+        practice_today = [session for session in front_practice if session.created_on == today]
+        if front_due:
+            state = "red"
+            action = "先清到期卡"
+        elif not practice_today:
+            state = "yellow"
+            action = "今天补一次练习"
+        else:
+            state = "green"
+            action = "保持节奏"
+        rows.append(
+            {
+                "front": front.value,
+                "label": labels[front],
+                "state": state,
+                "cards": len(front_cards),
+                "due": len(front_due),
+                "practice_today": len(practice_today),
+                "action": action,
+            }
+        )
+    return rows
+
+
+def _front_cards(rows: list[dict[str, object]]) -> str:
+    cards = []
+    for row in rows:
+        state = escape(str(row["state"]))
+        cards.append(
+            f"""<div class="front-card {state}">
+  <div class="front-head"><span>{escape(str(row["label"]))}</span><span class="front-state">{state}</span></div>
+  <div class="front-metrics">
+    <div class="front-mini"><span>卡片</span><strong>{escape(str(row["cards"]))}</strong></div>
+    <div class="front-mini"><span>到期</span><strong>{escape(str(row["due"]))}</strong></div>
+    <div class="front-mini"><span>今日练习</span><strong>{escape(str(row["practice_today"]))}</strong></div>
+  </div>
+  <div class="front-action">{escape(str(row["action"]))}</div>
+</div>"""
+        )
+    return "".join(cards)
 
 
 def _card_list(cards: list[MemoryCard], *, with_review: bool, today: date) -> str:

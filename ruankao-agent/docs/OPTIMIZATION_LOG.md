@@ -1085,3 +1085,38 @@ task.
   - due cards render a grade-button row;
   - grades 5 and 0 submit through the same `grade` field;
   - the old grade select is gone.
+
+## 2026-06-30 Round 033 - Three-Front Radar In Header
+
+### Learner Friction
+
+The workbench already had a full route map, but it lived behind a generated
+report. The first screen still did not make the three exam fronts comparable at
+a glance.
+
+### Change
+
+- Added a `三题型雷达` strip to the workbench header.
+- Rendered one compact card each for:
+  - 选择题
+  - 案例题
+  - 论文题
+- Each card shows:
+  - total cards;
+  - due cards;
+  - today's practice count;
+  - a small next action.
+- Used red/yellow/green top borders to make front status scannable.
+
+### UX Rule Captured
+
+Route awareness should be visible before the learner opens a report. The
+dashboard should make imbalance between choice, case, and essay hard to miss.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert:
+  - all three fronts appear in the header radar;
+  - a front with due cards is red;
+  - a front practiced today is green.

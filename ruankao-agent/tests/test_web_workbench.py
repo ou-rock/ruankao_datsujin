@@ -25,6 +25,10 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert "今日闭环" in html
     assert "今日第一动作" in html
     assert "处理今日闭环" in html
+    assert "三题型雷达" in html
+    assert "选择题" in html
+    assert "案例题" in html
+    assert "论文题" in html
     assert "学习信号" in html
     assert "把 Cheko 弱点入队" in html
     assert "记忆诊断" in html
@@ -55,6 +59,29 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert (root / "learning" / "lessons" / "0001-scene-before-solution.html").exists()
     assert (root / "vault" / "00-map" / "原则网络.md").exists()
     assert (root / "vault" / "10-memory-war-room" / "principles" / "场景先于方案.md").exists()
+
+
+def test_workbench_home_shows_three_front_radar_with_due_state(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+    app.initialize()
+    app.add_memory_card(
+        parse_qs(
+            "card_type=concept&title=质量属性场景&prompt=六要素是什么"
+            "&answer=刺激源、刺激、环境、制品、响应、响应度量"
+            "&fronts=case&next_due=2026-06-29"
+        )
+    )
+    app.add_practice_session(
+        parse_qs("front=choice&topic=选择题 10 道&summary=概念复盘&created_on=2026-06-29")
+    )
+
+    html = app.render_home()
+
+    assert 'aria-label="三题型雷达"' in html
+    assert '<div class="front-head"><span>案例题</span><span class="front-state">red</span></div>' in html
+    assert '<div class="front-head"><span>选择题</span><span class="front-state">green</span></div>' in html
+    assert "今天补一次练习" in html
 
 
 def test_workbench_home_prioritizes_due_review_in_first_action(tmp_path) -> None:
