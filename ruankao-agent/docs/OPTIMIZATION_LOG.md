@@ -4968,3 +4968,54 @@ those fragments but must remain the section/list structure renderer.
   `进步闸门`, `召回证据`, `得分：7/10`, `耗时：18分钟`, `状态：原始`,
   `类型：概念卡`, main max width `1120px`, and screenshot
   `/tmp/ruankao-receipts-format-report.png`.
+
+## 2026-06-30 Round 146 - Split Daily Receipt List Fragments
+
+### Learner Friction
+
+After formatting moved out, `receipts_sections.py` still owned both the daily
+receipt section order and the detailed list item renderers for recent records,
+memory diagnostics, RAG gates/hits, recent cards, reviews, and practice. That
+made the module look like a section composer and a collection of row templates
+at the same time.
+
+### Change
+
+- Added `ruankao_agent/receipts_lists.py` for daily receipt list items and RAG
+  control fragments.
+- Kept `ruankao_agent/receipts_sections.py` focused on section ordering,
+  metric/count-card sections, and the night focus band.
+- Reduced `receipts_sections.py` from roughly 281 lines to roughly 123 lines.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved daily receipt JSON/HTML paths, section order, list empty states,
+  RAG gate/hit text, recent record/card/review/practice formatting, and public
+  receipt commands.
+
+### Architecture Rule Captured
+
+`receipts_lists.py` owns only daily receipt list items and RAG control
+fragments. It can depend on `receipts_format.py` for labels and display values,
+but it cannot read payloads, choose section order, render the full receipt
+shell, write files, or inject CSS. `receipts_sections.py` may call those list
+fragments but must remain the section composer.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/receipts_sections.py ruankao_agent/receipts_lists.py ruankao_agent/receipts_format.py`
+- `python3 -m pytest tests/test_architecture_boundaries.py tests/test_daily_receipt.py tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary root under `/tmp/ruankao-receipts-lists`.
+- Seeded Cheko cards and daily receipt data through public CLI commands plus
+  direct temporary-store setup.
+- Generated `reports/daily/2026-06-29.html`.
+- Served the temporary workbench at `http://127.0.0.1:8915/`.
+- Opened `http://127.0.0.1:8915/reports/daily/2026-06-29.html` through
+  browser-act.
+- Verified HTTP 200, title `日结回执 2026-06-29`, 13 sections, 24 metrics,
+  16 item rows, `RAG 控制`, `进步闸门`, `召回证据`, `错题归因完成`,
+  `质量属性场景`, `评分：4`, `得分：7/10`, `耗时：18分钟`, main max width
+  `1120px`, and screenshot `/tmp/ruankao-receipts-lists-report.png`.
