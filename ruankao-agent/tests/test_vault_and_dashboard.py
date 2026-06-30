@@ -102,6 +102,10 @@ def test_sync_raw_records_to_vault_writes_mein_du_uns_notes(tmp_path) -> None:
     text = notes[0].read_text(encoding="utf-8")
     assert "type: raw-record" in text
     assert "source: mein" in text
+    assert "## Capture Context" in text
+    assert "来源：Mein（我的）" in text
+    assert "主题：质量属性" in text
+    assert "题型：选择题" in text
     assert "可用性可靠性混淆" in text
 
 

@@ -34,6 +34,12 @@ FRONT_LABELS = {
     "essay": "论文题",
 }
 
+SOURCE_LABELS = {
+    "mein": "Mein（我的）",
+    "du": "Du（Codex）",
+    "uns": "Uns（外界）",
+}
+
 
 def initialize_vault(root: Path | str) -> Path:
     vault = Path(root)
@@ -231,6 +237,13 @@ created_on: {created_on}
 
 # {record.summary}
 
+## Capture Context
+
+- 来源：{_source_label(record.source.value)}
+- 状态：{record.promotion_status}
+- 主题：{_inline_list(record.topics)}
+- 题型：{_inline_fronts(record.fronts)}
+
 ## Raw Text
 
 {record.text}
@@ -249,3 +262,17 @@ def _markdown_front_list(fronts: Iterable[object]) -> str:
     if not labels:
         return "- 未标注"
     return "\n".join(f"- {label}" for label in labels)
+
+
+def _inline_fronts(fronts: Iterable[object]) -> str:
+    labels = [FRONT_LABELS.get(str(front.value), str(front.value)) for front in fronts]
+    return "、".join(labels) if labels else "未标注"
+
+
+def _inline_list(values: Iterable[str]) -> str:
+    items = [value for value in values if value]
+    return "、".join(items) if items else "未标注"
+
+
+def _source_label(value: str) -> str:
+    return SOURCE_LABELS.get(value, value)

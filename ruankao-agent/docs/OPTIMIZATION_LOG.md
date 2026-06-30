@@ -2134,3 +2134,33 @@ stable codes in YAML, but localize the visible note body.
 - `python3 -m pytest tests/test_vault_and_dashboard.py -q`
 - Tests assert frontmatter still contains `choice`, the body shows Chinese exam
   fronts, and empty visible front lists render as `未标注`.
+
+## 2026-06-30 Round 069 - Add Vault Raw Capture Context
+
+### Learner Friction
+
+Generated raw-record notes preserved source, topics, fronts, and status in YAML,
+but the readable Markdown body jumped directly to raw text. In Obsidian, that
+forces the learner to inspect frontmatter to understand whether a note came from
+Mein, Du, or Uns and which exam front it supports.
+
+### Change
+
+- Added a visible `Capture Context` section to raw-record notes.
+- The section renders:
+  - source identity with learner-facing labels
+  - promotion status
+  - topics
+  - exam fronts with localized labels
+- Kept the YAML frontmatter unchanged for tooling.
+
+### UX Rule Captured
+
+Raw material needs provenance in the reading surface. The learner should be able
+to understand a note's role without opening YAML.
+
+### Validation
+
+- `python3 -m pytest tests/test_vault_and_dashboard.py -q`
+- Tests assert raw-record notes include readable source, topic, and exam-front
+  context in the Markdown body.
