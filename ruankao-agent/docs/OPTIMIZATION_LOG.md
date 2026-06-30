@@ -3337,3 +3337,32 @@ dead URL and a stack trace.
 
 - Workbench tests cover fallback binding when the requested port is busy.
 - `python3 -m pytest -q`
+
+## 2026-06-30 Round 111 - Architecture Boundary Map
+
+### Learner Friction
+
+The project now has enough modules that future optimization could drift into
+guesswork. The learner asked for an architect-level map: modules, boundaries,
+and coupling must be explicit before deeper refactoring.
+
+### Change
+
+- Added `docs/ARCHITECTURE_BOUNDARIES.md`.
+- Listed all current `ruankao_agent` modules with layer, dependencies, and
+  responsibility boundaries.
+- Recorded the internal import graph and coupling categories.
+- Identified coupling hotspots: `web.py`, `cli.py`, `learning.py`, `rag.py`, and
+  `receipts.py`.
+- Added architecture boundary tests that parse imports with AST and fail if the
+  dependency graph changes without an explicit contract update.
+
+### Architecture Rule Captured
+
+`cli.py` and `web.py` are composition roots. They may depend on many inner
+modules, but inner modules must not depend back on them.
+
+### Validation
+
+- Architecture boundary tests assert the current dependency graph and document
+  coverage.

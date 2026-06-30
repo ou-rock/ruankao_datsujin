@@ -1,0 +1,118 @@
+from __future__ import annotations
+
+import ast
+from pathlib import Path
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+PACKAGE_ROOT = REPO_ROOT / "ruankao_agent"
+DOCS_ROOT = REPO_ROOT / "docs"
+
+
+EXPECTED_INTERNAL_DEPS = {
+    "cheko": {"domain", "learning", "storage"},
+    "cli": {
+        "cheko",
+        "dashboard",
+        "domain",
+        "evolution",
+        "export_state",
+        "learning",
+        "loop",
+        "notebooklm",
+        "principles",
+        "rag",
+        "receipts",
+        "route_map",
+        "study",
+        "vault",
+        "web",
+    },
+    "dashboard": set(),
+    "domain": set(),
+    "evolution": {"receipts"},
+    "export_state": {"storage"},
+    "learning": {"domain"},
+    "loop": {"dashboard", "notebooklm"},
+    "memory": {"storage"},
+    "notebooklm": set(),
+    "principles": {"domain", "storage"},
+    "rag": {"domain", "memory", "storage"},
+    "receipts": {"loop", "memory", "rag", "storage"},
+    "route_map": {"domain", "memory", "storage"},
+    "storage": {"domain"},
+    "study": {"domain", "storage"},
+    "vault": set(),
+    "web": {
+        "cheko",
+        "dashboard",
+        "domain",
+        "evolution",
+        "export_state",
+        "learning",
+        "loop",
+        "memory",
+        "rag",
+        "receipts",
+        "route_map",
+        "storage",
+        "study",
+        "vault",
+    },
+}
+
+
+def test_internal_dependency_graph_matches_architecture_contract() -> None:
+    assert _internal_dependency_graph() == EXPECTED_INTERNAL_DEPS
+
+
+def test_inner_modules_do_not_depend_on_entry_adapters() -> None:
+    graph = _internal_dependency_graph()
+    for module, deps in graph.items():
+        if module in {"cli", "web"}:
+            continue
+        assert "web" not in deps
+        assert "cli" not in deps
+
+
+def test_architecture_boundary_doc_lists_modules_boundaries_and_coupling() -> None:
+    text = (DOCS_ROOT / "ARCHITECTURE_BOUNDARIES.md").read_text(encoding="utf-8")
+
+    assert "# 架构边界与耦合地图" in text
+    assert "模块清单" in text
+    assert "当前内部导入图" in text
+    assert "耦合分类" in text
+    assert "耦合热点" in text
+    assert "允许依赖规则" in text
+    for module in EXPECTED_INTERNAL_DEPS:
+        assert f"`{module}.py`" in text or f"{module} " in text
+
+
+def _internal_dependency_graph() -> dict[str, set[str]]:
+    modules = {
+        path.stem
+        for path in PACKAGE_ROOT.glob("*.py")
+        if path.name != "__init__.py"
+    }
+    graph: dict[str, set[str]] = {}
+    for module in modules:
+        path = PACKAGE_ROOT / f"{module}.py"
+        graph[module] = _module_internal_deps(path, modules)
+    return graph
+
+
+def _module_internal_deps(path: Path, modules: set[str]) -> set[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    deps: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.level == 1 and node.module:
+            top = node.module.split(".", 1)[0]
+            if top in modules:
+                deps.add(top)
+        elif isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name.startswith("ruankao_agent."):
+                    top = alias.name.split(".", 2)[1]
+                    if top in modules:
+                        deps.add(top)
+    return deps

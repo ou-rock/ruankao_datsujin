@@ -339,6 +339,10 @@ It must not directly overwrite core principles or live skills.
 
 Python package: `ruankao_agent`.
 
+The authoritative module inventory, boundaries, and coupling map now live in
+`docs/ARCHITECTURE_BOUNDARIES.md`. This design section keeps the high-level
+orientation; the architecture boundary document is the operational contract.
+
 Expected modules:
 
 - `domain.py`: dates, phases, risk status, card types, source identities, core models.
