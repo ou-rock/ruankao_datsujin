@@ -3154,3 +3154,26 @@ the same language as the rest of the system.
 
 - Principle tests assert the localized summary and reject `Core Seven` in the
   raw-record summary.
+
+## 2026-06-30 Round 106 - Link Dashboard Back To Workbench
+
+### Learner Friction
+
+The static total map linked to the learning desk and Obsidian vault, but did not
+link back to the main workbench. A learner could inspect the map and then have
+to navigate manually to take action.
+
+### Change
+
+- Added a `工作台` link to the dashboard's war-room navigation.
+- Kept the existing learning desk, memory room, principle network, campaign map,
+  and NotebookLM links unchanged.
+
+### UX Rule Captured
+
+Maps should lead back to controls. A total map is useful only if it gives the
+learner a fast path from orientation to action.
+
+### Validation
+
+- Dashboard tests assert the static total map includes a workbench link.

@@ -189,6 +189,7 @@ def test_dashboard_renders_total_map() -> None:
     assert 'id="choice"' in html
     assert 'id="case"' in html
     assert 'id="essay"' in html
+    assert 'href="/">工作台</a>' in html
     assert 'href="learning/index.html"' in html
     assert 'href="vault/00-map/原则网络.md"' in html
     assert 'href="vault/10-memory-war-room/"' in html
