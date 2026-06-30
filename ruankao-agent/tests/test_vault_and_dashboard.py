@@ -53,6 +53,10 @@ def test_principle_note_uses_obsidian_links(tmp_path) -> None:
     assert "[[技术先行]]" in text
     assert "type: principle" in text
     assert "场景先于方案" in text
+    assert "## 核心表述" in text
+    assert "选择题：" in text
+    assert "Core Statement" not in text
+    assert "Choice:" not in text
 
 
 def test_sync_memory_cards_to_vault_writes_generated_obsidian_notes(tmp_path) -> None:

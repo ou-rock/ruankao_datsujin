@@ -2530,3 +2530,35 @@ diagnosis and reserve internal codes for data.
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert the workbench shows `反复低分` and `低分：2次`, and no longer leaks
   `leech`.
+
+## 2026-06-30 Round 083 - Localize Principle Note Template
+
+### Learner Friction
+
+Generated principle notes still used English section headings such as
+`Core Statement`, `Applies When`, `Conflicts`, and exam mapping labels
+`Choice / Case / Essay`. These notes live in Obsidian and are meant to become the
+long-term architecture-thinking skill, so their visible structure should be in
+the learner's language.
+
+### Change
+
+- Localized principle-note Markdown headings:
+  - `核心表述`
+  - `适用场景`
+  - `不适用场景`
+  - `冲突原则`
+  - `考试映射`
+- Localized exam mapping labels to `选择题 / 案例题 / 论文题`.
+- Kept frontmatter unchanged.
+
+### UX Rule Captured
+
+Skill notes should use the same language as the thinking habit they are trying
+to build. English scaffold text should not leak into long-term Obsidian notes.
+
+### Validation
+
+- `python3 -m pytest tests/test_vault_and_dashboard.py -q`
+- Tests assert generated principle notes contain the localized headings and no
+  longer contain `Core Statement` or `Choice:`.
