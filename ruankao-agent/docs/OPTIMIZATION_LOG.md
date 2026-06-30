@@ -3912,3 +3912,50 @@ are split in later rounds.
 - Verified the rendered page still shows `软考达人学习台`, the four primary
   buttons, `战役导航`, `芝士架构同步信号`, `今日三任务`, and the CSS variable
   `--accent: #0f766e`.
+
+## 2026-06-30 Round 125 - Split Learning Desk Content Boundary
+
+### Learner Friction
+
+`learning.py` still mixed static learning content, Cheko seed data, and HTML
+rendering. This made content curation harder because a new lesson or reference
+page had to be edited inside the same file as page helpers and resource writes.
+
+### Change
+
+- Added `ruankao_agent/learning_content.py` for learning desk content
+  dataclasses, first-week plan, reference metadata, NotebookLM source label, and
+  the default Cheko snapshot.
+- Kept `ruankao_agent/learning.py` as the resource-generation and HTML rendering
+  module, importing content and CSS from explicit boundaries.
+- Reduced `learning.py` from roughly 860 lines to roughly 560 lines.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved generated learning URLs, Cheko snapshot behavior, page text, and
+  overwrite semantics.
+
+### Architecture Rule Captured
+
+`learning_content.py` owns learning seed data only. It must not render HTML,
+write files, read SQLite, or decide runtime learning state. `learning.py` may
+compose that content into generated HTML resources but still must not write
+`ruankao.db`.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/learning.py ruankao_agent/learning_content.py ruankao_agent/learning_style.py`
+- `python3 -m pytest tests/test_learning.py tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest tests/test_web_workbench.py::test_workbench_server_falls_back_when_default_port_is_busy tests/test_web_workbench.py::test_workbench_launch_message_names_fallback_port -q`
+
+### BrowserAct Evidence
+
+- Generated a temporary learning desk under `/tmp/ruankao-learning-content`.
+- Served the temporary workbench at `http://127.0.0.1:8895/`.
+- Tried the registered current-Chrome `chrome-direct` browser first; CDP
+  permission timed out, so validation continued with an existing Chrome browser.
+- Opened `http://127.0.0.1:8895/learning/` through browser-act.
+- Verified the rendered page still shows `软考达人学习台`, the four primary
+  buttons, `战役导航`, `芝士架构同步信号`, `今日三任务`, `四大质量属性与架构战术映射表`,
+  and `--accent: #0f766e`.
+- Clicked `今日三任务` and verified navigation to
+  `http://127.0.0.1:8895/learning/today.html` with the workbench action links
+  for learning turns, memory cards, and practice sessions.
