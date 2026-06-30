@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 import json
 import subprocess
 import sys
@@ -9,6 +10,7 @@ from ruankao_agent.learning import (
     ReferencePage,
     ensure_learning_resources,
     render_cheko_sync,
+    render_learning_index,
     render_reference_page,
     render_today,
     today_tasks,
@@ -161,6 +163,19 @@ def test_reference_page_localizes_front_codes() -> None:
     assert ">choice<" not in html
     assert ">case<" not in html
     assert ">essay<" not in html
+
+
+def test_learning_index_shows_campaign_orientation() -> None:
+    html = render_learning_index(DEFAULT_CHEKO_SNAPSHOT, as_of=date(2026, 6, 30))
+
+    assert "战役导航" in html
+    assert "当前位置" in html
+    assert "启动诊断" in html
+    assert "第 1 天；D-116" in html
+    assert "下一站" in html
+    assert "诊断建模" in html
+    assert "终点" in html
+    assert "2026-10-24" in html
 
 
 def test_cli_learning_generates_learning_desk(tmp_path) -> None:

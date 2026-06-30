@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass
+from datetime import date
 from html import escape
 from pathlib import Path
 from typing import Any, Iterable
+
+from .domain import Campaign
 
 
 NOTEBOOKLM_SOURCE = "System Architecture Designer Exam Questions and Analysis"
@@ -347,7 +350,12 @@ def ensure_learning_resources(root: Path | str, *, overwrite: bool = False) -> P
     return base
 
 
-def render_learning_index(cheko_snapshot: ChekoSnapshot = DEFAULT_CHEKO_SNAPSHOT) -> str:
+def render_learning_index(
+    cheko_snapshot: ChekoSnapshot = DEFAULT_CHEKO_SNAPSHOT,
+    *,
+    as_of: date | None = None,
+) -> str:
+    campaign_day = as_of or date.today()
     return _page(
         title="软考达人学习台",
         body=f"""
@@ -362,6 +370,7 @@ def render_learning_index(cheko_snapshot: ChekoSnapshot = DEFAULT_CHEKO_SNAPSHOT
     <a class="button secondary" href="/">回工作台</a>
   </div>
 </header>
+{_campaign_rail(campaign_day)}
 {_cheko_panel(cheko_snapshot)}
 <section>
   <h2>四个栏目</h2>
@@ -754,6 +763,35 @@ def _page(title: str, body: str) -> str:
       font-weight: 700;
       color: #12312e;
     }}
+    .route-strip {{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }}
+    .route-step {{
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--band);
+      padding: 12px;
+      min-height: 96px;
+    }}
+    .route-step span {{
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }}
+    .route-step strong {{
+      display: block;
+      color: #12312e;
+      font-size: 18px;
+      line-height: 1.25;
+    }}
+    .route-step p {{
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }}
     .actions {{
       display: flex;
       flex-wrap: wrap;
@@ -816,6 +854,7 @@ def _page(title: str, body: str) -> str:
     @media (max-width: 720px) {{
       main {{ padding: 18px 14px 40px; }}
       h1 {{ font-size: 25px; }}
+      .route-strip {{ grid-template-columns: 1fr; }}
       .day {{ grid-template-columns: 1fr; }}
     }}
   </style>
@@ -834,6 +873,53 @@ def _cards(items: Iterable[tuple[str, str]]) -> str:
         f'<div class="panel"><h3>{escape(title)}</h3><p>{escape(body)}</p></div>'
         for title, body in items
     )
+
+
+def _campaign_rail(as_of: date) -> str:
+    campaign = Campaign.default()
+    phase = campaign.phase_for(as_of)
+    elapsed_days = max(0, (as_of - campaign.start_date).days)
+    days_remaining = campaign.days_remaining(as_of)
+    next_phase = _next_phase(campaign, phase)
+    next_name = next_phase.name if next_phase is not None else "考后复盘"
+    next_window = _phase_window(next_phase) if next_phase is not None else "考试后继续沉淀架构能力"
+    return f"""<section>
+  <h2>战役导航</h2>
+  <div class="route-strip">
+    <div class="route-step">
+      <span>当前位置</span>
+      <strong>{escape(phase.name)}</strong>
+      <p>第 {elapsed_days} 天；D-{days_remaining}</p>
+    </div>
+    <div class="route-step">
+      <span>下一站</span>
+      <strong>{escape(next_name)}</strong>
+      <p>{escape(next_window)}</p>
+    </div>
+    <div class="route-step">
+      <span>终点</span>
+      <strong>{escape(campaign.exam_date.isoformat())}</strong>
+      <p>系统架构设计师考试，然后继续进化架构能力。</p>
+    </div>
+  </div>
+</section>"""
+
+
+def _next_phase(campaign: Campaign, phase: Any) -> Any | None:
+    for index, candidate in enumerate(campaign.phases):
+        if candidate.key == phase.key:
+            next_index = index + 1
+            if next_index < len(campaign.phases):
+                return campaign.phases[next_index]
+            return None
+    return None
+
+
+def _phase_window(phase: Any) -> str:
+    end_day = int(phase.end_day)
+    if end_day >= 9999:
+        return f"第 {phase.start_day} 天后"
+    return f"第 {phase.start_day}-{phase.end_day} 天"
 
 
 def _day_card(day: DailyLearningPlan) -> str:

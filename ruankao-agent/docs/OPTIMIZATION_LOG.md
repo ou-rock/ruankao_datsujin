@@ -1899,3 +1899,35 @@ records, and imports; translate them at the last visible boundary before HTML.
 - `python3 -m pytest tests/test_learning.py -q`
 - Added a regression test that renders a reference page with raw front codes and
   asserts the page shows `选择题 / 案例题 / 论文题` instead.
+
+## 2026-06-30 Round 061 - Add Learning Campaign Rail
+
+### Learner Friction
+
+The learning desk explained what to do today and what to read, but its first
+screen did not answer the strategic orientation question: where am I, what is
+the next stage, and what is the fixed exam endpoint? The workbench had campaign
+state, while the learning entrance still felt like a pile of resources.
+
+### Change
+
+- Added a learning-index campaign rail with three stable anchors:
+  - `当前位置`
+  - `下一站`
+  - `终点`
+- Reused the existing `Campaign.default()` model instead of hard-coding a second
+  timeline.
+- Added responsive CSS so the rail is three columns on desktop and one column on
+  mobile.
+
+### UX Rule Captured
+
+Learning pages should show local action and global campaign context together.
+The learner should never have to mentally reconnect today's task to the
+four-month exam strategy.
+
+### Validation
+
+- `python3 -m pytest tests/test_learning.py -q`
+- Added a deterministic 2026-06-30 test that checks the learning index shows
+  `启动诊断`, next stage `诊断建模`, `D-116`, and endpoint `2026-10-24`.
