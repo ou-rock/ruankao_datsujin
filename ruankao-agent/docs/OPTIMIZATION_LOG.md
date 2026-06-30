@@ -1051,3 +1051,37 @@ learner to interpret dashboards, reports, or raw counts.
   - the workbench home shows the first-action strip;
   - due reviews become the primary action;
   - red risk is reflected in the strip class.
+
+## 2026-06-30 Round 032 - One-Tap Review Grades
+
+### Learner Friction
+
+The due-card review form required opening a select field and then submitting.
+That is small friction, but spaced repetition depends on fast, repeated
+micro-decisions.
+
+### Change
+
+- Replaced the review select with six one-tap grade buttons.
+- Kept the same `/reviews` endpoint and `grade` field.
+- Added compact grade labels:
+  - 5 很稳
+  - 4 会
+  - 3 勉强
+  - 2 模糊
+  - 1 不会
+  - 0 空白
+- Marked low grades with a danger color.
+
+### UX Rule Captured
+
+Review grading should feel like a fast flashcard action, not a form-filling
+task.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert:
+  - due cards render a grade-button row;
+  - grades 5 and 0 submit through the same `grade` field;
+  - the old grade select is gone.

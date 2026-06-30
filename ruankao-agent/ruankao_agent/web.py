@@ -500,6 +500,39 @@ class WorkbenchApp:
       color: var(--accent-ink);
       background: #fff;
     }}
+    .grade-row {{
+      display: grid;
+      grid-template-columns: repeat(6, minmax(44px, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }}
+    .grade-button {{
+      border-color: var(--line);
+      background: #fff;
+      color: var(--accent-ink);
+      min-height: 46px;
+      padding: 6px 4px;
+      display: grid;
+      gap: 2px;
+      justify-items: center;
+      align-content: center;
+    }}
+    .grade-button span {{
+      font-size: 15px;
+      line-height: 1;
+    }}
+    .grade-button small {{
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1;
+    }}
+    .grade-button.low {{
+      color: var(--danger);
+    }}
+    .grade-button:hover {{
+      border-color: var(--accent);
+      background: var(--band);
+    }}
     .message {{
       border: 1px solid #99f6e4;
       background: #ecfdf5;
@@ -1195,17 +1228,9 @@ def _card_list(cards: list[MemoryCard], *, with_review: bool, today: date) -> st
             <form method="post" action="/reviews" style="margin-top:8px;">
               <input type="hidden" name="card_id" value="{card.id}">
               <input type="hidden" name="reviewed_on" value="{escape(today.isoformat())}">
-              <label>复习评分
-                <select name="grade">
-                  <option value="5">5 很稳</option>
-                  <option value="4">4 基本会</option>
-                  <option value="3">3 勉强过</option>
-                  <option value="2">2 模糊</option>
-                  <option value="1">1 不会</option>
-                  <option value="0">0 完全空白</option>
-                </select>
-              </label>
-              <button type="submit">完成复习</button>
+              <div class="grade-row" aria-label="复习评分">
+                {_review_grade_buttons()}
+              </div>
             </form>
             """
         items.append(
@@ -1217,6 +1242,26 @@ def _card_list(cards: list[MemoryCard], *, with_review: bool, today: date) -> st
 </div>"""
         )
     return '<div class="list">' + "".join(items) + "</div>"
+
+
+def _review_grade_buttons() -> str:
+    labels = (
+        (5, "很稳"),
+        (4, "会"),
+        (3, "勉强"),
+        (2, "模糊"),
+        (1, "不会"),
+        (0, "空白"),
+    )
+    buttons = []
+    for grade, label in labels:
+        low = " low" if grade < 3 else ""
+        buttons.append(
+            f"""<button class="grade-button{low}" type="submit" name="grade" value="{grade}" title="{grade} {escape(label)}">
+  <span>{grade}</span><small>{escape(label)}</small>
+</button>"""
+        )
+    return "".join(buttons)
 
 
 def _practice_list(sessions: list[PracticeSession]) -> str:

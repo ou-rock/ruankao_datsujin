@@ -76,6 +76,26 @@ def test_workbench_home_prioritizes_due_review_in_first_action(tmp_path) -> None
     assert "risk-red" in html
 
 
+def test_due_card_review_uses_one_tap_grade_buttons(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+    app.initialize()
+    app.add_memory_card(
+        parse_qs(
+            "card_type=concept&title=权衡点&prompt=什么是权衡点"
+            "&answer=影响多个质量属性的取舍点&fronts=case&next_due=2026-06-29"
+        )
+    )
+
+    html = app.render_home()
+
+    assert 'class="grade-row"' in html
+    assert 'name="grade" value="5"' in html
+    assert 'name="grade" value="0"' in html
+    assert 'class="grade-button low"' in html
+    assert "<select name=\"grade\">" not in html
+
+
 def test_workbench_forms_write_store_and_principle_note(tmp_path) -> None:
     root = tmp_path / "demo"
     app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
