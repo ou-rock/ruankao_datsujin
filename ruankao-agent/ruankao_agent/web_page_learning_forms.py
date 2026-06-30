@@ -3,8 +3,9 @@ from __future__ import annotations
 from html import escape
 
 from .web_controls import _front_checks
-from .web_lists import _card_list, _practice_list
+from .web_card_lists import _card_list
 from .web_page_view import HomePageView
+from .web_practice_lists import _practice_list
 
 
 def render_cheko_section(view: HomePageView) -> str:

@@ -4825,3 +4825,57 @@ or own the page shell.
   9 rendered sections, `main` max width `1280px`, title
   `软考达人工作台 · D-116 · 红灯`, and screenshot
   `/tmp/ruankao-web-learning-forms-workbench.png`.
+
+## 2026-06-30 Round 143 - Split Workbench List Renderers
+
+### Learner Friction
+
+After the learning-entry forms were separated, `web_lists.py` became the next
+small but blurry workbench boundary. It mixed memory-card lists and review
+buttons, practice-session lists, memory diagnostics, and risk reasons. Those
+lists are all display-only, but they change for different reasons and are read
+by different page adapters.
+
+### Change
+
+- Added `ruankao_agent/web_card_lists.py` for memory-card lists and review
+  grade buttons.
+- Added `ruankao_agent/web_practice_lists.py` for practice-session lists.
+- Added `ruankao_agent/web_diagnostic_lists.py` for memory diagnostics and
+  risk-reason lists.
+- Removed the generalized `ruankao_agent/web_lists.py` module.
+- Updated workbench page adapters to import the exact list renderer they use.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved card list empty states, review grading forms, practice list
+  formatting, diagnostic list formatting, risk reason rendering, workbench
+  section IDs, form actions, RAG panel, status strip, and front radar output.
+
+### Architecture Rule Captured
+
+Workbench list rendering is now split by data family. `web_card_lists.py`
+owns only memory-card lists and review buttons, `web_practice_lists.py` owns
+only practice-session lists, and `web_diagnostic_lists.py` owns only memory
+diagnostics and risk reasons. None of them may process HTTP, read SQLite, write
+state, render page shells, or own form sections.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/web_card_lists.py ruankao_agent/web_practice_lists.py ruankao_agent/web_diagnostic_lists.py ruankao_agent/web_page_forms.py ruankao_agent/web_page_learning_forms.py ruankao_agent/web_page_sections.py`
+- `python3 -m pytest tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- `rg -n "from \\.web_lists|import .*web_lists|web_lists" ruankao_agent tests docs/ARCHITECTURE_BOUNDARIES.md`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary workbench root under `/tmp/ruankao-web-list-renderers`.
+- Initialized the root and seeded Cheko cards through public CLI commands.
+- Served the temporary workbench at `http://127.0.0.1:8913/`.
+- Opened `http://127.0.0.1:8913/` through browser-act.
+- Verified HTTP 200 and rendered DOM content for due cards, Cheko cards,
+  practice, diagnostic, and risk reason list surfaces.
+- Verified 18 review grade buttons, Cheko action `/cheko/cards`, practice action
+  `/practice`, 9 rendered sections, `main` max width `1280px`, title
+  `软考达人工作台 · D-117 · 红灯`, and screenshot
+  `/tmp/ruankao-web-list-renderers-workbench.png`.

@@ -7,7 +7,7 @@ from .web_controls import (
     _promotion_status_radios,
     _relation_radios,
 )
-from .web_lists import _card_list
+from .web_card_lists import _card_list
 from .web_page_view import HomePageView
 
 
