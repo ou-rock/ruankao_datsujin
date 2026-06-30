@@ -14,7 +14,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 from .cheko import ChekoSeedResult, seed_cheko_cards as seed_cheko_memory_cards
 from .dashboard import render_dashboard
-from .domain import CardType, ExamFront, PrincipleRelationType, SourceIdentity
+from .domain import CardType
 from .evolution import night_evolution_html_path, write_night_evolution_plan
 from .export_state import state_export_path, write_state_export as write_local_state_export
 from .learning import ensure_learning_resources
@@ -36,6 +36,20 @@ from .vault import (
     sync_memory_cards_to_vault,
     sync_raw_records_to_vault,
     write_principle_note,
+)
+from .web_forms import (
+    FormData,
+    next_due_date,
+    one as _one,
+    overwrite_requested,
+    parse_memory_card_form,
+    parse_practice_session_form,
+    parse_principle_relation_form,
+    parse_raw_record_form,
+    parse_review_form,
+    parse_study_turn_form,
+    query_text,
+    report_date,
 )
 from .web_render import (
     _card_list,
@@ -133,141 +147,136 @@ class WorkbenchApp:
         dashboard_path.write_text(render_dashboard(snapshot.dashboard), encoding="utf-8")
         return dashboard_path
 
-    def add_raw_record(self, form: Mapping[str, list[str]]) -> int:
+    def add_raw_record(self, form: FormData) -> int:
         store = self.store()
         store.initialize()
+        data = parse_raw_record_form(form)
         return store.add_raw_record(
-            source=SourceIdentity(_one(form, "source", SourceIdentity.MEIN.value)),
-            text=_one(form, "text"),
-            summary=_one(form, "summary"),
-            topics=_split_lines(_one(form, "topics")),
-            fronts=_fronts(form),
-            promotion_status=_one(form, "promotion_status", "raw"),
+            source=data.source,
+            text=data.text,
+            summary=data.summary,
+            topics=data.topics,
+            fronts=data.fronts,
+            promotion_status=data.promotion_status,
         )
 
-    def add_memory_card(self, form: Mapping[str, list[str]]) -> int:
+    def add_memory_card(self, form: FormData) -> int:
         store = self.store()
         store.initialize()
-        card_type = CardType(_one(form, "card_type", CardType.CONCEPT.value))
-        title = _one(form, "title")
-        prompt = _one(form, "prompt")
-        answer = _one(form, "answer")
-        source_record_id = _optional_int(_one(form, "source_record_id"))
-        next_due = _optional_date(_one(form, "next_due"))
+        data = parse_memory_card_form(form)
         card_id = store.add_memory_card(
-            card_type=card_type,
-            title=title,
-            prompt=prompt,
-            answer=answer,
-            source_record_id=source_record_id,
-            fronts=_fronts(form),
-            next_due=next_due,
+            card_type=data.card_type,
+            title=data.title,
+            prompt=data.prompt,
+            answer=data.answer,
+            source_record_id=data.source_record_id,
+            fronts=data.fronts,
+            next_due=data.next_due,
         )
-        if card_type is CardType.PRINCIPLE:
-            conflicts = _split_lines(_one(form, "conflicts"))
-            applies_when = prompt or "待补充"
+        if data.card_type is CardType.PRINCIPLE:
+            applies_when = data.prompt or "待补充"
             write_principle_note(
                 self.vault_path,
-                title=title,
-                core_statement=answer,
+                title=data.title,
+                core_statement=data.answer,
                 applies_when=applies_when,
-                conflicts=conflicts,
+                conflicts=data.conflicts,
             )
         return card_id
 
-    def add_principle_relation(self, form: Mapping[str, list[str]]) -> int:
+    def add_principle_relation(self, form: FormData) -> int:
         store = self.store()
         store.initialize()
+        data = parse_principle_relation_form(form)
         return store.add_principle_relation(
-            from_card_id=int(_one(form, "from_card_id")),
-            to_card_id=int(_one(form, "to_card_id")),
-            relation=PrincipleRelationType(_one(form, "relation")),
-            rationale=_one(form, "rationale"),
+            from_card_id=data.from_card_id,
+            to_card_id=data.to_card_id,
+            relation=data.relation,
+            rationale=data.rationale,
         )
 
-    def add_practice_session(self, form: Mapping[str, list[str]]) -> int:
+    def add_practice_session(self, form: FormData) -> int:
         store = self.store()
         store.initialize()
+        data = parse_practice_session_form(form)
         return store.add_practice_session(
-            front=ExamFront(_one(form, "front", ExamFront.CHOICE.value)),
-            topic=_one(form, "topic"),
-            source=_one(form, "source"),
-            score=_optional_float(_one(form, "score")),
-            max_score=_optional_float(_one(form, "max_score")),
-            duration_minutes=_optional_int(_one(form, "duration_minutes")),
-            summary=_one(form, "summary"),
-            mistakes=_one(form, "mistakes"),
-            created_on=_optional_date(_one(form, "created_on")) or self.today,
+            front=data.front,
+            topic=data.topic,
+            source=data.source,
+            score=data.score,
+            max_score=data.max_score,
+            duration_minutes=data.duration_minutes,
+            summary=data.summary,
+            mistakes=data.mistakes,
+            created_on=data.created_on or self.today,
         )
 
-    def capture_study_turn(self, form: Mapping[str, list[str]]):
+    def capture_study_turn(self, form: FormData):
+        data = parse_study_turn_form(form)
         result = capture_learning_turn(
             self.root,
-            topic=_one(form, "topic"),
-            user_text=_one(form, "user_text"),
-            assistant_text=_one(form, "assistant_text"),
-            fronts=_fronts(form),
-            learner_position=_one(form, "learner_position"),
-            codex_position=_one(form, "codex_position"),
-            destination=_one(form, "destination"),
+            topic=data.topic,
+            user_text=data.user_text,
+            assistant_text=data.assistant_text,
+            fronts=data.fronts,
+            learner_position=data.learner_position,
+            codex_position=data.codex_position,
+            destination=data.destination,
         )
         self.write_dashboard()
         return result
 
-    def record_review(self, form: Mapping[str, list[str]]) -> None:
+    def record_review(self, form: FormData) -> None:
         store = self.store()
         store.initialize()
+        data = parse_review_form(form)
         store.record_review(
-            card_id=int(_one(form, "card_id")),
-            reviewed_on=_optional_date(_one(form, "reviewed_on")) or self.today,
-            grade=int(_one(form, "grade", "3")),
+            card_id=data.card_id,
+            reviewed_on=data.reviewed_on or self.today,
+            grade=data.grade,
         )
 
-    def seed_cheko_cards(self, form: Mapping[str, list[str]]) -> ChekoSeedResult:
-        next_due = _optional_date(_one(form, "next_due")) or self.today
+    def seed_cheko_cards(self, form: FormData) -> ChekoSeedResult:
+        next_due = next_due_date(form, self.today)
         result = seed_cheko_memory_cards(self.root, next_due=next_due)
         self.write_dashboard()
         return result
 
-    def write_daily_receipt(self, form: Mapping[str, list[str]]):
-        receipt_date = _optional_date(_one(form, "as_of")) or self.today
-        return write_daily_receipt(self.root, as_of=receipt_date)
+    def write_daily_receipt(self, form: FormData):
+        return write_daily_receipt(self.root, as_of=report_date(form, self.today))
 
-    def write_night_evolution_plan(self, form: Mapping[str, list[str]]):
-        evolution_date = _optional_date(_one(form, "as_of")) or self.today
-        return write_night_evolution_plan(self.root, as_of=evolution_date)
+    def write_night_evolution_plan(self, form: FormData):
+        return write_night_evolution_plan(self.root, as_of=report_date(form, self.today))
 
-    def write_route_map(self, form: Mapping[str, list[str]]):
-        route_date = _optional_date(_one(form, "as_of")) or self.today
-        return write_route_map(self.root, as_of=route_date)
+    def write_route_map(self, form: FormData):
+        return write_route_map(self.root, as_of=report_date(form, self.today))
 
-    def write_rag_brief(self, form: Mapping[str, list[str]]):
-        rag_date = _optional_date(_one(form, "as_of")) or self.today
-        query = _one(form, "query", DEFAULT_RAG_QUERY)
-        return write_local_rag_brief(self.root, query=query, as_of=rag_date)
+    def write_rag_brief(self, form: FormData):
+        return write_local_rag_brief(
+            self.root,
+            query=query_text(form, DEFAULT_RAG_QUERY),
+            as_of=report_date(form, self.today),
+        )
 
-    def write_state_export(self, form: Mapping[str, list[str]]):
-        export_date = _optional_date(_one(form, "as_of")) or self.today
-        return write_local_state_export(self.root, as_of=export_date)
+    def write_state_export(self, form: FormData):
+        return write_local_state_export(self.root, as_of=report_date(form, self.today))
 
-    def sync_memory_cards_to_vault(self, form: Mapping[str, list[str]]):
+    def sync_memory_cards_to_vault(self, form: FormData):
         store = self.store()
         store.initialize()
-        overwrite = _one(form, "overwrite") == "1"
         return sync_memory_cards_to_vault(
             self.vault_path,
             store.list_memory_cards(),
-            overwrite=overwrite,
+            overwrite=overwrite_requested(form),
         )
 
-    def sync_raw_records_to_vault(self, form: Mapping[str, list[str]]):
+    def sync_raw_records_to_vault(self, form: FormData):
         store = self.store()
         store.initialize()
-        overwrite = _one(form, "overwrite") == "1"
         return sync_raw_records_to_vault(
             self.vault_path,
             store.list_raw_records(),
-            overwrite=overwrite,
+            overwrite=overwrite_requested(form),
         )
 
     def render_home(self, message: str = "") -> str:
@@ -1479,13 +1488,6 @@ def _handler_for(app: WorkbenchApp):
     return WorkbenchHandler
 
 
-def _one(form: Mapping[str, list[str]], key: str, default: str = "") -> str:
-    values = form.get(key)
-    if not values:
-        return default
-    return values[0].strip()
-
-
 def _vault_relative_path(request_path: str) -> str:
     return unquote(request_path.removeprefix("/vault/"))
 
@@ -1500,24 +1502,3 @@ def _report_relative_path(request_path: str) -> str:
 
 def _export_relative_path(request_path: str) -> str:
     return unquote(request_path.removeprefix("/exports/"))
-
-
-def _optional_int(value: str) -> int | None:
-    return int(value) if value.strip() else None
-
-
-def _optional_float(value: str) -> float | None:
-    return float(value) if value.strip() else None
-
-
-def _optional_date(value: str) -> date | None:
-    return date.fromisoformat(value) if value.strip() else None
-
-
-def _split_lines(value: str) -> tuple[str, ...]:
-    return tuple(item.strip() for item in value.replace(",", "\n").splitlines() if item.strip())
-
-
-def _fronts(form: Mapping[str, list[str]]) -> tuple[ExamFront, ...]:
-    values = form.get("fronts") or []
-    return tuple(ExamFront(value) for value in values if value)

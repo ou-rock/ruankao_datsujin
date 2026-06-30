@@ -354,6 +354,7 @@ Expected modules:
 - `rag.py`: local retrieval and progress-control briefs from SQLite evidence.
 - `loop.py`: daily loop status, risk evaluation, next-action generation.
 - `web.py`: local workbench composition root for routes, forms, and app orchestration.
+- `web_forms.py`: workbench form field adapters that return typed input objects.
 - `web_render.py`: workbench HTML fragments and display labels, with no HTTP or writes.
 - `cli.py`: command line entry points.
 

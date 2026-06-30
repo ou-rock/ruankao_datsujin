@@ -3404,3 +3404,41 @@ and `storage`, but it must not handle HTTP, open SQLite, or write durable state.
 - Verified the rendered DOM still exposes the workbench title, three-front
   radar, review grade buttons, RAG control panel, study turn form, and Obsidian
   links after the `web_render.py` extraction.
+
+## 2026-06-30 Round 113 - Split Workbench Form Adapters
+
+### Learner Friction
+
+After the render split, `web.py` still knew every browser form field name and
+repeated low-level parsing across raw records, memory cards, reviews, practice,
+study turns, reports, and vault sync actions. That made UI field changes too
+likely to leak into the workbench composition root.
+
+### Change
+
+- Added `ruankao_agent/web_forms.py` as the workbench form adapter layer.
+- Converted POST form mappings into typed dataclasses before `web.py` calls
+  storage or report services.
+- Added focused parser tests for raw records, memory cards, practice sessions,
+  study turns, reviews, report dates, query text, and overwrite flags.
+- Updated the architecture boundary contract so inner modules cannot depend on
+  `web_forms.py`.
+
+### Architecture Rule Captured
+
+`web_forms.py` may depend on `domain.py` for enum conversion, but it must not
+open SQLite, render HTML, serve HTTP, or become a shared business service.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_forms.py tests/test_web_workbench.py -q`
+- `python3 -m pytest tests/test_architecture_boundaries.py -q`
+
+### BrowserAct Evidence
+
+- Started a temporary workbench root at `http://127.0.0.1:8876/`.
+- Used browser-act with the existing `github-act` Chrome browser to fill and
+  submit a real practice form through the page.
+- Verified the redirected page showed `练习记录 #1 已保存。`, marked the case
+  front green, and surfaced the submitted practice session in the RAG control
+  panel and recent practice list.

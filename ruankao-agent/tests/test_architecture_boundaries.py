@@ -7,6 +7,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_ROOT = REPO_ROOT / "ruankao_agent"
 DOCS_ROOT = REPO_ROOT / "docs"
+ENTRY_ADAPTERS = {"cli", "web", "web_forms"}
 
 
 EXPECTED_INTERNAL_DEPS = {
@@ -58,8 +59,10 @@ EXPECTED_INTERNAL_DEPS = {
         "storage",
         "study",
         "vault",
+        "web_forms",
         "web_render",
     },
+    "web_forms": {"domain"},
     "web_render": {"domain", "memory", "storage"},
 }
 
@@ -73,8 +76,7 @@ def test_inner_modules_do_not_depend_on_entry_adapters() -> None:
     for module, deps in graph.items():
         if module in {"cli", "web"}:
             continue
-        assert "web" not in deps
-        assert "cli" not in deps
+        assert not (deps & ENTRY_ADAPTERS)
 
 
 def test_architecture_boundary_doc_lists_modules_boundaries_and_coupling() -> None:
