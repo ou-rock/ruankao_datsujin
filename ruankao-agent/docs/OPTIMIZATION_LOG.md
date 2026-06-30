@@ -4217,3 +4217,52 @@ rules again.
   `检索策略：sqlite-fts5-hybrid-progress`, `进步闸门`, `召回证据`,
   `回答契约`, `先处理「可用性 vs 可靠性」`, `高并发订单案例`, and 3 rendered
   sections.
+
+## 2026-06-30 Round 131 - Split RAG Report Style Boundary
+
+### Learner Friction
+
+`rag_report.py` owned payload conversion, report paths, HTML rendering, display
+labels, and page CSS. The module was already separate from retrieval and
+progress control, but visual changes still required editing the same file that
+defines the public RAG report payload shape.
+
+### Change
+
+- Added `ruankao_agent/rag_report_style.py` for the RAG report CSS constant.
+- Updated `ruankao_agent/rag_report.py` to import the style constant and keep
+  payload conversion, report paths, HTML structure, labels, and section helpers.
+- Reduced `rag_report.py` from roughly 260 lines to roughly 205 lines.
+- Captured `rag_report -> rag_report_style` in the architecture dependency
+  test and documented `rag_report_style.py` as a CSS-only leaf module.
+- Preserved generated report paths, payload shape, rendered text, CLI/Web entry
+  points, and command output.
+
+### Architecture Rule Captured
+
+`rag_report_style.py` may contain only RAG report CSS constants. It must not
+save payload, render HTML, execute retrieval, or generate files. `rag_report.py`
+may depend on `rag_report_style.py`, but it must stay focused on payload/path
+and HTML rendering.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/rag_report.py ruankao_agent/rag_report_style.py`
+- `python3 -m pytest tests/test_rag.py tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary RAG root under `/tmp/ruankao-rag-report-style`.
+- Created one Mein record, one repeatedly low-graded memory card, and one
+  low-score case-practice session through public store APIs.
+- Generated `/reports/rag/2026-06-29.html` through the public `rag-query` CLI
+  path.
+- Served the temporary workbench at `http://127.0.0.1:8901/`.
+- Opened `http://127.0.0.1:8901/reports/rag/2026-06-29.html` through
+  browser-act.
+- Verified HTTP 200 and rendered DOM content for `RAG 记忆与进步控制`,
+  `检索策略：sqlite-fts5-hybrid-progress`, `进步闸门`, `召回证据`,
+  `回答契约`, CSS `--accent=#0f766e`, `main` max width `1120px`, and 3
+  rendered sections.
