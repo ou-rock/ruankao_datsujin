@@ -103,7 +103,11 @@ def sync_memory_cards_to_vault(
             skipped.append(note_path)
             continue
         note_path.parent.mkdir(parents=True, exist_ok=True)
-        note_path.write_text(_render_memory_card_note(card), encoding="utf-8")
+        note_text = _merge_preserved_user_section(
+            _render_memory_card_note(card),
+            note_path.read_text(encoding="utf-8") if note_path.exists() else "",
+        )
+        note_path.write_text(note_text, encoding="utf-8")
         written.append(note_path)
     return VaultSyncResult(written_paths=tuple(written), skipped_paths=tuple(skipped))
 
@@ -123,7 +127,11 @@ def sync_raw_records_to_vault(
             skipped.append(note_path)
             continue
         note_path.parent.mkdir(parents=True, exist_ok=True)
-        note_path.write_text(_render_raw_record_note(record), encoding="utf-8")
+        note_text = _merge_preserved_user_section(
+            _render_raw_record_note(record),
+            note_path.read_text(encoding="utf-8") if note_path.exists() else "",
+        )
+        note_path.write_text(note_text, encoding="utf-8")
         written.append(note_path)
     return VaultSyncResult(written_paths=tuple(written), skipped_paths=tuple(skipped))
 
@@ -166,6 +174,33 @@ def _write_if_missing(path: Path, text: str) -> None:
     if path.exists():
         return
     path.write_text(text, encoding="utf-8")
+
+
+def _merge_preserved_user_section(generated: str, existing: str) -> str:
+    preserved = _protected_user_section(existing)
+    if not preserved:
+        return generated
+    return generated.rstrip() + "\n\n" + preserved.lstrip("\n")
+
+
+def _protected_user_section(text: str) -> str:
+    if not text:
+        return ""
+    lines = text.splitlines(keepends=True)
+    for index, line in enumerate(lines):
+        if line.strip() in {"## My Notes", "## 我的笔记", "## 个人笔记"}:
+            start = index
+            if index > 0 and lines[index - 1].strip() == "---":
+                start = index - 1
+            return "".join(lines[start:])
+
+    horizontal_rules = [
+        index for index, line in enumerate(lines)
+        if line.strip() == "---"
+    ]
+    if len(horizontal_rules) >= 3:
+        return "".join(lines[horizontal_rules[2]:])
+    return ""
 
 
 def _memory_card_note_path(vault: Path, card: MemoryCard) -> Path:

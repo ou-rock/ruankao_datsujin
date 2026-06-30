@@ -5112,3 +5112,39 @@ not this physical validation boundary.
   - Direct SQLite readback showed one `practice_sessions` row
     `('case', 12.5, 15.0, '案例题打卡', 'semantic-ingest')` and one raw record
     `('mein', 'raw', '语义解析降级：日常碎片', ...)`.
+
+## 2026-06-30 Round 149 - Preserve Obsidian Personal Notes
+
+### Learner Friction
+
+The Hermes migration prompt requires `vault-sync --overwrite` to refresh
+SQLite-owned YAML/frontmatter and generated memory-card body without wiping the
+learner's personal notes below the note delimiter. Before this round,
+overwrite sync regenerated the whole file and erased manual Obsidian comments.
+
+### Change
+
+- Added protected-section merging in `ruankao_agent/vault.py`.
+- `sync_memory_cards_to_vault(..., overwrite=True)` and
+  `sync_raw_records_to_vault(..., overwrite=True)` now preserve user content
+  beginning at the third standalone `---` or at `## My Notes`, `## 我的笔记`,
+  or `## 个人笔记`.
+- Added a function-level regression test for memory-card overwrite protection.
+- Added a CLI-level regression test that runs
+  `python3 -m ruankao_agent.cli vault-sync --overwrite` and verifies generated
+  YAML/body updates while the personal comment remains intact.
+- Updated the Hermes migration spec and architecture boundary map.
+
+### Architecture Rule Captured
+
+`vault.py` remains a no-dependency persistence/presentation boundary. It may
+merge preserved user markdown sections into newly generated notes, but it must
+not read business state or treat Obsidian comments as authoritative data.
+SQLite remains the only source of truth for generated card fields.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/vault.py`
+- `python3 -m pytest tests/test_vault_and_dashboard.py::test_overwrite_memory_card_sync_preserves_obsidian_personal_notes -q`
+- `python3 -m pytest tests/test_cli.py::test_cli_vault_sync_overwrite_preserves_obsidian_personal_notes -q`
+- `python3 -m pytest tests/test_vault_and_dashboard.py tests/test_cli.py -q`

@@ -1,4 +1,5 @@
 import subprocess
+import sqlite3
 import sys
 
 from datetime import date
@@ -245,6 +246,79 @@ def test_cli_vault_sync_exports_memory_cards(tmp_path) -> None:
     assert "记忆卡已同步到 Obsidian：写入 1 个，跳过 0 个。" in result.stdout
     assert "written=1" in result.stdout
     assert (root / "vault" / "10-memory-war-room" / "concepts" / "质量属性场景.md").exists()
+
+
+def test_cli_vault_sync_overwrite_preserves_obsidian_personal_notes(tmp_path) -> None:
+    root = tmp_path / "demo"
+    store = RuankaoStore(root / "data" / "ruankao.db")
+    store.initialize()
+    card_id = store.add_memory_card(
+        card_type=CardType.CONCEPT,
+        title="灾备响应度量",
+        prompt="灾备响应度量怎么写？",
+        answer="写清恢复时间、降级范围和成功率。",
+        fronts=(ExamFront.CASE,),
+    )
+    first = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ruankao_agent.cli",
+            "vault-sync",
+            "--root",
+            str(root),
+        ],
+        cwd=".",
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert first.returncode == 0, first.stderr
+
+    note = root / "vault" / "10-memory-war-room" / "concepts" / "灾备响应度量.md"
+    note.write_text(
+        note.read_text(encoding="utf-8")
+        + "\n---\n## My Notes\n* This is my personal comment.\n",
+        encoding="utf-8",
+    )
+    with sqlite3.connect(root / "data" / "ruankao.db") as con:
+        con.execute(
+            """
+            UPDATE memory_cards
+            SET prompt = ?, answer = ?, review_count = ?
+            WHERE id = ?
+            """,
+            (
+                "灾备响应度量更新后怎么写？",
+                "先写 RTO/RPO，再写切换成功率和用户可见结果。",
+                3,
+                card_id,
+            ),
+        )
+
+    second = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ruankao_agent.cli",
+            "vault-sync",
+            "--root",
+            str(root),
+            "--overwrite",
+        ],
+        cwd=".",
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    text = note.read_text(encoding="utf-8")
+    assert second.returncode == 0, second.stderr
+    assert "written=1" in second.stdout
+    assert "review_count: 3" in text
+    assert "灾备响应度量更新后怎么写？" in text
+    assert "先写 RTO/RPO，再写切换成功率和用户可见结果。" in text
+    assert "---\n## My Notes\n* This is my personal comment." in text
 
 
 def test_cli_raw_vault_sync_exports_source_records(tmp_path) -> None:

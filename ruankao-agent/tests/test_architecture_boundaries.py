@@ -210,6 +210,8 @@ def test_architecture_boundary_doc_lists_modules_boundaries_and_coupling() -> No
     assert "耦合分类" in text
     assert "耦合热点" in text
     assert "允许依赖规则" in text
+    assert "`vault.py`" in text
+    assert "保护用户批注段" in text
     for module in EXPECTED_INTERNAL_DEPS:
         assert f"`{module}.py`" in text or f"{module} " in text
 

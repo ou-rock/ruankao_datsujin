@@ -64,6 +64,7 @@
 
 *   **物理编辑约束**：Obsidian 在架构上定义为**纯呈现面与只读批注层**。SQLite (`ruankao.db`) 拥有绝对权威修改权。
 *   **物理同步与覆盖规则**：
+    *   **当前本地入口（已落地）**：`python3 -m ruankao_agent.cli vault-sync --root <root> --overwrite` 会用 SQLite 重新生成 YAML Frontmatter 与核心问题/回答，同时保留现有 md 文件中第三个 `---` 或 `## My Notes` / `## 我的笔记` / `## 个人笔记` 开始的人工批注段。
     1.  中端在执行 `vault-sync` 时，以 SQLite 中的卡片及提炼状态为准，强制覆盖 Obsidian 中对应的 md 文件的 YAML Frontmatter 头部及核心问题/回答正文。
     2.  当用户希望补充个人心得时，可在 md 文件底部的特定分隔线（如 `## My Notes` 或 `---` 分隔线）下方自由添加评论、手写心得或关联链接。
     3.  同步引擎 `vault.py` 在写入覆盖时，必须使用结构化解析器保护该分隔线以下的人工追加段落不被抹除。
@@ -202,4 +203,3 @@
     *   [ ] 排序权重与可解释性：混排得分中包含对 `fts_bm25` 词频的打分以及对卡片/练习进阶状态的分离与可解释 `score_breakdown` 拆分列（progress、token、fts_bm25、phrase、front、status）。
     *   [ ] 进步闸门拦截：当有任务处于高危状态（如某卡复习到期、某战线题型缺席）时，自动生成 `ProgressGate` 元素并给出强退回的 `recommended_action` 警醒。
     *   [ ] 每天闭环运行完，新生成的日结报表中应正常显示 `RAG 控制` 面板与契约指令。
-

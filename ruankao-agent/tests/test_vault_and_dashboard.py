@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import date
 
 from ruankao_agent.dashboard import DashboardSnapshot, render_dashboard
@@ -87,6 +88,45 @@ def test_sync_memory_cards_to_vault_writes_generated_obsidian_notes(tmp_path) ->
     assert "- 选择题" in text
     assert "- 案例题" in text
     assert "刺激源、刺激、环境" in text
+
+
+def test_overwrite_memory_card_sync_preserves_obsidian_personal_notes(tmp_path) -> None:
+    root = tmp_path / "demo"
+    vault = initialize_vault(root / "vault")
+    store = RuankaoStore(root / "data" / "ruankao.db")
+    store.initialize()
+    card_id = store.add_memory_card(
+        card_type=CardType.CONCEPT,
+        title="灾备响应度量",
+        prompt="灾备响应度量怎么写？",
+        answer="写清恢复时间、降级范围和成功率。",
+        fronts=(ExamFront.CASE,),
+    )
+    sync_memory_cards_to_vault(vault, store.list_memory_cards())
+
+    note = vault / "10-memory-war-room" / "concepts" / "灾备响应度量.md"
+    note.write_text(
+        note.read_text(encoding="utf-8")
+        + "\n---\n## My Notes\n* This is my personal comment.\n",
+        encoding="utf-8",
+    )
+    updated_card = replace(
+        store.get_memory_card(card_id),
+        prompt="灾备响应度量更新后怎么写？",
+        answer="先写 RTO/RPO，再写切换成功率和用户可见结果。",
+        review_count=3,
+    )
+
+    result = sync_memory_cards_to_vault(vault, [updated_card], overwrite=True)
+
+    text = note.read_text(encoding="utf-8")
+    assert result.written_paths == (note,)
+    assert "review_count: 3" in text
+    assert "灾备响应度量更新后怎么写？" in text
+    assert "先写 RTO/RPO，再写切换成功率和用户可见结果。" in text
+    assert "灾备响应度量怎么写？" not in text
+    assert "写清恢复时间、降级范围和成功率。" not in text
+    assert "---\n## My Notes\n* This is my personal comment." in text
 
 
 def test_sync_raw_records_to_vault_writes_mein_du_uns_notes(tmp_path) -> None:

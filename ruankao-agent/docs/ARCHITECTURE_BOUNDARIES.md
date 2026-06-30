@@ -30,7 +30,7 @@ L1 领域内核        domain.py, notebooklm.py
 | `domain.py` | L1 | 无 | 枚举、日期、风险规则、战役阶段。不能依赖存储、UI 或文件系统。 |
 | `notebooklm.py` | L1 | 无 | NotebookLM 外部研究源的本地元数据。不能直接访问网络。 |
 | `storage.py` | L2 | `domain` | SQLite schema、仓储、数据行对象。不能渲染 HTML 或写 Obsidian。 |
-| `vault.py` | L2 | 无 | Obsidian 目录与 Markdown 生成。不能读取业务状态，只接收调用方传入数据。 |
+| `vault.py` | L2 | 无 | Obsidian 目录与 Markdown 生成，覆盖同步时保护用户批注段。不能读取业务状态，只接收调用方传入数据。 |
 | `export_state.py` | L2 | `storage` | 导出本地 JSON 状态。不能承担业务决策。 |
 | `memory.py` | L3 | `storage` | 记忆诊断、Obsidian note 渲染辅助。不能打开数据库。 |
 | `rag_types.py` | L3 | `domain` | RAG 文档、切块、命中、闸门和简报数据结构。不能读取数据库、渲染 HTML 或执行排序。 |
