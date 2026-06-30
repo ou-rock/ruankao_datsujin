@@ -1521,8 +1521,8 @@ def _status_summary(snapshot) -> str:
     backlog = snapshot.dashboard.review_backlog_ratio
     due_cards = snapshot.dashboard.due_cards
     return (
-        f"{snapshot.countdown} | {snapshot.phase_name} | {_risk_label(snapshot.risk_text)} "
-        f"| 到期={due_cards} | 积压={backlog:.0%}"
+        f"{snapshot.countdown} · {snapshot.phase_name} · {_risk_label(snapshot.risk_text)} "
+        f"· 到期 {due_cards} · 积压 {backlog:.0%}"
     )
 
 

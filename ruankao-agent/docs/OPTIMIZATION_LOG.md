@@ -2415,3 +2415,30 @@ learner's vocabulary and keep machine naming out of map prose.
 - `python3 -m pytest tests/test_vault_and_dashboard.py -q`
 - Tests assert newly initialized vault maps use Chinese labels and no longer
   contain the old English scaffold text.
+
+## 2026-06-30 Round 079 - Humanize Workbench Status Summary
+
+### Learner Friction
+
+The workbench title row summarized state as
+`D-117 | 启动诊断 | 绿灯 | 到期=0 | 积压=0%`. It was compact, but it looked like a
+log line in the most visible part of the interface.
+
+### Change
+
+- Changed the top status summary to use centered separators.
+- Changed `到期=0` and `积压=0%` to natural labels:
+  - `到期 0`
+  - `积压 0%`
+- Kept the page title and underlying status data unchanged.
+
+### UX Rule Captured
+
+Top-level status should feel like an interface label, not CLI output. Save
+key-value syntax for machine-facing surfaces.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert the new status summary renders and the old pipe/key-value version
+  no longer appears.
