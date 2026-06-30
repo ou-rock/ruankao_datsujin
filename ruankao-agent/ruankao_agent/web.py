@@ -1027,6 +1027,7 @@ class WorkbenchApp:
         <h2>原则网络</h2>
         <div class="split">
           <form method="post" action="/relations">
+            <div class="form-note">只连接有真实逻辑张力的原则：能说明支撑、制约、冲突或派生，才值得进入网络。</div>
             <div class="grid">
               <label>From 原则 ID
                 <input type="number" name="from_card_id" min="1" step="1" inputmode="numeric" required>

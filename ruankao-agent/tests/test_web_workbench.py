@@ -254,6 +254,7 @@ def test_principle_relation_uses_segmented_radio_control(tmp_path) -> None:
     assert 'type="radio" name="relation" value="constrains">制约' in html
     assert 'type="radio" name="relation" value="conflicts_with">冲突' in html
     assert 'type="radio" name="relation" value="derived_from">派生' in html
+    assert "只连接有真实逻辑张力的原则" in html
     assert '<select name="relation">' not in html
 
 

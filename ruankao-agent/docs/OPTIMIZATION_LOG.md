@@ -2079,3 +2079,28 @@ recalled and graded is not yet a useful study asset.
 
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert the memory-card form includes the new quality rule.
+
+## 2026-06-30 Round 067 - Add Principle Link Quality Rule
+
+### Learner Friction
+
+The principle relation form supported support, constraint, conflict, and
+derivation, but it did not warn against casual linking. A principle network only
+helps architecture thinking if every edge carries real reasoning pressure.
+
+### Change
+
+- Added a compact note at the top of the principle relation form.
+- The note says to connect principles only when there is true logical tension:
+  support, constraint, conflict, or derivation.
+- Kept the segmented relation control and storage behavior unchanged.
+
+### UX Rule Captured
+
+Principle links are claims, not decoration. The UI should bias the learner
+toward fewer, stronger edges.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert the principle relation form includes the new link-quality rule.
