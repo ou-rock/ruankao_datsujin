@@ -14,6 +14,9 @@ class StudyTurnResult:
     du_record_id: int
     topic: str
     fronts: tuple[ExamFront, ...]
+    learner_position: str
+    codex_position: str
+    destination: str
 
 
 def capture_study_turn(
@@ -23,10 +26,16 @@ def capture_study_turn(
     user_text: str,
     assistant_text: str,
     fronts: Sequence[ExamFront] = (),
+    learner_position: str = "",
+    codex_position: str = "",
+    destination: str = "",
 ) -> StudyTurnResult:
     clean_topic = topic.strip() or "未命名学习回合"
     clean_user = user_text.strip()
     clean_assistant = assistant_text.strip()
+    clean_learner_position = learner_position.strip()
+    clean_codex_position = codex_position.strip()
+    clean_destination = destination.strip()
     if not clean_user:
         raise ValueError("user_text is required")
     if not clean_assistant:
@@ -40,7 +49,12 @@ def capture_study_turn(
 
     mein_record_id = store.add_raw_record(
         source=SourceIdentity.MEIN,
-        text=clean_user,
+        text=_with_position_header(
+            clean_user,
+            learner_position=clean_learner_position,
+            codex_position=clean_codex_position,
+            destination=clean_destination,
+        ),
         summary=f"学习模式 Mein：{clean_topic}",
         topics=topics,
         fronts=front_tuple,
@@ -48,7 +62,12 @@ def capture_study_turn(
     )
     du_record_id = store.add_raw_record(
         source=SourceIdentity.DU,
-        text=clean_assistant,
+        text=_with_position_header(
+            clean_assistant,
+            learner_position=clean_learner_position,
+            codex_position=clean_codex_position,
+            destination=clean_destination,
+        ),
         summary=f"学习模式 Du：{clean_topic}",
         topics=topics,
         fronts=front_tuple,
@@ -59,4 +78,28 @@ def capture_study_turn(
         du_record_id=du_record_id,
         topic=clean_topic,
         fronts=front_tuple,
+        learner_position=clean_learner_position,
+        codex_position=clean_codex_position,
+        destination=clean_destination,
+    )
+
+
+def _with_position_header(
+    text: str,
+    *,
+    learner_position: str,
+    codex_position: str,
+    destination: str,
+) -> str:
+    if not any((learner_position, codex_position, destination)):
+        return text
+    return "\n".join(
+        (
+            "学习定位:",
+            f"- 我在哪: {learner_position or '未记录'}",
+            f"- 你在哪: {codex_position or '未记录'}",
+            f"- 我们要去哪: {destination or '未记录'}",
+            "",
+            text,
+        )
     )

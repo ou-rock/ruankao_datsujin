@@ -981,3 +981,38 @@ Both must be recorded turn by turn.
   - topic, fronts, and promotion status are preserved;
   - the CLI prints hook-friendly record IDs;
   - the Codex command documents the one-question-at-a-time protocol.
+
+## 2026-06-30 Round 030 - Socratic Study Positioning
+
+### Learner Friction
+
+The first study-mode draft recorded Mein and Du, but it did not yet behave like
+entering a dedicated learning perspective. It also blurred daytime study actions
+with principle-link mining, which belongs to night evolution.
+
+### Change
+
+- Updated `/ruankao-study-mode` to start with:
+  - `我在哪`
+  - `你在哪`
+  - `我们要去哪`
+- Added ruankao-teach and Uns as question-seeding inputs.
+- Clarified that Uns creates questions or candidates, not direct conclusions.
+- Removed daytime principle-link creation from study-mode behavior.
+- Added optional `study-turn` position fields:
+  - `--learner-position`
+  - `--codex-position`
+  - `--destination`
+
+### Learning Rule Captured
+
+Socratic learning needs position awareness. The agent should know the learner's
+current model, its own role, and the next reachable target before asking.
+
+### Validation
+
+- `python3 -m pytest tests/test_study_mode.py -q`
+- Tests assert:
+  - study turns persist the three position fields in Mein and Du records;
+  - the command mentions ruankao-teach and Uns question seeding;
+  - principle links are deferred to night mining.

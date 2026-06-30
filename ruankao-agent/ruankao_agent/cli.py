@@ -318,6 +318,9 @@ def cmd_study_turn(
     user_text: str,
     assistant_text: str,
     fronts: Sequence[str] = (),
+    learner_position: str = "",
+    codex_position: str = "",
+    destination: str = "",
 ) -> int:
     result = capture_study_turn(
         root,
@@ -325,6 +328,9 @@ def cmd_study_turn(
         user_text=user_text,
         assistant_text=assistant_text,
         fronts=_parse_fronts(fronts),
+        learner_position=learner_position,
+        codex_position=codex_position,
+        destination=destination,
     )
     front_text = ",".join(front.value for front in result.fronts) or "none"
     print(
@@ -393,6 +399,9 @@ def build_parser() -> argparse.ArgumentParser:
     study_parser.add_argument("--topic", required=True)
     study_parser.add_argument("--user", required=True, dest="user_text")
     study_parser.add_argument("--assistant", required=True, dest="assistant_text")
+    study_parser.add_argument("--learner-position", default="")
+    study_parser.add_argument("--codex-position", default="")
+    study_parser.add_argument("--destination", default="")
     study_parser.add_argument(
         "--front",
         choices=("choice", "case", "essay"),
@@ -447,6 +456,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             user_text=args.user_text,
             assistant_text=args.assistant_text,
             fronts=args.fronts,
+            learner_position=args.learner_position,
+            codex_position=args.codex_position,
+            destination=args.destination,
         )
     raise AssertionError(f"Unsupported command: {args.command}")
 

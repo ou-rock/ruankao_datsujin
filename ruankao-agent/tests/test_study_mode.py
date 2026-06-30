@@ -16,6 +16,9 @@ def test_capture_study_turn_records_mein_and_du_raw_material(tmp_path) -> None:
         user_text="我觉得可用性就是系统别挂。",
         assistant_text="把可用性改成可度量场景：故障后 5 分钟内恢复核心下单能力。",
         fronts=(ExamFront.CASE, ExamFront.ESSAY),
+        learner_position="可用性概念粗糙，缺少度量",
+        codex_position="案例教练",
+        destination="写出可评分的质量属性场景",
     )
 
     store = RuankaoStore(root / "data" / "ruankao.db")
@@ -31,6 +34,12 @@ def test_capture_study_turn_records_mein_and_du_raw_material(tmp_path) -> None:
     assert records[1].promotion_status == "extracted"
     assert records[0].topics == ("学习模式", "质量属性场景")
     assert records[1].fronts == (ExamFront.CASE, ExamFront.ESSAY)
+    assert result.learner_position == "可用性概念粗糙，缺少度量"
+    assert result.codex_position == "案例教练"
+    assert result.destination == "写出可评分的质量属性场景"
+    assert "我在哪: 可用性概念粗糙，缺少度量" in records[0].text
+    assert "你在哪: 案例教练" in records[1].text
+    assert "我们要去哪: 写出可评分的质量属性场景" in records[1].text
 
 
 def test_cli_study_turn_prints_record_ids(tmp_path) -> None:
@@ -50,6 +59,12 @@ def test_cli_study_turn_prints_record_ids(tmp_path) -> None:
             "ATAM 是评估架构风险。",
             "--assistant",
             "补充：要区分风险点、非风险点、敏感点和权衡点。",
+            "--learner-position",
+            "知道 ATAM 名称，但分类不稳",
+            "--codex-position",
+            "ruankao-teach 追问者",
+            "--destination",
+            "能区分四类评估点",
             "--front",
             "choice",
             "--front",
@@ -75,5 +90,11 @@ def test_study_mode_command_documents_dialogue_protocol() -> None:
     assert "Mein" in text
     assert "Du" in text
     assert "追问" in text
+    assert "ruankao-teach" in text
+    assert "Uns" in text
+    assert "我在哪" in text
+    assert "你在哪" in text
+    assert "我们要去哪" in text
     assert "study-turn" in text
     assert "不一次问多个问题" in text
+    assert "原则链接只作为夜间挖掘候选" in text
