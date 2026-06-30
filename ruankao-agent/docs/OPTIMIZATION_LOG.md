@@ -2501,3 +2501,32 @@ into a single punctuation-heavy line.
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert practice entries show `得分：... / 得分率：...` and no longer show
   the old key-value pipe format.
+
+## 2026-06-30 Round 082 - Localize Workbench Memory Diagnostics
+
+### Learner Friction
+
+Workbench memory diagnostics still exposed internal status values such as
+`leech` and metadata like `low=... | last=... | avg=...`. This is exactly the
+place where the learner needs a clear recovery signal.
+
+### Change
+
+- Localized diagnostic status labels:
+  - `leech` to `反复低分`
+  - `unstable` to `不稳定`
+  - `due` to `到期`
+  - `untested` to `未检验`
+  - `stable` to `稳定`
+- Reused the workbench `meta-row` chip style for diagnostic counts and grades.
+
+### UX Rule Captured
+
+Weak-memory signals should be emotionally legible. Use learner language for
+diagnosis and reserve internal codes for data.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert the workbench shows `反复低分` and `低分：2次`, and no longer leaks
+  `leech`.

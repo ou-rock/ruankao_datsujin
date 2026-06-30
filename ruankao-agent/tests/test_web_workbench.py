@@ -399,7 +399,9 @@ def test_workbench_home_surfaces_memory_diagnostics(tmp_path) -> None:
     html = app.render_home()
 
     assert "敏感点 vs 权衡点" in html
-    assert "leech" in html
+    assert "反复低分" in html
+    assert "低分：2次" in html
+    assert "leech" not in html
     assert "拆成更小卡片" in html
 
 
