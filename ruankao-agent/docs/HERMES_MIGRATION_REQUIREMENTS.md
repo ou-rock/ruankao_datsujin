@@ -34,7 +34,19 @@
 
 ## 2. 详细需求说明 (System Requirements)
 
-### 需求一：Webhook 接收端与静默同步引擎 (Sync Pipeline)
+### 需求一：唯一底座 SQLite 防灾与滚动物理回滚契约 (SQLite Disaster Recovery & State Versioning)
+*   **物理容灾重要性**：本地 SQLite 数据库 `ruankao.db` 是系统唯一的真理源。必须在中端配备高强度的自动防灾与容灾（Disaster Recovery）机制，防御由于硬件突然断电或大模型逻辑错误引发的数据损坏。
+*   **物理防灾双轨方案 (Dual-Track Backup Contract - B+C)**：
+    1.  **第一轨：轻量物理滚动备份（Rolling Binary Backups - C）**：
+        *   运行任何 SQLite 写入事务前，中端 Inbound 驱动由 Python 自动将当前 `ruankao.db` 二进制副本备份至本地 `data/backups/ruankao.db.bak.[1-7]` 下。
+        *   备份采用 7 天循环滚动淘汰策略（以当前星期几作为后缀映射），保留最新 7天内的完整二进制镜像。
+    2.  **第二轨：可审计纯文本状态快照（Versioned Text JSON Snapshots - B）**：
+        *   每日闭环最后一步必须强制调用 `export-state` 模块，将当前的卡片、练习记录、Mein/Du/Uns 元数据全量导出为具名格式化纯文本文件：`exports/state-YYYY-MM-DD.json`。
+        *   此 JSON 文件应受 Git 版本库持续跟踪，方便在 Git 终端进行代码修改与数据演进的行级差分审计（Line diff audit）。
+*   **崩溃重建与一键导入（Recovery Command）**：
+    *   中端必须内置容灾指令契约：在 SQLite 数据库物理性缺失或毁坏时，通过一键呼叫 `python3 -m ruankao_agent.cli import-state --file <JSON_PATH>` 解析 Git 历史中的任意文本快照，在 5秒内原地重新构建出状态完全一致的全新 SQLite 物理库。
+
+### 需求二：Webhook 接收端与静默同步引擎 (Sync Pipeline)
 *   **触发源**：支持通过 HTTP POST 将简要 payload 抛至本地服务端点。
 *   **指令映射**：端点 `POST /webhooks/ruankao-sync` 发生请求时，Hermes 后台应无感、无阻塞地并发拉起本地脚本：
     ```bash
@@ -42,7 +54,7 @@
     ```
 *   **并发控制**：在脚本运行期间，后续的 Webhook 信号需进行防抖（Debounce），3 秒内多次触发仅执行一次，以防止 Obsidian 自动保存时造成 SQLite 写入冲突。
 
-### 需求二：差分状态监视器与 Discord 级报警器 (Diff & Alert Gateway)
+### 需求三：差分状态监视器与 Discord 级报警器 (Diff & Alert Gateway)
 *   **状态抓取**：每次同步脚本执行完成后，系统通过读库或调用 `cli.py status` 解析出 `RiskStatus`（绿/黄/红）、`due_cards`（到期卡）、`leech` 诊断清单及缺席题型。
 *   **差分判断**：设计一个“状态哨兵”服务，比对本次同步与上一次的历史指标。
 *   **重连同步与告警路由规则（Silent Offline Sync）**：
@@ -50,7 +62,6 @@
     2.  **前端可见性防线**：系统的红黄绿灯及风险详细元数据应通过本地静态 HTML Dashboard 以及 Obsidian 总图进行醒目渲染。若用户不打开前端页面，可通过在 Discord 线程中主动发送 `/status` 或 `/rag-query` 指令拉取当前状态简报。
     3.  **主动通知边界**：只有在**实时在线期间**（非离线堆积重连），当单次物理动作（如当天首次练习被判定为 `low_score` 且导致健康灯降级）引发的突变时，才在 Discord 发出单次中文预警，其余时间保持静默。
 
-### 需求三：Obsidian 呈现面与只读契约 (Obsidian Read-Only Domain Contract)
 *   **物理编辑约束**：Obsidian 在架构上定义为**纯呈现面与只读批注层**。SQLite (`ruankao.db`) 拥有绝对权威修改权。
 *   **物理同步与覆盖规则**：
     1.  中端在执行 `vault-sync` 时，以 SQLite 中的卡片及提炼状态为准，强制覆盖 Obsidian 中对应的 md 文件的 YAML Frontmatter 头部及核心问题/回答正文。
@@ -61,6 +72,11 @@
 ### 需求四：Obsidian / Git 提交钩子配置 (Local Trigger)
 *   **物理集成**：在 `/Users/pedan/Documents/ruankao/.git/hooks/post-commit` 以及 Obsidian 软件中配置自动触发。配置需要具有极简稳定性：
     ```bash
+    curl -s -X POST http://127.0.0.1:8765/webhooks/ruankao-sync > /dev/null &
+    ```
+    （注：端口与当前 Web 端口保持动态映射，若 8765 占用，需自适应寻址）。
+
+### 需求五：苏格拉底式持久会话 Skill (Hermes Study-Mode Skill)
     curl -s -X POST http://127.0.0.1:8765/webhooks/ruankao-sync > /dev/null &
     ```
     （注：端口与当前 Web 端口保持动态映射，若 8765 占用，需自适应寻址）。
