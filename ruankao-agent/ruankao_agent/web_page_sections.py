@@ -9,9 +9,9 @@ from .web_page_forms import (
     render_practice_section,
     render_principles_section,
     render_study_turn_section,
-    render_today_operations,
     render_vault_section,
 )
+from .web_page_operations import render_today_operations
 from .web_page_style import WORKBENCH_HOME_STYLE
 from .web_page_view import HomePageView
 from .web_fronts import _front_cards

@@ -4716,3 +4716,58 @@ radar, or own the page shell.
 - Verified 3 front cards, 9 rendered sections, `main` max width `1280px`,
   title `软考达人工作台 · D-116 · 红灯`, and screenshot
   `/tmp/ruankao-web-status-workbench.png`.
+
+## 2026-06-30 Round 141 - Split Workbench Operations Section
+
+### Learner Friction
+
+`web_page_forms.py` still mixed two different responsibilities: learning/data
+entry forms and the "today product generation" operation stack. The operation
+stack triggers reports and exports through dedicated endpoints, while the rest
+of the module renders learning, capture, memory, principle, Cheko, and Vault
+forms. Keeping them together made the form module look like a general action
+surface again.
+
+### Change
+
+- Added `ruankao_agent/web_page_operations.py` for the workbench today product
+  operation stack.
+- Moved `render_today_operations` out of `web_page_forms.py`.
+- Updated `web_page_sections.py` to import the operation stack directly from
+  `web_page_operations.py`.
+- Reduced `web_page_forms.py` from roughly 312 lines to roughly 279 lines.
+- Updated the architecture dependency contract and boundary documentation.
+- Preserved workbench routes, operation form actions, hidden `as_of` fields,
+  RAG query field, footer links, learning forms, RAG panel, status strip, and
+  front radar output.
+
+### Architecture Rule Captured
+
+`web_page_operations.py` owns only the workbench today product operation HTML
+stack: daily receipt, night evolution, route map, RAG brief, and state export.
+It may depend on `HomePageView`, but must not parse HTTP, trigger actions,
+read SQLite, write state, render learning/memory/principle forms, or own the
+page shell.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/web_page_forms.py ruankao_agent/web_page_operations.py ruankao_agent/web_page_sections.py`
+- `python3 -m pytest tests/test_architecture_boundaries.py -q`
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary workbench root under `/tmp/ruankao-web-operations`.
+- Initialized the root and seeded Cheko cards through public CLI commands.
+- Served the temporary workbench at `http://127.0.0.1:8911/`.
+- Opened `http://127.0.0.1:8911/` through browser-act.
+- Verified HTTP 200 and rendered DOM content for one `.operation-stack`,
+  5 `.operation-form` forms, and actions `/daily/receipt`, `/night/evolve`,
+  `/routes/map`, `/rag/brief`, and `/state/export`.
+- Verified button text for `生成日结回执`, `生成夜间进化草案`, `生成三题型覆盖图`,
+  `生成 RAG 控制简报`, and `导出本地状态 JSON`; verified 5 hidden `as_of`
+  values, the default RAG query, 9 rendered sections, `main` max width
+  `1280px`, title `软考达人工作台 · D-116 · 红灯`, and screenshot
+  `/tmp/ruankao-web-operations-workbench.png`.
