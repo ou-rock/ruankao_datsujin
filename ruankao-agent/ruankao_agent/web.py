@@ -983,6 +983,7 @@ class WorkbenchApp:
         <h2>记忆卡</h2>
         <div class="split">
           <form method="post" action="/cards">
+            <div class="form-note">一张合格记忆卡要能触发回忆、能自评、能映射到选择/案例/论文；如果只是摘抄，先回三源库沉淀。</div>
             <div class="grid">
               <label>类型
                 <select name="card_type">

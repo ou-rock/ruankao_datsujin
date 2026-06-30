@@ -2051,3 +2051,31 @@ The system should protect source identity at capture time, not during cleanup.
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert the `三源边界` guide and all three source definitions render in
   the workbench.
+
+## 2026-06-30 Round 066 - Add Memory Card Quality Rule
+
+### Learner Friction
+
+The memory-card form collected title, prompt, answer, fronts, and due date, but
+it did not remind the learner what separates a reviewable card from a passive
+note. This matters because memory is a strategic layer of the exam system, not a
+side archive.
+
+### Change
+
+- Added a compact quality rule at the top of the memory-card form.
+- The rule requires a good card to:
+  - trigger recall
+  - support self-rating
+  - map to choice, case, or essay fronts
+- It also nudges pure excerpts back into the three-source capture layer first.
+
+### UX Rule Captured
+
+Memory entry should be biased toward retrievability. A card that cannot be
+recalled and graded is not yet a useful study asset.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert the memory-card form includes the new quality rule.
