@@ -115,6 +115,39 @@ def render_route_map(payload: dict[str, object]) -> str:
       background: var(--paper);
       padding: 16px;
     }}
+    .route-head {{
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }}
+    .route-head h2 {{
+      margin-bottom: 0;
+    }}
+    .route-state {{
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      background: var(--band);
+    }}
+    .route-state.red {{
+      color: #8a1f11;
+      border-color: #f0b6ad;
+      background: #fff1f0;
+    }}
+    .route-state.yellow {{
+      color: #7a5600;
+      border-color: #ead18a;
+      background: #fff8db;
+    }}
+    .route-state.green {{
+      color: #17623a;
+      border-color: #a9d5b8;
+      background: #eefaf1;
+    }}
     .metrics {{
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -239,10 +272,13 @@ def _route_cards(routes: list[object]) -> str:
         focus_titles = route["focus_titles"]
         assert isinstance(focus_titles, list)
         focus = "；".join(str(title) for title in focus_titles) if focus_titles else "暂无"
+        status = str(route["status"])
         items.append(
             f"""<section class="route">
-  <h2>{escape(str(route["label"]))}</h2>
-  <div class="meta">status={escape(str(route["status"]))}</div>
+  <div class="route-head">
+    <h2>{escape(str(route["label"]))}</h2>
+    <span class="route-state {escape(status)}">状态：{escape(_route_status_label(status))}</span>
+  </div>
   <div>{escape(str(route["action"]))}</div>
   <div class="metrics">
     {_metric("总卡片", route["total_cards"])}
@@ -253,7 +289,7 @@ def _route_cards(routes: list[object]) -> str:
     {_metric("今日练习", route["practice_today"])}
     {_metric("均分率", _ratio_text(route["average_score_ratio"]))}
   </div>
-  <div class="meta">last_practice={escape(str(route["last_practice_on"]))} | focus={escape(focus)}</div>
+  <div class="meta">最近练习={escape(_value_text(route["last_practice_on"]))} | 焦点={escape(focus)}</div>
 </section>"""
         )
     return "".join(items)
@@ -279,5 +315,19 @@ def _average_score_ratio(sessions: list[PracticeSession]) -> float | None:
 
 def _ratio_text(value: object) -> str:
     if value is None:
-        return "none"
+        return "未记录"
     return f"{float(value):.0%}"
+
+
+def _value_text(value: object) -> str:
+    if value is None or value == "":
+        return "未记录"
+    return str(value)
+
+
+def _route_status_label(value: str) -> str:
+    return {
+        "red": "红灯",
+        "yellow": "黄灯",
+        "green": "绿灯",
+    }.get(value, value)

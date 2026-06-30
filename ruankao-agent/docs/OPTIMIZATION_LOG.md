@@ -1528,3 +1528,34 @@ review loop.
 - Tests assert receipt HTML renders `评分=4`, `得分=7/10`, `耗时=18分钟`,
   localized card/front labels, and no longer renders old `grade=` or `score=`
   metadata.
+
+## 2026-06-30 Round 049 - Localized Route Map Status
+
+### Learner Friction
+
+The three-front route map exists to answer "where am I, and where should I go
+next?", but each route card still showed `status=red` and
+`last_practice=... | focus=...`. That made a strategic map feel like a raw
+debug panel.
+
+### Change
+
+- Changed route status display from `status=red/yellow/green` to visible
+  `状态：红灯/黄灯/绿灯` badges.
+- Changed route footer metadata:
+  - `last_practice` to `最近练习`
+  - `focus` to `焦点`
+- Rendered missing route ratios and dates as `未记录` instead of `none`.
+- Kept JSON route payload values unchanged for scripts and automation.
+
+### UX Rule Captured
+
+A route map should be instantly scannable. Machine states can remain stable in
+JSON, but the learner-facing map should show traffic-light judgement and next
+focus in study language.
+
+### Validation
+
+- `python3 -m pytest tests/test_route_map.py -q`
+- Tests assert the route map renders localized state badges, localized footer
+  metadata, and no longer renders `status=red` or `last_practice=`.
