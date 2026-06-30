@@ -1359,3 +1359,32 @@ while deciding what to practice next.
 
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert a case practice row renders `案例题`.
+
+## 2026-06-30 Round 043 - Localized Memory Card Type Labels
+
+### Learner Friction
+
+Card lists displayed internal card type values such as `concept`. The learner
+works with concept cards, principle cards, comparison cards, scenario cards, and
+expression cards, not enum names.
+
+### Change
+
+- Added a card type label helper for workbench display.
+- Changed card list badges to show:
+  - 原则卡
+  - 概念卡
+  - 对比卡
+  - 场景卡
+  - 表达卡
+- Kept stored values and form values unchanged.
+
+### UX Rule Captured
+
+Visible labels should match the learner's study vocabulary. Internal enum names
+belong in data and code, not in the card scanning surface.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert a concept due card renders `概念卡`.

@@ -128,6 +128,7 @@ def test_due_card_review_uses_one_tap_grade_buttons(tmp_path) -> None:
     html = app.render_home()
 
     assert 'class="grade-row"' in html
+    assert "<span>#1 权衡点</span><span>概念卡</span>" in html
     assert 'name="grade" value="5"' in html
     assert 'name="grade" value="0"' in html
     assert 'class="grade-button low"' in html

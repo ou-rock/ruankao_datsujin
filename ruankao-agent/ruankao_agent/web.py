@@ -1413,7 +1413,7 @@ def _card_list(cards: list[MemoryCard], *, with_review: bool, today: date) -> st
             """
         items.append(
             f"""<div class="item">
-  <div class="item-title"><span>#{card.id} {escape(card.title)}</span><span>{escape(card.card_type.value)}</span></div>
+  <div class="item-title"><span>#{card.id} {escape(card.title)}</span><span>{escape(_card_type_label(card.card_type))}</span></div>
   <div class="meta">fronts={escape(",".join(front.value for front in card.fronts) or "none")} | due={escape(card.next_due.isoformat() if card.next_due else "none")} | reviews={card.review_count}</div>
   <div class="meta">{escape(card.prompt[:140])}</div>
   {review_form}
@@ -1440,6 +1440,16 @@ def _review_grade_buttons() -> str:
 </button>"""
         )
     return "".join(buttons)
+
+
+def _card_type_label(card_type: CardType) -> str:
+    return {
+        CardType.PRINCIPLE: "原则卡",
+        CardType.CONCEPT: "概念卡",
+        CardType.COMPARISON: "对比卡",
+        CardType.SCENARIO: "场景卡",
+        CardType.EXPRESSION: "表达卡",
+    }[card_type]
 
 
 def _practice_list(sessions: list[PracticeSession]) -> str:
