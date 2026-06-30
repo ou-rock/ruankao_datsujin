@@ -16,6 +16,12 @@ def test_initialize_vault_creates_expected_obsidian_structure(tmp_path) -> None:
 
     assert (vault / "00-map" / "战役总图.md").exists()
     assert (vault / "00-map" / "原则网络.md").exists()
+    total_map = (vault / "00-map" / "战役总图.md").read_text(encoding="utf-8")
+    route_map = (vault / "00-map" / "三题型路线图.md").read_text(encoding="utf-8")
+    assert "目标：2026 下半年系统架构设计师" in total_map
+    assert "Target:" not in total_map
+    assert "[[../50-exam/choice|选择题]]" in route_map
+    assert "Choice" not in route_map
     assert (vault / "10-memory-war-room" / "principles").is_dir()
     assert (vault / "20-mein").is_dir()
     assert (vault / "30-du").is_dir()

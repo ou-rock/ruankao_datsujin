@@ -134,10 +134,10 @@ def _write_map_notes(vault: Path) -> None:
     total_map = render_map_note(
         "战役总图",
         [
-            "- Target: System Architecture Designer 2026 H2",
-            "- Links: [[原则网络]]",
-            "- Fronts: [[三题型路线图]]",
-            "- Memory: [[../10-memory-war-room/principles/场景先于方案|场景先于方案]]",
+            "- 目标：2026 下半年系统架构设计师",
+            "- 原则网络：[[原则网络]]",
+            "- 三题型路线：[[三题型路线图]]",
+            "- 核心记忆：[[../10-memory-war-room/principles/场景先于方案|场景先于方案]]",
         ],
     )
     principle_network = render_map_note(
@@ -151,9 +151,9 @@ def _write_map_notes(vault: Path) -> None:
     route_map = render_map_note(
         "三题型路线图",
         [
-            "- Choice",
-            "- Case",
-            "- Essay",
+            "- [[../50-exam/choice|选择题]]",
+            "- [[../50-exam/case|案例题]]",
+            "- [[../50-exam/essay|论文题]]",
         ],
     )
 

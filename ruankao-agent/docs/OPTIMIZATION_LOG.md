@@ -2383,3 +2383,35 @@ fields in JSON/CLI; make HTML calm and readable.
 
 - `python3 -m pytest tests/test_evolution.py -q`
 - Tests assert the HTML shows `优先级：高` and no longer shows `优先级=高`.
+
+## 2026-06-30 Round 078 - Localize Vault Map Templates
+
+### Learner Friction
+
+The default Obsidian map notes still used English scaffold labels such as
+`Target`, `Links`, `Fronts`, `Choice`, `Case`, and `Essay`. Those notes are meant
+to be the learner's long-lived knowledge map, so the initial scaffold should
+match the Chinese study environment.
+
+### Change
+
+- Localized the default `战役总图` map labels:
+  - goal
+  - principle network
+  - three-front route
+  - core memory
+- Localized the default `三题型路线图` entries and linked them to the exam-front
+  folders.
+- Preserved the existing "write if missing" behavior so manual notes are not
+  overwritten.
+
+### UX Rule Captured
+
+Default vault maps set the long-term language of the system. Start in the
+learner's vocabulary and keep machine naming out of map prose.
+
+### Validation
+
+- `python3 -m pytest tests/test_vault_and_dashboard.py -q`
+- Tests assert newly initialized vault maps use Chinese labels and no longer
+  contain the old English scaffold text.
