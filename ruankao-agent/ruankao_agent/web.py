@@ -721,6 +721,21 @@ class WorkbenchApp:
       line-height: 1.45;
       margin-top: 4px;
     }}
+    .meta-row {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }}
+    .meta-row span {{
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--band);
+      color: var(--muted);
+      padding: 4px 7px;
+      font-size: 12px;
+      line-height: 1.2;
+    }}
     .empty {{
       color: var(--muted);
       border: 1px dashed var(--line);
@@ -1586,7 +1601,11 @@ def _card_list(cards: list[MemoryCard], *, with_review: bool, today: date) -> st
         items.append(
             f"""<div class="item">
   <div class="item-title"><span>#{card.id} {escape(card.title)}</span><span>{escape(_card_type_label(card.card_type))}</span></div>
-  <div class="meta">题型={escape(_fronts_label(card.fronts))} | 到期={escape(_date_text(card.next_due))} | 复习={card.review_count}次</div>
+  <div class="meta-row">
+    <span>题型：{escape(_fronts_label(card.fronts))}</span>
+    <span>到期：{escape(_date_text(card.next_due))}</span>
+    <span>复习：{card.review_count}次</span>
+  </div>
   <div class="meta">{escape(card.prompt[:140])}</div>
   {review_form}
 </div>"""

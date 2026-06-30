@@ -161,9 +161,10 @@ def test_due_card_review_uses_one_tap_grade_buttons(tmp_path) -> None:
 
     assert 'class="grade-row"' in html
     assert "<span>#1 权衡点</span><span>概念卡</span>" in html
-    assert "题型=案例题" in html
-    assert "到期=2026-06-29" in html
-    assert "复习=0次" in html
+    assert "题型：案例题" in html
+    assert "到期：2026-06-29" in html
+    assert "复习：0次" in html
+    assert "题型=案例题" not in html
     assert 'name="grade" value="5"' in html
     assert 'name="grade" value="0"' in html
     assert 'class="grade-button low"' in html
@@ -342,7 +343,10 @@ def test_workbench_lists_render_missing_values_as_unrecorded(tmp_path) -> None:
 
     html = app.render_home()
 
-    assert "题型=未记录 | 到期=未记录 | 复习=0次" in html
+    assert "题型：未记录" in html
+    assert "到期：未记录" in html
+    assert "复习：0次" in html
+    assert "题型=未记录 | 到期=未记录 | 复习=0次" not in html
     assert "得分=未记录 | 得分率=未记录 | 来源=未记录 | 耗时=未记录 | 日期=2026-06-29" in html
     assert "到期=none" not in html
     assert "得分=none" not in html

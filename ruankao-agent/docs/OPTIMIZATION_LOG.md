@@ -2442,3 +2442,31 @@ key-value syntax for machine-facing surfaces.
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert the new status summary renders and the old pipe/key-value version
   no longer appears.
+
+## 2026-06-30 Round 080 - Humanize Workbench Card Metadata
+
+### Learner Friction
+
+Workbench card lists still showed card metadata as
+`题型=... | 到期=... | 复习=...`. Those lists appear in due review and recent-card
+contexts, so they should be as scannable as the reports.
+
+### Change
+
+- Added a reusable workbench `meta-row` chip style.
+- Changed card-list metadata into chips:
+  - exam fronts
+  - next due date
+  - review count
+- Kept the card data and review form behavior unchanged.
+
+### UX Rule Captured
+
+Review surfaces should visually separate state dimensions. A learner should not
+parse punctuation to find due dates and review counts.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert card metadata shows `题型：... / 到期：... / 复习：...` and no
+  longer shows the old key-value pipe format.
