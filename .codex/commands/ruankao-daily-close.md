@@ -13,6 +13,7 @@ argument-hint: [YYYY-MM-DD]
 cd /Users/pedan/Documents/ruankao/ruankao-agent
 python3 -m ruankao_agent.cli cheko-seed-cards --root /Users/pedan/Documents/ruankao/ruankao-agent --next-due <YYYY-MM-DD>
 python3 -m ruankao_agent.cli daily-receipt --root /Users/pedan/Documents/ruankao/ruankao-agent --as-of <YYYY-MM-DD>
+python3 -m ruankao_agent.cli rag-query --root /Users/pedan/Documents/ruankao/ruankao-agent --query "今天如何用记忆、错因和三题型进步信号安排学习？" --as-of <YYYY-MM-DD>
 ```
 
-完成后报告生成的网页回执、JSON 数据路径，以及 Cheko 入队创建/跳过数量。
+完成后报告生成的网页回执、RAG 控制简报、JSON 数据路径，以及 Cheko 入队创建/跳过数量。

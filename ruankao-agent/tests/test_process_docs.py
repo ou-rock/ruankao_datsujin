@@ -41,6 +41,16 @@ def test_ux_verification_requires_browser_act_real_browsing() -> None:
     assert "关闭 browser-act session" in text
 
 
+def test_rag_design_captures_memory_progress_control() -> None:
+    text = (DOCS_ROOT / "RAG_MEMORY_PROGRESS.md").read_text(encoding="utf-8")
+
+    assert "# RAG 记忆与进步控制方案" in text
+    assert "SQLite 仍保存三源材料、记忆卡、复习日志和练习记录" in text
+    assert "不是搜索框，而是控制层" in text
+    assert "进步闸门" in text
+    assert "召回证据" in text
+
+
 def test_agent_orchestration_log_has_current_context_note() -> None:
     text = (DOCS_ROOT / "AGENT_ORCHESTRATION.md").read_text(encoding="utf-8")
 
@@ -60,6 +70,8 @@ def test_readme_starts_from_workbench_and_daily_loop() -> None:
     assert "RUANKAO_WORKBENCH_PORT=8770 ./start-workbench.command" in text
     assert "学习回合" in text
     assert "Mein/Du/Uns 三源材料同步" in text
+    assert "RAG 记忆与进步控制简报" in text
+    assert "/ruankao-rag-query <query-or-front>" in text
     assert "用户体验改动，都必须用 browser-act 打开本地页面" in text
     assert "/ruankao-ux-check <page-or-flow>" in text
     assert "Local-first Codex companion agent" not in text

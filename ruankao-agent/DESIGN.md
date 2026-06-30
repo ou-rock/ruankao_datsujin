@@ -14,6 +14,7 @@
 核心分工：
 
 - `SQLite` 保存训练状态、排程、复习、练习和三源材料。
+- `RAG` 是记忆与进步控制层，只从 SQLite、Obsidian 同步产物和本地资料召回证据。
 - `Obsidian` 保存可编辑的知识网络，尤其是原则卡和 Mein / Du / Uns。
 - `HTML` 是总图和工作台，必须让人一眼看到位置、目标和下一步。
 - `NotebookLM` 只作为精选外部研究员，输出进入 Uns，不能直接替代判断。
@@ -58,6 +59,7 @@ The agent must feel like a companion, but behave like an accountable training sy
 - No chat-context dependence: conversation memory must be written to durable files or SQLite.
 - NotebookLM is an external researcher, not the source of truth.
 - SQLite is the training and scheduling engine.
+- Local RAG is the retrieval and progress-control layer, not a second memory store.
 - Obsidian is the editable knowledge network.
 - HTML is the dashboard and total map.
 - BrowserAct UX verification is mandatory for learner-facing web changes.
@@ -345,6 +347,7 @@ Expected modules:
 - `vault.py`: Obsidian directory and note generation.
 - `dashboard.py`: static HTML dashboard generation.
 - `notebooklm.py`: local representation and CLI wrapper for NotebookLM queries.
+- `rag.py`: local retrieval and progress-control briefs from SQLite evidence.
 - `loop.py`: daily loop status, risk evaluation, next-action generation.
 - `cli.py`: command line entry points.
 
@@ -359,6 +362,7 @@ Tests are written before implementation and must cover:
 - Principle conflict/support relation persistence.
 - Obsidian vault initialization and principle note generation.
 - Dashboard rendering of campaign, risk, memory, and navigation.
+- RAG brief generation from raw records, memory cards, review logs, and practice sessions.
 - NotebookLM source metadata without live network dependency.
 - CLI smoke behavior.
 

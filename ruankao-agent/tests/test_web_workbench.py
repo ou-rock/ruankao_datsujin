@@ -36,6 +36,8 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert "案例题" in html
     assert "论文题" in html
     assert "学习信号" in html
+    assert "RAG 记忆控制" in html
+    assert "生成 RAG 控制简报" in html
     assert "把 Cheko 弱点入队" in html
     assert "记忆诊断" in html
     assert "今日产物生成" in html
@@ -59,6 +61,7 @@ def test_workbench_home_is_an_actionable_control_panel(tmp_path) -> None:
     assert 'action="/daily/receipt"' in html
     assert 'action="/night/evolve"' in html
     assert 'action="/routes/map"' in html
+    assert 'action="/rag/brief"' in html
     assert 'action="/state/export"' in html
     assert 'action="/cheko/cards"' in html
     assert 'action="/practice"' in html
@@ -106,6 +109,7 @@ def test_workbench_messages_translate_common_action_slugs(tmp_path) -> None:
         "daily-receipt-2026-06-29-written": "2026-06-29 日结回执已生成。",
         "night-evolution-2026-06-29-actions-3-staged": "2026-06-29 夜间进化草案已生成，包含 3 个动作。",
         "route-map-2026-06-29-written": "2026-06-29 三题型覆盖图已生成。",
+        "rag-brief-2026-06-29-written": "2026-06-29 RAG 控制简报已生成。",
         "state-export-2026-06-29-written": "2026-06-29 本地状态 JSON 已导出。",
         "vault-sync-written-2-skipped-1": "记忆卡已同步到 Obsidian：写入 2 个，跳过 1 个。",
         "raw-vault-sync-written-1-skipped-0": "三源材料已同步到 Obsidian：写入 1 个，跳过 0 个。",
@@ -501,6 +505,27 @@ def test_workbench_can_write_and_serve_route_map(tmp_path) -> None:
     assert "选择题" in html
     assert "论文题" in html
     assert 'href="/reports/routes/2026-06-29.html"' in home
+
+
+def test_workbench_can_write_and_serve_rag_brief(tmp_path) -> None:
+    root = tmp_path / "demo"
+    app = WorkbenchApp(WorkbenchConfig(root=root, as_of=date(2026, 6, 29)))
+    app.initialize()
+    app.add_memory_card(
+        parse_qs(
+            "card_type=scenario&title=订单高并发质量场景&prompt=如何写 3 秒明确结果"
+            "&answer=写成刺激、响应、响应度量&fronts=case&next_due=2026-06-29"
+        )
+    )
+
+    result = app.write_rag_brief(parse_qs("as_of=2026-06-29&query=高并发 3 秒"))
+    html = app.render_report_file("rag/2026-06-29.html")
+    home = app.render_home()
+
+    assert result.as_of == date(2026, 6, 29)
+    assert "RAG 记忆与进步控制" in html
+    assert "订单高并发质量场景" in html
+    assert 'href="/reports/rag/2026-06-29.html"' in home
 
 
 def test_workbench_can_export_and_serve_local_state(tmp_path) -> None:

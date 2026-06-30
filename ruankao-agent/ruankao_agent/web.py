@@ -19,6 +19,13 @@ from .export_state import state_export_path, write_state_export as write_local_s
 from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
 from .memory import MemoryDiagnostic, diagnose_memory
+from .rag import (
+    DEFAULT_RAG_QUERY,
+    build_rag_brief,
+    rag_brief_html_path,
+    rag_brief_to_payload,
+    write_rag_brief as write_local_rag_brief,
+)
 from .receipts import daily_receipt_html_path, write_daily_receipt
 from .route_map import route_map_html_path, write_route_map
 from .storage import MemoryCard, PracticeSession, RuankaoStore
@@ -216,6 +223,11 @@ class WorkbenchApp:
         route_date = _optional_date(_one(form, "as_of")) or self.today
         return write_route_map(self.root, as_of=route_date)
 
+    def write_rag_brief(self, form: Mapping[str, list[str]]):
+        rag_date = _optional_date(_one(form, "as_of")) or self.today
+        query = _one(form, "query", DEFAULT_RAG_QUERY)
+        return write_local_rag_brief(self.root, query=query, as_of=rag_date)
+
     def write_state_export(self, form: Mapping[str, list[str]]):
         export_date = _optional_date(_one(form, "as_of")) or self.today
         return write_local_state_export(self.root, as_of=export_date)
@@ -276,11 +288,20 @@ class WorkbenchApp:
             if route_path.exists()
             else ""
         )
+        rag_path = rag_brief_html_path(self.root, self.today)
+        rag_link = (
+            f'<a class="button secondary" href="/reports/rag/{escape(self.today.isoformat())}.html">打开 RAG 控制简报</a>'
+            if rag_path.exists()
+            else ""
+        )
         export_path = state_export_path(self.root, self.today)
         export_link = (
             f'<a class="button secondary" href="/exports/state-{escape(self.today.isoformat())}.json">打开本地状态导出</a>'
             if export_path.exists()
             else ""
+        )
+        rag_brief = rag_brief_to_payload(
+            build_rag_brief(store, query=DEFAULT_RAG_QUERY, as_of=self.today, limit=4)
         )
         primary_action = _today_primary_action(
             due_cards=due_cards,
@@ -841,6 +862,7 @@ class WorkbenchApp:
       <a href="#today">今日闭环</a>
       <a href="#cheko">学习信号</a>
       <a href="#practice">练习记录</a>
+      <a href="#rag">RAG 控制</a>
       <a href="#study-turn">学习回合</a>
       <a href="#capture">三源录入</a>
       <a href="#cards">记忆卡</a>
@@ -886,15 +908,26 @@ class WorkbenchApp:
                 <button type="submit">生成三题型覆盖图</button>
                 <div class="operation-hint">检查选择、案例、论文是否失衡。</div>
               </form>
+              <form class="operation-form" method="post" action="/rag/brief">
+                <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
+                <input type="hidden" name="query" value="{escape(DEFAULT_RAG_QUERY)}">
+                <button type="submit">生成 RAG 控制简报</button>
+                <div class="operation-hint">召回记忆证据，并指出进步闸门。</div>
+              </form>
               <form class="operation-form" method="post" action="/state/export">
                 <input type="hidden" name="as_of" value="{escape(self.today.isoformat())}">
                 <button type="submit">导出本地状态 JSON</button>
                 <div class="operation-hint">保存本地状态，方便迁移、审计和回滚。</div>
               </form>
             </div>
-            <div class="footer-actions">{receipt_link}{evolution_link}{route_link}{export_link}</div>
+            <div class="footer-actions">{receipt_link}{evolution_link}{route_link}{rag_link}{export_link}</div>
           </div>
         </div>
+      </section>
+
+      <section id="rag">
+        <h2>RAG 记忆控制</h2>
+        {_rag_panel(rag_brief)}
       </section>
 
       <section id="cheko">
@@ -1316,6 +1349,10 @@ def _handler_for(app: WorkbenchApp):
                     result = app.write_route_map(form)
                     self._redirect(f"/?message=route-map-{result.as_of.isoformat()}-written")
                     return
+                if self.path == "/rag/brief":
+                    result = app.write_rag_brief(form)
+                    self._redirect(f"/?message=rag-brief-{result.as_of.isoformat()}-written")
+                    return
                 if self.path == "/state/export":
                     result = app.write_state_export(form)
                     self._redirect(f"/?message=state-export-{result.as_of.isoformat()}-written")
@@ -1494,6 +1531,9 @@ def _message_text(message: str) -> str:
     if message.startswith("route-map-") and message.endswith("-written"):
         day = message.removeprefix("route-map-").removesuffix("-written")
         return f"{day} 三题型覆盖图已生成。"
+    if message.startswith("rag-brief-") and message.endswith("-written"):
+        day = message.removeprefix("rag-brief-").removesuffix("-written")
+        return f"{day} RAG 控制简报已生成。"
     if message.startswith("state-export-") and message.endswith("-written"):
         day = message.removeprefix("state-export-").removesuffix("-written")
         return f"{day} 本地状态 JSON 已导出。"
@@ -1530,6 +1570,81 @@ def _today_primary_reason(reasons: tuple[str, ...], due_cards: list[MemoryCard])
     if due_cards:
         return "到期复习是今天最稳定的提分动作。"
     return "当前风险信号正常，继续保持最小闭环。"
+
+
+def _rag_panel(brief: dict[str, object]) -> str:
+    gates = brief.get("progress_gates", [])
+    hits = brief.get("hits", [])
+    assert isinstance(gates, list)
+    assert isinstance(hits, list)
+    gate = gates[0] if gates else None
+    hit = hits[0] if hits else None
+    return f"""<div class="split">
+  <div>
+    <h3>建议动作</h3>
+    <div class="list">
+      <div class="item">
+        <div class="item-title">{escape(str(brief.get("recommended_action", "维持今日闭环。")))}</div>
+        <div class="meta">查询：{escape(str(brief.get("query", "")))}</div>
+      </div>
+      {_rag_gate_item(gate)}
+    </div>
+  </div>
+  <div>
+    <h3>最高召回证据</h3>
+    <div class="list">{_rag_hit_item(hit)}</div>
+  </div>
+</div>"""
+
+
+def _rag_gate_item(gate: object) -> str:
+    if not isinstance(gate, dict):
+        return '<div class="item">暂无进步闸门。</div>'
+    return f"""<div class="item">
+  <div class="item-title"><span>{escape(str(gate.get("title", "")))}</span><span>{escape(_gate_severity_label(gate.get("severity")))}</span></div>
+  <div>{escape(str(gate.get("reason", "")))}</div>
+  <div class="meta">{escape(str(gate.get("action", "")))}</div>
+</div>"""
+
+
+def _rag_hit_item(hit: object) -> str:
+    if not isinstance(hit, dict):
+        return '<div class="item">暂无召回证据。</div>'
+    return f"""<div class="item">
+  <div class="item-title"><span>{escape(str(hit.get("title", "")))}</span><span>{escape(str(hit.get("source_label", "")))}</span></div>
+  <div>{escape(str(hit.get("snippet", "")))}</div>
+  <div class="meta-row">
+    <span>{escape(str(hit.get("ref", "")))}</span>
+    <span>得分：{escape(str(hit.get("score", "")))}</span>
+    <span>状态：{escape(_rag_status_label(hit.get("progress_status")))}</span>
+  </div>
+  <div class="meta">{escape(str(hit.get("action_hint", "")))}</div>
+</div>"""
+
+
+def _gate_severity_label(value: object) -> str:
+    return {
+        "red": "红色闸门",
+        "yellow": "黄色闸门",
+        "green": "绿色",
+    }.get(str(value), str(value))
+
+
+def _rag_status_label(value: object) -> str:
+    return {
+        "leech": "反复低分",
+        "unstable": "不稳定",
+        "due": "到期",
+        "untested": "未检验",
+        "stable": "稳定",
+        "low_score": "练习低分",
+        "needs_review": "需要复盘",
+        "recorded": "已记录",
+        "raw": "原始",
+        "extracted": "已提炼",
+        "tested": "已检验",
+        "promoted": "已升格",
+    }.get(str(value), str(value))
 
 
 def _front_overview(

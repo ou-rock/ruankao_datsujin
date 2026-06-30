@@ -25,6 +25,7 @@ cd /Users/pedan/Documents/ruankao
 - 种入七条核心原则，补齐原则记忆底座。
 - 生成当天日结回执。
 - 生成选择题、案例题、论文题三题型路线图。
+- 生成 RAG 记忆与进步控制简报。
 - 生成仅暂存的夜间进化计划。
 - 同步记忆卡到 Obsidian。
 - 同步 Mein / Du / Uns 三源材料到 Obsidian。

@@ -71,6 +71,9 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
     assert payload["source_counts"] == {"mein": 1, "uns": 1}
     assert payload["front_counts"]["choice"] == 4
     assert payload["front_counts"]["essay"] == 1
+    assert payload["rag_brief"]["recommended_action"]
+    assert payload["rag_brief"]["hits"]
+    assert payload["rag_brief"]["progress_gates"]
 
     html = result.html_path.read_text(encoding="utf-8")
     assert "日结回执 2026-06-29" in html
@@ -80,6 +83,9 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
     assert "质量属性场景" in html
     assert "错题归因完成" in html
     assert "记忆诊断" in html
+    assert "RAG 控制" in html
+    assert "进步闸门" in html
+    assert "召回证据" in html
     assert "最近练习" in html
     assert "今晚焦点" in html
     assert "今晚先清空到期复习" in html

@@ -15,6 +15,7 @@ from .learning import ensure_learning_resources
 from .loop import build_daily_loop_snapshot, status_line
 from .notebooklm import DEFAULT_NOTEBOOK_SOURCE
 from .principles import seed_core_principles
+from .rag import write_rag_brief
 from .receipts import write_daily_receipt
 from .route_map import write_route_map
 from .study import capture_study_turn
@@ -277,6 +278,30 @@ def cmd_route_map(root: Path, *, as_of: date | None = None) -> int:
     return 0
 
 
+def cmd_rag_query(
+    root: Path,
+    *,
+    query: str,
+    fronts: Sequence[str] = (),
+    as_of: date | None = None,
+    limit: int = 6,
+) -> int:
+    result = write_rag_brief(
+        root,
+        query=query,
+        fronts=_parse_fronts(fronts),
+        as_of=as_of,
+        limit=limit,
+    )
+    print(f"RAG 记忆与进步控制已生成：{result.html_path}。")
+    print(f"建议动作：{result.recommended_action}")
+    print(
+        f"html={result.html_path} json={result.json_path} "
+        f"hits={result.hit_count} gates={result.gate_count}"
+    )
+    return 0
+
+
 def cmd_vault_sync(root: Path, *, overwrite: bool = False) -> int:
     store = _open_store(root)
     cards = store.list_memory_cards() if store is not None else []
@@ -426,6 +451,19 @@ def build_parser() -> argparse.ArgumentParser:
     route_parser.add_argument("--root", required=True, type=Path)
     route_parser.add_argument("--as-of")
 
+    rag_parser = subparsers.add_parser("rag-query")
+    rag_parser.add_argument("--root", required=True, type=Path)
+    rag_parser.add_argument("--query", required=True)
+    rag_parser.add_argument("--as-of")
+    rag_parser.add_argument("--limit", default=6, type=int)
+    rag_parser.add_argument(
+        "--front",
+        choices=("choice", "case", "essay"),
+        action="append",
+        default=[],
+        dest="fronts",
+    )
+
     vault_parser = subparsers.add_parser("vault-sync")
     vault_parser.add_argument("--root", required=True, type=Path)
     vault_parser.add_argument("--overwrite", action="store_true")
@@ -489,6 +527,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_night_evolve(args.root, as_of=_parse_date(args.as_of))
     if args.command == "route-map":
         return cmd_route_map(args.root, as_of=_parse_date(args.as_of))
+    if args.command == "rag-query":
+        return cmd_rag_query(
+            args.root,
+            query=args.query,
+            fronts=args.fronts,
+            as_of=_parse_date(args.as_of),
+            limit=args.limit,
+        )
     if args.command == "vault-sync":
         return cmd_vault_sync(args.root, overwrite=args.overwrite)
     if args.command == "raw-vault-sync":

@@ -10,6 +10,7 @@ from typing import Callable, Iterable
 
 from .loop import build_daily_loop_snapshot, status_line
 from .memory import MemoryDiagnostic, diagnose_memory
+from .rag import DEFAULT_RAG_QUERY, build_rag_brief, rag_brief_to_payload
 from .storage import MemoryCard, PracticeSession, RawRecord, ReviewLog, RuankaoStore
 
 
@@ -46,6 +47,12 @@ def write_daily_receipt(root: Path | str, *, as_of: date | None = None) -> Daily
     cheko_cards = [card for card in cards if card.title.startswith("Cheko")]
     cheko_due_cards = [card for card in cheko_cards if card.next_due is not None and card.next_due <= day]
     diagnostics = diagnose_memory(cards, review_logs, as_of=day)
+    rag_brief = build_rag_brief(
+        store,
+        query=DEFAULT_RAG_QUERY,
+        as_of=day,
+        limit=4,
+    )
 
     snapshot = build_daily_loop_snapshot(
         as_of=day,
@@ -71,6 +78,7 @@ def write_daily_receipt(root: Path | str, *, as_of: date | None = None) -> Daily
         due_cards=due_cards,
         cheko_cards=cheko_cards,
         cheko_due_cards=cheko_due_cards,
+        rag_brief=rag_brief_to_payload(rag_brief),
     )
 
     json_path = daily_receipt_json_path(root_path, day)
@@ -102,6 +110,7 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
     recent_practice = payload["recent_practice"]
     memory_diagnostics = payload["memory_diagnostics"]
     practice_front_counts = payload["practice_front_counts"]
+    rag_brief = payload["rag_brief"]
     assert isinstance(source_counts, dict)
     assert isinstance(card_type_counts, dict)
     assert isinstance(front_counts, dict)
@@ -111,6 +120,7 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
     assert isinstance(recent_practice, list)
     assert isinstance(memory_diagnostics, list)
     assert isinstance(practice_front_counts, dict)
+    assert isinstance(rag_brief, dict)
 
     return f"""<!doctype html>
 <html lang="zh-CN">
@@ -286,6 +296,10 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
       <div class="list">{_memory_diagnostics(memory_diagnostics)}</div>
     </section>
     <section>
+      <h2>RAG 控制</h2>
+      {_rag_brief(rag_brief)}
+    </section>
+    <section>
       <h2>最近材料</h2>
       <div class="list">{_recent_records(recent_records)}</div>
     </section>
@@ -327,6 +341,7 @@ def _receipt_payload(
     due_cards: list[MemoryCard],
     cheko_cards: list[MemoryCard],
     cheko_due_cards: list[MemoryCard],
+    rag_brief: dict[str, object],
 ) -> dict[str, object]:
     metrics = {
         "raw_records": len(records),
@@ -355,6 +370,7 @@ def _receipt_payload(
         "review_backlog_ratio": review_backlog_ratio,
         "metrics": metrics,
         "night_focus": _night_focus(metrics, diagnostics),
+        "rag_brief": rag_brief,
         "source_counts": _count(record.source.value for record in records),
         "card_type_counts": _count(card.card_type.value for card in cards),
         "front_counts": _count(front.value for card in cards for front in card.fronts),
@@ -543,6 +559,58 @@ def _memory_diagnostics(diagnostics: list[object]) -> str:
 </div>"""
         )
     return "".join(items)
+
+
+def _rag_brief(brief: dict[object, object]) -> str:
+    gates = brief.get("progress_gates", [])
+    hits = brief.get("hits", [])
+    assert isinstance(gates, list)
+    assert isinstance(hits, list)
+    gate = gates[0] if gates else None
+    hit = hits[0] if hits else None
+    gate_html = (
+        _rag_gate(gate)
+        if isinstance(gate, dict)
+        else '<div class="item">暂无进步闸门。</div>'
+    )
+    hit_html = (
+        _rag_hit(hit)
+        if isinstance(hit, dict)
+        else '<div class="item">暂无召回证据。</div>'
+    )
+    return f"""<div class="list">
+  <div class="item focus">
+    <span>建议动作</span>
+    <strong>{escape(str(brief.get("recommended_action", "维持今日闭环。")))}</strong>
+    <p>{escape(str(brief.get("query", "")))}</p>
+  </div>
+  {gate_html}
+  {hit_html}
+</div>"""
+
+
+def _rag_gate(gate: dict[object, object]) -> str:
+    return f"""<div class="item">
+  <strong>进步闸门：{escape(str(gate.get("title", "")))}</strong>
+  <div>{escape(str(gate.get("reason", "")))}</div>
+  <div class="meta-row">
+    <span>{escape(str(gate.get("severity", "")))}</span>
+    <span>{escape(str(gate.get("kind", "")))}</span>
+  </div>
+  <div>{escape(str(gate.get("action", "")))}</div>
+</div>"""
+
+
+def _rag_hit(hit: dict[object, object]) -> str:
+    return f"""<div class="item">
+  <strong>召回证据：{escape(str(hit.get("title", "")))}</strong>
+  <div>{escape(str(hit.get("snippet", "")))}</div>
+  <div class="meta-row">
+    <span>{escape(str(hit.get("source_label", "")))}</span>
+    <span>{escape(str(hit.get("ref", "")))}</span>
+    <span>得分：{escape(str(hit.get("score", "")))}</span>
+  </div>
+</div>"""
 
 
 def _recent_cards(cards: list[object]) -> str:

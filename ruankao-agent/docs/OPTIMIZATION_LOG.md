@@ -3215,3 +3215,55 @@ the real local route.
 
 - Learning tests assert tracked HTML pages no longer leak stale English labels.
 - Process and command-doc tests assert the browser-act UX verification rule.
+
+## 2026-06-30 Round 108 - Add Local RAG Memory Progress Control
+
+### Learner Friction
+
+The project already had durable memory, reviews, practice sessions, and
+Mein/Du/Uns, but no retrieval layer that could use those facts to control the
+next learning move. A learner could search or review, but the system did not yet
+combine evidence recall with progress gates.
+
+### Grilling Decisions
+
+- RAG is not a second memory store. SQLite remains the fact source.
+- First implementation stays local and deterministic: keyword, Chinese n-gram,
+  exam-front, and progress weighting before any embedding backend.
+- Every RAG brief must show both `召回证据` and `进步闸门`.
+- Progress gates outrank explanation: weak memory, due review, front gaps, low
+  practice scores, and raw-material backlog define what should happen next.
+
+### Change
+
+- Added `ruankao_agent.rag`.
+- Added `python3 -m ruankao_agent.cli rag-query`.
+- Added `/ruankao-rag-query`.
+- Added `docs/RAG_MEMORY_PROGRESS.md`.
+- Added RAG control to daily receipts, the workbench, and the daily cycle script.
+- Added tests for retrieval, progress gates, CLI output, daily receipts, command
+  docs, process docs, design contract, workbench rendering, and the daily script.
+
+### BrowserAct Evidence
+
+- Started a temporary workbench at `http://127.0.0.1:8781/`.
+- Opened `/#rag` with browser-act using the configured Chrome verification
+  browser.
+- Confirmed the workbench shows `RAG 记忆控制`, `建议动作`, a red progress gate,
+  and `最高召回证据`.
+- Clicked `生成 RAG 控制简报`.
+- Confirmed the status message `2026-06-30 RAG 控制简报已生成。`.
+- Opened `/reports/rag/2026-06-30.html` and verified the HTML contains
+  `进步闸门`, `召回证据`, and `回答契约`.
+
+### UX Rule Captured
+
+A RAG system for learning is not useful if it only retrieves similar text. It
+must retrieve the most relevant evidence and then force the learner back through
+the highest-risk progress gate.
+
+### Validation
+
+- `python3 -m pytest tests/test_rag.py tests/test_cli.py tests/test_daily_receipt.py tests/test_web_workbench.py tests/test_daily_cycle_script.py tests/test_command_docs.py tests/test_process_docs.py tests/test_design_contract.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`

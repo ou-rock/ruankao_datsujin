@@ -286,3 +286,53 @@ def test_cli_raw_vault_sync_exports_source_records(tmp_path) -> None:
     assert "三源材料已同步到 Obsidian：写入 1 个，跳过 0 个。" in result.stdout
     assert "written=1" in result.stdout
     assert len(list((root / "vault" / "30-du").glob("*.md"))) == 1
+
+
+def test_cli_rag_query_writes_control_brief(tmp_path) -> None:
+    root = tmp_path / "demo"
+    subprocess.run(
+        [sys.executable, "-m", "ruankao_agent.cli", "init", "--root", str(root), "--as-of", "2026-06-29"],
+        cwd=".",
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    store = RuankaoStore(root / "data" / "ruankao.db")
+    store.initialize()
+    store.add_memory_card(
+        card_type=CardType.SCENARIO,
+        title="质量属性场景",
+        prompt="如何拆刺激、响应和响应度量？",
+        answer="先写刺激源、刺激、环境、制品、响应、响应度量。",
+        fronts=(ExamFront.CASE,),
+        next_due=date(2026, 6, 29),
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ruankao_agent.cli",
+            "rag-query",
+            "--root",
+            str(root),
+            "--query",
+            "质量属性 响应度量",
+            "--front",
+            "case",
+            "--as-of",
+            "2026-06-29",
+        ],
+        cwd=".",
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "RAG 记忆与进步控制已生成：" in result.stdout
+    assert "建议动作：" in result.stdout
+    assert "hits=" in result.stdout
+    assert "gates=" in result.stdout
+    assert (root / "reports" / "rag" / "2026-06-29.html").exists()
+    assert (root / "data" / "rag" / "2026-06-29.json").exists()

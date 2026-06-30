@@ -14,40 +14,46 @@ step() {
 
 print "软考达人每日闭环：$DAY"
 
-step "1/8 Cheko 弱点入队"
+step "1/9 Cheko 弱点入队"
 python3 -m ruankao_agent.cli cheko-seed-cards \
   --root "$AGENT_ROOT" \
   --next-due "$DAY"
 
-step "2/8 核心原则入队"
+step "2/9 核心原则入队"
 python3 -m ruankao_agent.cli seed-principles \
   --root "$AGENT_ROOT" \
   --next-due "$DAY"
 
-step "3/8 生成日结回执"
+step "3/9 生成日结回执"
 python3 -m ruankao_agent.cli daily-receipt \
   --root "$AGENT_ROOT" \
   --as-of "$DAY"
 
-step "4/8 生成三题型覆盖图"
+step "4/9 生成三题型覆盖图"
 python3 -m ruankao_agent.cli route-map \
   --root "$AGENT_ROOT" \
   --as-of "$DAY"
 
-step "5/8 生成夜间进化草案"
+step "5/9 生成 RAG 控制简报"
+python3 -m ruankao_agent.cli rag-query \
+  --root "$AGENT_ROOT" \
+  --query "今天如何用记忆、错因和三题型进步信号安排学习？" \
+  --as-of "$DAY"
+
+step "6/9 生成夜间进化草案"
 python3 -m ruankao_agent.cli night-evolve \
   --root "$AGENT_ROOT" \
   --as-of "$DAY"
 
-step "6/8 同步记忆卡到 Obsidian"
+step "7/9 同步记忆卡到 Obsidian"
 python3 -m ruankao_agent.cli vault-sync \
   --root "$AGENT_ROOT"
 
-step "7/8 同步三源材料到 Obsidian"
+step "8/9 同步三源材料到 Obsidian"
 python3 -m ruankao_agent.cli raw-vault-sync \
   --root "$AGENT_ROOT"
 
-step "8/8 导出本地状态"
+step "9/9 导出本地状态"
 python3 -m ruankao_agent.cli export-state \
   --root "$AGENT_ROOT" \
   --as-of "$DAY"

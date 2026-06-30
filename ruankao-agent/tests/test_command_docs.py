@@ -21,11 +21,17 @@ def test_daily_command_docs_hide_internal_stage_labels() -> None:
     night_evolve = (COMMAND_ROOT / "ruankao-night-evolve.md").read_text(encoding="utf-8")
     daily_close = (COMMAND_ROOT / "ruankao-daily-close.md").read_text(encoding="utf-8")
     learning = (COMMAND_ROOT / "ruankao-learning.md").read_text(encoding="utf-8")
+    rag_query = (COMMAND_ROOT / "ruankao-rag-query.md").read_text(encoding="utf-8")
 
     assert "仅暂存的夜间进化草案" in daily_cycle
+    assert "RAG 记忆与进步控制简报" in daily_cycle
     assert "只生成暂存计划" in night_evolve
-    assert "网页回执、JSON 数据路径" in daily_close
+    assert "网页回执" in daily_close
+    assert "JSON 数据路径" in daily_close
+    assert "RAG 控制简报" in daily_close
     assert "学习台网页资料" in learning
+    assert "SQLite 仍是唯一事实源" in rag_query
+    assert "召回证据、进步闸门、建议动作和回答契约" in rag_query
     assert "stage-only" not in daily_cycle
     assert "stage-only" not in night_evolve
     assert "staged plan" not in night_evolve

@@ -13,6 +13,7 @@
 - Obsidian vault 生成与同步。
 - 本地网页工作台。
 - 学习台与静态 HTML 总图。
+- RAG 记忆与进步控制简报。
 - NotebookLM 外部研究源元数据。
 - 已搬入的上游 skill 参考。
 
@@ -46,11 +47,12 @@ RUANKAO_WORKBENCH_PORT=8770 ./start-workbench.command
 /ruankao-architect-review <question-or-draft>
 /ruankao-study-mode <topic-or-front>
 /ruankao-ux-check <page-or-flow>
+/ruankao-rag-query <query-or-front>
 ```
 
 每日闭环会依次运行 Cheko 弱点入队、核心原则入队、日结回执、三题型覆盖图、
-仅暂存夜间进化草案、记忆卡 Obsidian 同步、Mein/Du/Uns 三源材料同步，以及本地
-JSON 状态导出。
+RAG 记忆与进步控制简报、仅暂存夜间进化草案、记忆卡 Obsidian 同步、
+Mein/Du/Uns 三源材料同步，以及本地 JSON 状态导出。
 
 学习模式是一问一答的苏格拉底式对话：学习者答案进入 Mein，Codex 的复述、纠偏、
 结构化和追问进入 Du。夜间进化默认只生成暂存草案，不直接改 live skill 或学习规则。
