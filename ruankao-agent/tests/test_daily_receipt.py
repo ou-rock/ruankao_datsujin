@@ -82,7 +82,8 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
     assert "系统架构设计错题" in html
     assert "70%" in html
     assert "最近复习" in html
-    assert "评分=4" in html
+    assert "评分：4" in html
+    assert "评分=4" not in html
     assert "得分：7/10" in html
     assert "耗时：18分钟" in html
     assert "得分=7/10" not in html

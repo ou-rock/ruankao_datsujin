@@ -484,7 +484,12 @@ def _recent_reviews(reviews: list[object]) -> str:
         items.append(
             f"""<div class="item">
   <strong>复习 #{escape(str(item["id"]))} 卡片 #{escape(str(item["card_id"]))}</strong>
-  <div class="meta">日期={escape(str(item["reviewed_on"]))} | 评分={escape(str(item["grade"]))} | 强度={escape(str(item["retrieval_strength"]))} | 下次={escape(str(item["next_due"]))}</div>
+  <div class="meta-row">
+    <span>日期：{escape(str(item["reviewed_on"]))}</span>
+    <span>评分：{escape(str(item["grade"]))}</span>
+    <span>强度：{escape(str(item["retrieval_strength"]))}</span>
+    <span>下次：{escape(str(item["next_due"]))}</span>
+  </div>
 </div>"""
         )
     return "".join(items)

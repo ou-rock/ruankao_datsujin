@@ -2300,3 +2300,31 @@ string.
 - `python3 -m pytest tests/test_daily_receipt.py -q`
 - Tests assert the receipt shows `类型：概念卡` and no longer renders
   `类型=概念卡`.
+
+## 2026-06-30 Round 075 - Humanize Receipt Review Metadata
+
+### Learner Friction
+
+The daily receipt's recent-review entries still rendered review metadata as
+`日期=... | 评分=... | 强度=... | 下次=...`. Review quality is central to the
+memory strategy, so those values should be visually chunked.
+
+### Change
+
+- Reused the daily receipt `meta-row` chip style.
+- Changed recent-review metadata into separate chips:
+  - reviewed date
+  - grade
+  - retrieval strength
+  - next due date
+- Kept the receipt JSON unchanged.
+
+### UX Rule Captured
+
+Review logs should make the next memory action visible. Scores and due dates are
+state, not decorative text.
+
+### Validation
+
+- `python3 -m pytest tests/test_daily_receipt.py -q`
+- Tests assert the receipt shows `评分：4` and no longer renders `评分=4`.
