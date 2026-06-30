@@ -118,14 +118,24 @@
     1.  **触发阶段**：当用户在任一前端（Obsidian 保存、Webhook 事件或 Discord 回话）输入散装笔记或人话时，Harness 中的 Python 自行捕获。
     2.  **调用规整模型**：中端调用低成本、高并发的大模型（如 Gemini Flash），加载专用 Skill `ruankao-semantic-parser`。
     3.  **JSON 契约化输出**：小模型依据规范 Schema 枚举，将散装字段映射为 JSON 字符串并返回给 Python 中间件。
-*   **物理层双重栅栏校验（Harness Checklist Gate）**：
-    1.  **第一层：认知拦截**。大模型若输出非规范 JSON，中间件直接拦回，重试或记录错误。
-    2.  **第二层：物理类型校验**。中端 Python 校验器运行强类型解析（使用数据模型对 JSON 字段强制反序列化，如校验 score 为浮点数、front 为合规 Enum 值）。若校验失败，直接抛错或写回本地备份，严防脏数据污染 SQLite 唯一真理源。
+*   **物理层双重栅栏校验（Checklist Gate）**：
+    1.  **第一层：认知校验**。如果输出非规范 JSON，硬性拦回重算。
+    2.  **第二层：物理类型校验**。Python 本地强类型解析（Enum 映射匹配和 Float 等强限制），拦截不合规的脏数据，保障事实数据绝对纯净。
     3.  **第三层：容灾降级（Heuristic Fallback）**。
         *   若用户输入的是**日常思考或碎片化知识**：当小模型解析失败时，主控制器自动将其降级为 `SourceIdentity.MEIN` 的 `raw`（原始）材料入库。由于 `promotion_status` 仍为 `raw`，下一次触发同步时，该材料会被列入 RAG 控制简报的“三源材料未升格进步闸门”，由 RAG 作为黄色警告推送到前台。
         *   若用户输入的是**关键打卡得分纪录（带练习意图）**：在此场景下数据缺失会导致红黄绿灯计算失真，系统立即执行“回弹拦截（Fallback Rejection）”，通过当前会话通道（如 Discord）向用户发送明确的指令纠正提示及输入模板，拒绝写入。
 
-### 需求七：核心中脑 Payload 拼装与反馈机制 (Core Brain Payload & Response Routing)
+### 需求七：夜间进化自动扫描与人工确认门禁 (Nightly Evolution Ingestion & Merge Gate)
+*   **物理动作隔离**：夜间进化自动编译模块定位为**规划器而不是物理执行器**。
+*   **自动扫描规划**：
+    1.  中端 Scheduler 在每日深夜（24:00）自动无感唤起 `night-evolve` 模块。
+    2.  大语言模型基于今日生成的 receipt 回执及错题，自动分析出所有卡片修改建议、重置复习系数以及原则网络追加关联动作。
+    3.  上述动作全部以暂存计划形势导出：`evolution/staged/<date>.json`，底层 SQLite 绝不做任何静默数据写入（零脏数据污染风险）。
+*   **人工审查合入 (Merge Gate)**：
+    1.  **呈现机制**：Harness 在网页工作台首屏或向 Discord 投递阶段，将暂存的微动计划渲染为可读的变更 Diff 对齐面板（包含“原卡问题/建议修改问题，原卡答案/建议答案”等）。
+    2.  **确认机制**：系统仅在收到用户手动在控制台点击 `Approve & Merge` 后，才由 Harness 触发本地的 Python 脚本，以事务性保证（Atomic SQL transaction）将变更真正刷入 `ruankao.db` 底座并更新同步至 Obsidian，以此作为每次学习的二次记忆复盘闭环。
+
+### 需求八：核心中脑 Payload 拼装与反馈机制 (Core Brain Payload & Response Routing)
     *   **核心中脑 Payload 生成者**：主决策大模型（Codex/推理脑）的推理 Payload **必须由中端 Harness Shell 的主编译器自包含装配（Self-contained Compilation）**。
     *   **装配装料源**：
         1.  中端的 RAG 检索引擎：提供最高相关度及需要最急迫处理的Leach/到期 `RagChunks` 证据。
