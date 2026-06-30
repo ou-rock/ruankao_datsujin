@@ -1,0 +1,201 @@
+from __future__ import annotations
+
+
+LEARNING_PAGE_STYLE = r""":root {
+      color-scheme: light;
+      --ink: #172026;
+      --muted: #5e6b73;
+      --line: #cfd8dc;
+      --paper: #ffffff;
+      --band: #f6f8f6;
+      --accent: #0f766e;
+      --amber: #92400e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: #fbfcfb;
+      line-height: 1.58;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 24px 20px 48px;
+    }
+    .hero {
+      border-bottom: 1px solid var(--line);
+      padding: 12px 0 20px;
+      margin-bottom: 18px;
+    }
+    .eyebrow {
+      margin: 0 0 6px;
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0;
+      font-weight: 700;
+    }
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+      line-height: 1.3;
+    }
+    h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      line-height: 1.3;
+    }
+    .lead {
+      max-width: 820px;
+      color: var(--muted);
+      margin: 10px 0 0;
+    }
+    section {
+      border: 1px solid var(--line);
+      background: var(--paper);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--band);
+      padding: 12px;
+    }
+    .panel p { margin: 0 0 8px; }
+    .panel p:last-child { margin-bottom: 0; }
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--band);
+      padding: 12px;
+      min-height: 78px;
+    }
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .metric strong {
+      display: block;
+      font-size: 20px;
+      line-height: 1.25;
+    }
+    .strong {
+      font-weight: 700;
+      color: #12312e;
+    }
+    .route-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .route-step {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--band);
+      padding: 12px;
+      min-height: 96px;
+    }
+    .route-step span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+    .route-step strong {
+      display: block;
+      color: #12312e;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+    .route-step p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .button {
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      background: var(--accent);
+      color: #fff;
+      padding: 9px 12px;
+      text-decoration: none;
+      font-weight: 700;
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+    }
+    .button.secondary {
+      background: #fff;
+      color: #063f3b;
+      border-color: var(--line);
+    }
+    .timeline {
+      display: grid;
+      gap: 10px;
+    }
+    .day {
+      display: grid;
+      grid-template-columns: 78px minmax(0, 1fr);
+      gap: 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 12px;
+      background: var(--band);
+    }
+    .day-index {
+      color: var(--amber);
+      font-weight: 800;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chips span {
+      border: 1px solid var(--line);
+      background: var(--band);
+      border-radius: 999px;
+      padding: 6px 9px;
+      font-weight: 700;
+      color: #12312e;
+    }
+    a { color: var(--accent); }
+    li + li { margin-top: 6px; }
+    @media (max-width: 720px) {
+      main { padding: 18px 14px 40px; }
+      h1 { font-size: 25px; }
+      .route-strip { grid-template-columns: 1fr; }
+      .day { grid-template-columns: 1fr; }
+    }"""

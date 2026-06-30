@@ -3872,3 +3872,43 @@ Web, CLI, or report rendering.
 - Verified the rendered report still shows `RAG 记忆与进步控制`, `进步闸门`,
   `召回证据`, `回答契约`, `sqlite-fts5-hybrid-progress`, `memory:1#c1`, and
   `fts_bm25`.
+
+## 2026-06-30 Round 124 - Split Learning Desk Style Boundary
+
+### Learner Friction
+
+`learning.py` mixed generated study content, Cheko snapshot data, page helpers,
+and a large CSS block. The file was still over 1000 lines, so changing learning
+content required scanning through presentation styling.
+
+### Change
+
+- Added `ruankao_agent/learning_style.py` for the learning desk CSS constant.
+- Changed `_page()` in `learning.py` to inject `LEARNING_PAGE_STYLE`.
+- Reduced `learning.py` from roughly 1060 lines to roughly 860 lines.
+- Updated the architecture dependency contract and boundary documentation.
+- Kept generated learning URLs, page text, Cheko snapshot behavior, and
+  overwrite semantics unchanged.
+
+### Architecture Rule Captured
+
+`learning_style.py` owns learning-page CSS only. It must not save study content,
+Cheko snapshot data, generated files, or learning decisions. `learning.py`
+continues to own learning resource generation until static data and templates
+are split in later rounds.
+
+### Validation
+
+- `python3 -m py_compile ruankao_agent/learning.py ruankao_agent/learning_style.py`
+- `python3 -m pytest tests/test_architecture_boundaries.py tests/test_learning.py -q`
+- `python3 -m pytest -q`
+- `git diff --check`
+
+### BrowserAct Evidence
+
+- Generated a temporary learning desk under `/tmp/ruankao-learning-style`.
+- Served the temporary workbench at `http://127.0.0.1:8894/`.
+- Opened `http://127.0.0.1:8894/learning/` through browser-act.
+- Verified the rendered page still shows `软考达人学习台`, the four primary
+  buttons, `战役导航`, `芝士架构同步信号`, `今日三任务`, and the CSS variable
+  `--accent: #0f766e`.
