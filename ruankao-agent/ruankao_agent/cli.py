@@ -21,6 +21,7 @@ from .receipts import write_daily_receipt
 from .route_map import write_route_map
 from .semantic_ingest import ingest_semantic_input
 from .study import capture_study_turn
+from .sync_alerts import SyncSentinelMode, run_sync_sentinel
 from .vault import sync_memory_cards_to_vault, sync_raw_records_to_vault
 from .web import serve_workbench
 
@@ -315,6 +316,22 @@ def cmd_semantic_ingest(
     return 0
 
 
+def cmd_sync_sentinel(
+    root: Path,
+    *,
+    mode: SyncSentinelMode,
+    discord_log: Path | None = None,
+    as_of: date | None = None,
+) -> int:
+    run_sync_sentinel(
+        root,
+        mode=mode,
+        discord_log=discord_log,
+        as_of=as_of,
+    )
+    return 0
+
+
 def cmd_vault_sync(root: Path, *, overwrite: bool = False) -> int:
     store = _open_store(root)
     cards = store.list_memory_cards() if store is not None else []
@@ -482,6 +499,16 @@ def build_parser() -> argparse.ArgumentParser:
     semantic_parser.add_argument("--text", required=True)
     semantic_parser.add_argument("--as-of")
 
+    sync_parser = subparsers.add_parser("sync-sentinel")
+    sync_parser.add_argument("--root", required=True, type=Path)
+    sync_parser.add_argument("--as-of")
+    sync_parser.add_argument(
+        "--mode",
+        required=True,
+        choices=("offline-reconnect", "realtime"),
+    )
+    sync_parser.add_argument("--discord-log", type=Path)
+
     vault_parser = subparsers.add_parser("vault-sync")
     vault_parser.add_argument("--root", required=True, type=Path)
     vault_parser.add_argument("--overwrite", action="store_true")
@@ -555,6 +582,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     if args.command == "semantic-ingest":
         return cmd_semantic_ingest(args.root, text=args.text, as_of=_parse_date(args.as_of))
+    if args.command == "sync-sentinel":
+        return cmd_sync_sentinel(
+            args.root,
+            mode=args.mode,
+            discord_log=args.discord_log,
+            as_of=_parse_date(args.as_of),
+        )
     if args.command == "vault-sync":
         return cmd_vault_sync(args.root, overwrite=args.overwrite)
     if args.command == "raw-vault-sync":

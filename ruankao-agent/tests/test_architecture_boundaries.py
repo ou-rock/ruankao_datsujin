@@ -43,6 +43,7 @@ EXPECTED_INTERNAL_DEPS = {
         "route_map",
         "semantic_ingest",
         "study",
+        "sync_alerts",
         "vault",
         "web",
     },
@@ -99,6 +100,7 @@ EXPECTED_INTERNAL_DEPS = {
     "semantic_ingest": {"domain", "storage"},
     "storage": {"domain"},
     "study": {"domain", "storage"},
+    "sync_alerts": {"loop", "storage"},
     "vault": set(),
     "web": {"web_app", "web_handlers"},
     "web_actions": {

@@ -57,6 +57,7 @@
 ### 需求三：差分状态监视器与 Discord 级报警器 (Diff & Alert Gateway)
 *   **状态抓取**：每次同步脚本执行完成后，系统通过读库或调用 `cli.py status` 解析出 `RiskStatus`（绿/黄/红）、`due_cards`（到期卡）、`leech` 诊断清单及缺席题型。
 *   **差分判断**：设计一个“状态哨兵”服务，比对本次同步与上一次的历史指标。
+*   **当前本地入口（已落地）**：`python3 -m ruankao_agent.cli sync-sentinel --root <root> --mode offline-reconnect|realtime --discord-log <JSONL_PATH>` 提供本地物理验收入口。`offline-reconnect` 只更新 `data/sync-alert-state.json` 的已见低分练习，不向模拟频道补发历史告警；`realtime` 只对当天新出现且尚未告警的 `<60%` 低分练习写入一条模拟 Discord JSONL，并携带主题、题型、得分率、风险灯和风险原因。该命令保持零 stdout，便于被 webhook、定时任务或 Hermes 网关静默调用。
 *   **重连同步与告警路由规则（Silent Offline Sync）**：
     1.  **静默断线重连**：当网关（Discord/Telegram）经历离线重连、或用户在本地积压了多轮 Obsidian 笔记未触发网络时，Harness 在重新连线瞬间，**仅在后台静默同步 SQLite 数据库与 Obsidian 本地文件，不向聊天频道推送任何历史补发告警（零打扰原则）**。
     2.  **前端可见性防线**：系统的红黄绿灯及风险详细元数据应通过本地静态 HTML Dashboard 以及 Obsidian 总图进行醒目渲染。若用户不打开前端页面，可通过在 Discord 线程中主动发送 `/status` 或 `/rag-query` 指令拉取当前状态简报。

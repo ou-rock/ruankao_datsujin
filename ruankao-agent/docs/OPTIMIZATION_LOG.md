@@ -5148,3 +5148,45 @@ SQLite remains the only source of truth for generated card fields.
 - `python3 -m pytest tests/test_vault_and_dashboard.py::test_overwrite_memory_card_sync_preserves_obsidian_personal_notes -q`
 - `python3 -m pytest tests/test_cli.py::test_cli_vault_sync_overwrite_preserves_obsidian_personal_notes -q`
 - `python3 -m pytest tests/test_vault_and_dashboard.py tests/test_cli.py -q`
+
+## 2026-06-30 Round 150 - Add Sync Alert Sentinel
+
+### Learner Friction
+
+The Hermes migration prompt requires silent offline reconnects and immediate
+low-score alerts. Before this round, the local system had risk snapshots and
+practice records, but no diff sentinel that could prove "no historical alert
+replay" or "one real-time alert for a new low-score practice".
+
+### Change
+
+- Added `ruankao_agent/sync_alerts.py` as a local diff sentinel.
+- Added `python3 -m ruankao_agent.cli sync-sentinel`.
+- `offline-reconnect` marks existing low-score practice sessions as seen and
+  keeps stdout and simulated Discord output empty.
+- `realtime` writes one simulated Discord JSONL row for each new same-day
+  practice with score ratio `< 60%`, including topic, front, score ratio, risk
+  status, and risk reasons.
+- Added duplicate suppression via `data/sync-alert-state.json`.
+- Added `.codex/commands/ruankao-sync-sentinel.md` and documented the local
+  entrypoint in the Hermes migration spec.
+- Updated the architecture boundary map so future real Discord/Telegram gateway
+  code stays outside the sentinel core.
+
+### Architecture Rule Captured
+
+`sync_alerts.py` belongs to the learning intelligence layer. It may read
+`RuankaoStore`, call `loop.build_daily_loop_snapshot`, write local diff state,
+and append simulated alert JSONL. It must not call real Webhook, Discord, or
+Telegram endpoints, execute daily-cycle scripts, or mutate SQLite schema.
+
+### Validation
+
+- `python3 -m pytest tests/test_sync_alerts.py -q`
+- AC-3 local evidence:
+  - `sync-sentinel --mode offline-reconnect` after three SQLite memory-card
+    writes returned zero stdout and wrote no simulated Discord alert.
+  - `sync-sentinel --mode realtime` after a `5/15` case practice wrote exactly
+    one JSONL alert containing `灾备响应度量`, `练习得分低于 60%`, and
+    `本周缺席 2 个以上题型`.
+  - A second realtime sentinel run did not duplicate the alert.

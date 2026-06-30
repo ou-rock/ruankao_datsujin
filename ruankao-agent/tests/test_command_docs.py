@@ -23,6 +23,7 @@ def test_daily_command_docs_hide_internal_stage_labels() -> None:
     learning = (COMMAND_ROOT / "ruankao-learning.md").read_text(encoding="utf-8")
     rag_query = (COMMAND_ROOT / "ruankao-rag-query.md").read_text(encoding="utf-8")
     semantic_ingest = (COMMAND_ROOT / "ruankao-semantic-ingest.md").read_text(encoding="utf-8")
+    sync_sentinel = (COMMAND_ROOT / "ruankao-sync-sentinel.md").read_text(encoding="utf-8")
 
     assert "仅暂存的夜间进化草案" in daily_cycle
     assert "RAG 记忆与进步控制简报" in daily_cycle
@@ -42,6 +43,11 @@ def test_daily_command_docs_hide_internal_stage_labels() -> None:
     assert 'promotion_status="raw"' in semantic_ingest
     assert "rejected" in semantic_ingest
     assert "不写入 SQLite" in semantic_ingest
+    assert "sync-sentinel" in sync_sentinel
+    assert "offline-reconnect" in sync_sentinel
+    assert "realtime" in sync_sentinel
+    assert "模拟 Discord JSONL" in sync_sentinel
+    assert "零 stdout" in sync_sentinel
     assert "stage-only" not in daily_cycle
     assert "stage-only" not in night_evolve
     assert "staged plan" not in night_evolve
@@ -54,6 +60,7 @@ def test_workbench_command_documents_port_recovery() -> None:
     assert "http://127.0.0.1:8765" in text
     assert "/ruankao-workbench --port 8770" in text
     assert "如果端口占用" in text
+    assert "自动改用下一个可用端口" in text
 
 
 def test_ux_check_command_requires_browser_act_real_browsing() -> None:
