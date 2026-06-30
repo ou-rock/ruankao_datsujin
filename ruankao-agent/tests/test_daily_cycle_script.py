@@ -14,6 +14,12 @@ def test_daily_cycle_script_includes_closure_exports() -> None:
     assert "raw-vault-sync" in text
     assert "export-state" in text
     assert text.index("raw-vault-sync") < text.index("export-state")
+    assert "软考达人每日闭环：$DAY" in text
+    assert "1/8 Cheko 弱点入队" in text
+    assert "5/8 生成夜间进化草案" in text
+    assert "8/8 导出本地状态" in text
+    assert "每日闭环完成：$DAY" in text
+    assert text.index("1/8 Cheko 弱点入队") < text.index("8/8 导出本地状态")
 
 
 def test_automation_doc_is_learner_facing() -> None:

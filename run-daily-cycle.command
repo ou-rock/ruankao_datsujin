@@ -7,32 +7,50 @@ DAY="${1:-$(date +%F)}"
 
 cd "$AGENT_ROOT"
 
+step() {
+  print ""
+  print "== $1 =="
+}
+
+print "软考达人每日闭环：$DAY"
+
+step "1/8 Cheko 弱点入队"
 python3 -m ruankao_agent.cli cheko-seed-cards \
   --root "$AGENT_ROOT" \
   --next-due "$DAY"
 
+step "2/8 核心原则入队"
 python3 -m ruankao_agent.cli seed-principles \
   --root "$AGENT_ROOT" \
   --next-due "$DAY"
 
+step "3/8 生成日结回执"
 python3 -m ruankao_agent.cli daily-receipt \
   --root "$AGENT_ROOT" \
   --as-of "$DAY"
 
+step "4/8 生成三题型覆盖图"
 python3 -m ruankao_agent.cli route-map \
   --root "$AGENT_ROOT" \
   --as-of "$DAY"
 
+step "5/8 生成夜间进化草案"
 python3 -m ruankao_agent.cli night-evolve \
   --root "$AGENT_ROOT" \
   --as-of "$DAY"
 
+step "6/8 同步记忆卡到 Obsidian"
 python3 -m ruankao_agent.cli vault-sync \
   --root "$AGENT_ROOT"
 
+step "7/8 同步三源材料到 Obsidian"
 python3 -m ruankao_agent.cli raw-vault-sync \
   --root "$AGENT_ROOT"
 
+step "8/8 导出本地状态"
 python3 -m ruankao_agent.cli export-state \
   --root "$AGENT_ROOT" \
   --as-of "$DAY"
+
+print ""
+print "每日闭环完成：$DAY"

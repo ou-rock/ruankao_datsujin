@@ -2919,3 +2919,30 @@ restore and human inspection if it includes compact distribution summaries.
 
 - State-export tests assert the new distribution counts while preserving the
   existing full table data.
+
+## 2026-06-30 Round 097 - Label Daily Cycle Script Steps
+
+### Learner Friction
+
+The daily-cycle script worked, but manual runs and launchd logs appeared as a
+plain stream of command output. When something fails or takes time, the learner
+needs to know which part of the loop is currently running.
+
+### Change
+
+- Added a start banner with the cycle date.
+- Added eight numbered step labels:
+  Cheko seeding, core principles, daily receipt, route map, night evolution,
+  memory-card vault sync, raw-material vault sync, and state export.
+- Added a completion banner.
+- Kept every underlying command and order unchanged.
+
+### UX Rule Captured
+
+Automation logs are user interface. A scheduled loop should narrate its own
+progress well enough that a person can trust it and diagnose it later.
+
+### Validation
+
+- Daily-cycle script tests assert the numbered labels, completion banner, and
+  command ordering.
