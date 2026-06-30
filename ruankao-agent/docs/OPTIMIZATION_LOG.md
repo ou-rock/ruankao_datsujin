@@ -2244,3 +2244,30 @@ be chunked into visual units, not packed into a pipe-delimited line.
 - `python3 -m pytest tests/test_daily_receipt.py -q`
 - Tests assert the receipt shows `得分：7/10` and no longer renders the old
   `得分=7/10` practice metadata format.
+
+## 2026-06-30 Round 073 - Humanize Receipt Raw Metadata
+
+### Learner Friction
+
+The daily receipt's recent-material entries still showed raw metadata as
+`状态=... | 主题=...`. These entries are the learner's Mein/Du/Uns trail, so the
+visible report should make provenance easy to scan.
+
+### Change
+
+- Reused the daily receipt `meta-row` chip style.
+- Changed recent-material metadata into separate chips:
+  - `状态：...`
+  - `主题：...`
+- Kept JSON fields and payload shape unchanged.
+
+### UX Rule Captured
+
+Raw material provenance should be readable at rest. Treat source trail metadata
+as study context, not as a debug line.
+
+### Validation
+
+- `python3 -m pytest tests/test_daily_receipt.py -q`
+- Tests assert the receipt shows `状态：原始` and no longer renders the old
+  `状态=原始` metadata format.

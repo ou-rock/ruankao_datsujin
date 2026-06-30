@@ -430,7 +430,10 @@ def _recent_records(records: list[object]) -> str:
             f"""<div class="item">
   <strong>#{escape(str(item["id"]))} {escape(_source_label(item["source"]))}</strong>
   <div>{escape(str(item["summary"]))}</div>
-  <div class="meta">状态={escape(_promotion_status_label(item["promotion_status"]))} | 主题={escape(_joined_text(item["topics"]))}</div>
+  <div class="meta-row">
+    <span>状态：{escape(_promotion_status_label(item["promotion_status"]))}</span>
+    <span>主题：{escape(_joined_text(item["topics"]))}</span>
+  </div>
 </div>"""
         )
     return "".join(items)

@@ -86,7 +86,9 @@ def test_daily_receipt_writes_json_and_html_summary(tmp_path) -> None:
     assert "得分：7/10" in html
     assert "耗时：18分钟" in html
     assert "得分=7/10" not in html
-    assert "状态=原始" in html
+    assert "状态：原始" in html
+    assert "主题：系统架构设计" in html
+    assert "状态=原始" not in html
     assert "类型=概念卡" in html
     assert "题型=选择题、案例题" in html
     assert "grade=4" not in html
