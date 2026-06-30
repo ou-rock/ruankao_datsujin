@@ -61,10 +61,10 @@ def render_dashboard(snapshot: DashboardSnapshot) -> str:
     )
     war_room_links = (
         ("学习台", "learning/index.html"),
-        ("Memory War Room", "vault/10-memory-war-room/"),
+        ("记忆作战室", "vault/10-memory-war-room/"),
         ("原则网络", "vault/00-map/原则网络.md"),
         ("战役总图", "vault/00-map/战役总图.md"),
-        ("NotebookLM source map", "notebooklm"),
+        ("NotebookLM 资料图", "notebooklm"),
     )
 
     return f"""<!doctype html>
@@ -72,7 +72,7 @@ def render_dashboard(snapshot: DashboardSnapshot) -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ruankao Agent Dashboard</title>
+  <title>软考达人战役总图</title>
   <style>
     :root {{
       color-scheme: light;
@@ -180,48 +180,48 @@ def render_dashboard(snapshot: DashboardSnapshot) -> str:
 <body>
   <main>
     <div class="hero">
-      <p class="eyebrow">System Architecture Designer</p>
-      <h1>2026 H2 System Architecture Designer pass</h1>
+      <p class="eyebrow">系统架构设计师</p>
+      <h1>2026 下半年系统架构设计师通关战役</h1>
       <div class="meta">
         <div class="metric">
-          <span class="label">Countdown</span>
+          <span class="label">倒计时</span>
           <span class="value">{escape(countdown)}</span>
         </div>
         <div class="metric">
-          <span class="label">Exam date</span>
+          <span class="label">考试日期</span>
           <span class="value">{escape(exam_date.isoformat())}</span>
         </div>
         <div class="metric">
-          <span class="label">Campaign phase</span>
+          <span class="label">当前阶段</span>
           <span class="value">{escape(phase_name)}</span>
           <div class="small">{escape(phase_key)}</div>
         </div>
         <div class="metric">
-          <span class="label">Risk</span>
-          <span class="value">{escape(risk_text)}</span>
+          <span class="label">风险</span>
+          <span class="value">{escape(_risk_label(risk_text))}</span>
         </div>
         <div class="metric">
-          <span class="label">Main battle progress</span>
-          <span class="value">{main_battle_weeks_done} / 14 weeks</span>
+          <span class="label">主战进度</span>
+          <span class="value">{main_battle_weeks_done} / 14 周</span>
         </div>
         <div class="metric">
-          <span class="label">Reserve pool</span>
-          <span class="value">2 weeks</span>
-          <div class="small">Consumed: {reserve_days_consumed} days</div>
+          <span class="label">冗余池</span>
+          <span class="value">2 周</span>
+          <div class="small">已消耗：{reserve_days_consumed} 天</div>
         </div>
         <div class="metric">
-          <span class="label">Reserve days consumed</span>
+          <span class="label">冗余已用</span>
           <span class="value">{reserve_days_consumed}</span>
         </div>
         <div class="metric">
-          <span class="label">Review backlog</span>
+          <span class="label">复习积压</span>
           <span class="value">{snapshot.review_backlog_ratio:.0%}</span>
         </div>
       </div>
     </div>
 
     <section>
-      <h2>Today&#x27;s minimum loop</h2>
+      <h2>今日最小闭环</h2>
       <div class="grid">
         <div class="panel"><p>到期记忆复习</p></div>
         <div class="panel"><p>选择题 10 道并记录错因</p></div>
@@ -231,20 +231,20 @@ def render_dashboard(snapshot: DashboardSnapshot) -> str:
     </section>
 
     <section>
-      <h2>Memory War Room</h2>
+      <h2>记忆作战室</h2>
       <div class="grid">
         <div class="panel">
-          <p>Due cards: {snapshot.due_cards}</p>
-          <p>NotebookLM source: {escape(snapshot.notebook_name)}</p>
+          <p>到期卡片：{snapshot.due_cards}</p>
+          <p>NotebookLM 精选资料：{escape(snapshot.notebook_name)}</p>
         </div>
         <div class="panel">
-          <p>Mein / Du / Uns preserve raw material, agent analysis, and external evidence.</p>
+          <p>Mein / Du / Uns 分别保存我的原始材料、你的分析加工和外界证据。</p>
         </div>
       </div>
     </section>
 
     <section>
-      <h2>Routes</h2>
+      <h2>三题型路线</h2>
       <nav>
         <ul>
           {"".join(f'<li><a href="#{escape(route_id)}">{escape(label)}</a></li>' for label, route_id in route_links)}
@@ -258,14 +258,14 @@ def render_dashboard(snapshot: DashboardSnapshot) -> str:
     </section>
 
     <section>
-      <h2>Knowledge Flow</h2>
+      <h2>三源流动</h2>
       <div class="grid">
         {"".join(f'<div class="panel"><p><strong>{escape(label)}</strong> <span class="small">{escape(path)}</span></p></div>' for label, path in triad_links)}
       </div>
     </section>
 
     <section>
-      <h2>Navigation</h2>
+      <h2>导航</h2>
       <div class="grid">
         {"".join(f'<div class="panel"><p><a href="{escape(path)}">{escape(label)}</a></p></div>' for label, path in war_room_links)}
       </div>
@@ -274,3 +274,11 @@ def render_dashboard(snapshot: DashboardSnapshot) -> str:
 </body>
 </html>
 """
+
+
+def _risk_label(value: str) -> str:
+    return {
+        "red": "红灯",
+        "yellow": "黄灯",
+        "green": "绿灯",
+    }.get(value, value)

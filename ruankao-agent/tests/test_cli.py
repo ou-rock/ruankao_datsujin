@@ -56,7 +56,7 @@ def test_cli_init_status_and_dashboard(tmp_path) -> None:
 
     assert dashboard_result.returncode == 0, dashboard_result.stderr
     assert "dashboard.html" in dashboard_result.stdout
-    assert "Memory War Room" in (root / "dashboard.html").read_text(encoding="utf-8")
+    assert "记忆作战室" in (root / "dashboard.html").read_text(encoding="utf-8")
 
 
 def test_cli_status_and_dashboard_reflect_persisted_store_state(tmp_path) -> None:
@@ -119,10 +119,10 @@ def test_cli_status_and_dashboard_reflect_persisted_store_state(tmp_path) -> Non
     )
 
     html = (root / "dashboard.html").read_text(encoding="utf-8")
-    assert "Due cards: 1" in html
-    assert "Review backlog" in html
+    assert "到期卡片：1" in html
+    assert "复习积压" in html
     assert "100%" in html
-    assert ">red<" in html
+    assert ">红灯<" in html
 
 
 def test_cli_status_reflects_practice_front_gaps_after_practice_starts(tmp_path) -> None:

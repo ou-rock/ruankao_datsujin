@@ -1776,3 +1776,34 @@ page.
 
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert the workbench renders all contextual learning placeholders.
+
+## 2026-06-30 Round 057 - Localized Static Total Map
+
+### Learner Friction
+
+The static dashboard was meant to be the system's total map, but it still looked
+like an English template: `Ruankao Agent Dashboard`, `Today's minimum loop`,
+`Memory War Room`, `Routes`, `Knowledge Flow`, and raw risk values such as
+`green` or `red`.
+
+### Change
+
+- Localized the static dashboard title, hero, metric labels, section headings,
+  and navigation labels.
+- Rendered risk as `红灯/黄灯/绿灯` in the HTML total map.
+- Localized dashboard evidence labels such as due cards, NotebookLM source, main
+  battle progress, reserve pool, and review backlog.
+- Kept filesystem paths and CLI status output unchanged.
+
+### UX Rule Captured
+
+The total map should be readable as a study artifact, not a project scaffold.
+Paths and machine outputs can remain stable, while the learner-facing HTML
+speaks the campaign's language.
+
+### Validation
+
+- `python3 -m pytest tests/test_vault_and_dashboard.py -q`
+- `python3 -m pytest tests/test_cli.py -q`
+- Tests assert the dashboard renders localized map headings, risk labels, due
+  card evidence, and navigation links.

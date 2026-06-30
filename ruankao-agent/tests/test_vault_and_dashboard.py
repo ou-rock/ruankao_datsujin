@@ -146,17 +146,20 @@ def test_dashboard_renders_total_map() -> None:
 
     html = render_dashboard(snapshot)
 
-    assert "System Architecture Designer" in html
+    assert "系统架构设计师" in html
     assert "2026-10-24" in html
     assert "D-117" in html
     assert "启动诊断" in html
-    assert "Main battle progress" in html
-    assert "0 / 14 weeks" in html
-    assert "Reserve pool" in html
-    assert "2 weeks" in html
-    assert "Today&#x27;s minimum loop" in html
+    assert "主战进度" in html
+    assert "0 / 14 周" in html
+    assert "冗余池" in html
+    assert "2 周" in html
+    assert "今日最小闭环" in html
     assert "到期记忆复习" in html
-    assert "Memory War Room" in html
+    assert "记忆作战室" in html
+    assert "到期卡片：12" in html
+    assert "风险" in html
+    assert "绿灯" in html
     assert "Mein" in html
     assert "Du" in html
     assert "Uns" in html
