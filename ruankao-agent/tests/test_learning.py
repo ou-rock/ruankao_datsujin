@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 import json
+from pathlib import Path
 import subprocess
 import sys
 
@@ -15,6 +16,9 @@ from ruankao_agent.learning import (
     render_today,
     today_tasks,
 )
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_learning_resources_generate_html_study_desk(tmp_path) -> None:
@@ -201,3 +205,25 @@ def test_cli_learning_generates_learning_desk(tmp_path) -> None:
     assert result.returncode == 0, result.stderr
     assert "learning/index.html" in result.stdout
     assert (root / "learning" / "index.html").exists()
+
+
+def test_tracked_learning_pages_are_current_browser_surface() -> None:
+    learning_root = REPO_ROOT / "learning"
+    stale_phrases = (
+        "Learning Desk",
+        "Lesson 0001",
+        "Reference",
+        "Cheko Sync",
+        "Today",
+        "Task 1",
+    )
+
+    pages = sorted(learning_root.rglob("*.html"))
+    assert pages
+    for page in pages:
+        html = page.read_text(encoding="utf-8")
+        for phrase in stale_phrases:
+            assert phrase not in html, f"{phrase!r} leaked in {page}"
+
+    assert "学习台" in (learning_root / "index.html").read_text(encoding="utf-8")
+    assert "第 1 件" in (learning_root / "today.html").read_text(encoding="utf-8")

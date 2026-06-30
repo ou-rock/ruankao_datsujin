@@ -52,3 +52,9 @@ python3 -m ruankao_agent.cli dashboard --root /tmp/ruankao-agent-demo
 - 3 个关键审查 agent 的证据。
 - 3 个验收测试 agent 的证据。
 - 集成后的通过测试记录。
+
+## 必须留下的用户体验证据
+
+涉及学习台、工作台、总图或网页表单的改动，必须用 browser-act 打开本地页面实际体验，
+不能只靠源码阅读、截图猜测或单元测试。验收记录至少包含访问路径、点击路径、发现的问题、
+修复动作和复测结果。

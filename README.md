@@ -34,6 +34,9 @@ RUANKAO_WORKBENCH_PORT=8770 ./start-workbench.command
 原则网络、学习台和 Obsidian vault 同步。在 Codex 里，`/ruankao-workbench`
 会启动同一个工作台。
 
+任何学习台、工作台、总图或网页表单的用户体验改动，都必须用 browser-act 打开本地页面
+实际体验，不能只靠源码阅读或单元测试。
+
 常用 Codex 命令：
 
 ```text
@@ -42,6 +45,7 @@ RUANKAO_WORKBENCH_PORT=8770 ./start-workbench.command
 /ruankao-night-evolve 2026-06-29
 /ruankao-architect-review <question-or-draft>
 /ruankao-study-mode <topic-or-front>
+/ruankao-ux-check <page-or-flow>
 ```
 
 每日闭环会依次运行 Cheko 弱点入队、核心原则入队、日结回执、三题型覆盖图、

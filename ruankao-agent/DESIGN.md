@@ -17,6 +17,8 @@
 - `Obsidian` 保存可编辑的知识网络，尤其是原则卡和 Mein / Du / Uns。
 - `HTML` 是总图和工作台，必须让人一眼看到位置、目标和下一步。
 - `NotebookLM` 只作为精选外部研究员，输出进入 Uns，不能直接替代判断。
+- `browser-act` 是网页用户体验实测通道。学习台、工作台和总图的 UX 改动必须
+  用真实浏览路径验证，不能只靠源码阅读或单元测试。
 
 成长底座：
 
@@ -58,6 +60,7 @@ The agent must feel like a companion, but behave like an accountable training sy
 - SQLite is the training and scheduling engine.
 - Obsidian is the editable knowledge network.
 - HTML is the dashboard and total map.
+- BrowserAct UX verification is mandatory for learner-facing web changes.
 - Night evolution is stage-only by default; it cannot silently modify live core skills.
 - TDD is mandatory for implementation.
 - Parallel agent work is capped in waves of 3 and must use disjoint ownership.

@@ -3177,3 +3177,41 @@ learner a fast path from orientation to action.
 ### Validation
 
 - Dashboard tests assert the static total map includes a workbench link.
+
+## 2026-06-30 Round 107 - Require BrowserAct UX Verification
+
+### Learner Friction
+
+The learner repeated that user experience must be checked with browser-act. A
+source-only review would have missed the real page state: the running learning
+desk still showed stale English labels from tracked generated HTML.
+
+### BrowserAct Evidence
+
+- Started the local workbench at `http://127.0.0.1:8780/`.
+- Tried `chrome-direct`; it failed with a CDP permission retry timeout, then
+  reused the configured Chrome browser session.
+- Opened the workbench, clicked `学习回合`, typed a topic without submitting the
+  form, opened `学习台`, and opened `今日三任务`.
+- Found stale labels such as `Learning Desk`, `Today`, and `Task 1` in the
+  browser surface even though the Python templates had already been localized.
+
+### Change
+
+- Regenerated the tracked learning HTML with `--overwrite` so the live browser
+  surface matches the localized templates.
+- Added `/ruankao-ux-check` as the Codex command for browser-act UX checks.
+- Added `docs/UX_VERIFICATION.md`.
+- Made design, TDD, acceptance criteria, README, command docs, and tests require
+  browser-act real browsing for learner-facing web UX changes.
+
+### UX Rule Captured
+
+UX evidence must come from the page a learner actually sees. Unit tests and
+source inspection are necessary, but they do not replace a browser-act pass over
+the real local route.
+
+### Validation
+
+- Learning tests assert tracked HTML pages no longer leak stale English labels.
+- Process and command-doc tests assert the browser-act UX verification rule.

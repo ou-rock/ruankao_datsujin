@@ -38,3 +38,14 @@ def test_workbench_command_documents_port_recovery() -> None:
     assert "http://127.0.0.1:8765" in text
     assert "/ruankao-workbench --port 8770" in text
     assert "如果端口占用" in text
+
+
+def test_ux_check_command_requires_browser_act_real_browsing() -> None:
+    text = (COMMAND_ROOT / "ruankao-ux-check.md").read_text(encoding="utf-8")
+
+    assert "browser-act 实际打开本地页面" in text
+    assert "不能只靠源码阅读" in text
+    assert "python3 -m ruankao_agent.cli learning" in text
+    assert "--overwrite" in text
+    assert "wait stable" in text
+    assert "关闭 browser-act session" in text

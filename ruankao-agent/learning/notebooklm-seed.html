@@ -109,6 +109,35 @@
       font-weight: 700;
       color: #12312e;
     }
+    .route-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .route-step {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--band);
+      padding: 12px;
+      min-height: 96px;
+    }
+    .route-step span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+    .route-step strong {
+      display: block;
+      color: #12312e;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+    .route-step p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
     .actions {
       display: flex;
       flex-wrap: wrap;
@@ -171,6 +200,7 @@
     @media (max-width: 720px) {
       main { padding: 18px 14px 40px; }
       h1 { font-size: 25px; }
+      .route-strip { grid-template-columns: 1fr; }
       .day { grid-template-columns: 1fr; }
     }
   </style>
@@ -179,7 +209,7 @@
   <main>
     
 <header class="hero">
-  <p class="eyebrow">Uns</p>
+  <p class="eyebrow">Uns 外部资料</p>
   <h1>NotebookLM 资源生成记录</h1>
   <p class="lead">NotebookLM 是外部研究员，不是最终学习系统。它给出资料线索和结构，最终由本地学习台改写、执行、复习和沉淀。</p>
 </header>

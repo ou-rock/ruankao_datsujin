@@ -26,6 +26,9 @@ def test_design_document_captures_non_negotiables() -> None:
         "HTML` 是总图和工作台",
         "NotebookLM` 只作为精选外部研究员",
         "夜间进化默认只生成暂存草案",
+        "browser-act` 是网页用户体验实测通道",
+        "不能只靠源码阅读或单元测试",
+        "BrowserAct UX verification is mandatory",
     ]
 
     for phrase in required_phrases:

@@ -109,6 +109,35 @@
       font-weight: 700;
       color: #12312e;
     }
+    .route-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .route-step {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--band);
+      padding: 12px;
+      min-height: 96px;
+    }
+    .route-step span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+    .route-step strong {
+      display: block;
+      color: #12312e;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+    .route-step p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
     .actions {
       display: flex;
       flex-wrap: wrap;
@@ -171,6 +200,7 @@
     @media (max-width: 720px) {
       main { padding: 18px 14px 40px; }
       h1 { font-size: 25px; }
+      .route-strip { grid-template-columns: 1fr; }
       .day { grid-template-columns: 1fr; }
     }
   </style>
@@ -179,7 +209,7 @@
   <main>
     
 <header class="hero">
-  <p class="eyebrow">Today</p>
+  <p class="eyebrow">今日</p>
   <h1>今日三任务</h1>
   <p class="lead">今天不追求打开所有资料。先把最大弱点、一个题型触达、一个记忆沉淀做完，让系统向前滚一格。</p>
   <div class="actions">
@@ -194,34 +224,38 @@
     <div class="metric"><span>预估分</span><strong>43.75</strong></div>
     <div class="metric"><span>最大错题池</span><strong>系统架构设计</strong></div>
     <div class="metric"><span>论文助手算力</span><strong>15 / 15</strong></div>
+    <div class="metric"><span>时间盒</span><strong>60 分钟</strong></div>
   </div>
 </section>
 <section>
   <h2>只做这三件事</h2>
   <div class="timeline">
     <div class="day">
-  <div class="day-index">Task 1</div>
+  <div class="day-index">第 1 件</div>
   <div>
     <h3>系统架构设计错题回炉</h3>
     <p><strong>为什么：</strong>系统架构设计 是当前最大错题池，164 题已经足够暴露结构性薄弱点。</p>
+    <p class="meta">建议时长：25 分钟</p>
     <p class="meta">动作：先做质量属性、架构风格、ATAM 三块错因归类。</p>
     <p class="meta">完成标准：至少完成 10 道错题复盘，按不会/混淆/审题/表达归因。</p>
     <p class="meta">产出：2 张概念卡 + 1 张错因卡。</p>
   </div>
 </div><div class="day">
-  <div class="day-index">Task 2</div>
+  <div class="day-index">第 2 件</div>
   <div>
     <h3>软件工程对比卡</h3>
     <p><strong>为什么：</strong>软件工程 错题池为 82，适合用对比卡降低混淆成本。</p>
+    <p class="meta">建议时长：15 分钟</p>
     <p class="meta">动作：把开发方法、测试、维护、质量管理做成对比卡。</p>
     <p class="meta">完成标准：挑 3 个最容易混淆的概念，各写一句边界。</p>
     <p class="meta">产出：1 张对比卡 + 1 条 Du 分析。</p>
   </div>
 </div><div class="day">
-  <div class="day-index">Task 3</div>
+  <div class="day-index">第 3 件</div>
   <div>
     <h3>论文最低触达</h3>
     <p><strong>为什么：</strong>2013-2026 论文真题最近得分均为 0 / 4</p>
+    <p class="meta">建议时长：20 分钟</p>
     <p class="meta">动作：写 300 字以内摘要 + 1 段项目背景，不调用论文助手。</p>
     <p class="meta">完成标准：必须产生可复用文字，不以“看了范文”作为完成。</p>
     <p class="meta">产出：1 张表达卡，主题为项目背景或回应子题目。</p>
@@ -232,10 +266,15 @@
 <section>
   <h2>停止条件</h2>
   <ol>
-    <li>三件事全部完成后，不继续加码，转到工作台记录复习结果。</li>
+    <li>三件事全部完成或 60 分钟用完后，不继续加码，转到工作台记录复习结果。</li>
     <li>任一任务卡住超过 20 分钟，把卡住点记录到 Mein，不硬扛。</li>
     <li>如果今天只能做一件事，只做第 1 件：最大错题池回炉。</li>
   </ol>
+  <div class="actions">
+    <a class="button" href="/#study-turn">记录学习回合</a>
+    <a class="button secondary" href="/#cards">创建记忆卡</a>
+    <a class="button secondary" href="/#practice">记录练习</a>
+  </div>
 </section>
 
   </main>

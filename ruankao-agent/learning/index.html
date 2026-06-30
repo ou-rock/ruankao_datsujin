@@ -109,6 +109,35 @@
       font-weight: 700;
       color: #12312e;
     }
+    .route-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .route-step {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--band);
+      padding: 12px;
+      min-height: 96px;
+    }
+    .route-step span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+    .route-step strong {
+      display: block;
+      color: #12312e;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+    .route-step p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
     .actions {
       display: flex;
       flex-wrap: wrap;
@@ -171,6 +200,7 @@
     @media (max-width: 720px) {
       main { padding: 18px 14px 40px; }
       h1 { font-size: 25px; }
+      .route-strip { grid-template-columns: 1fr; }
       .day { grid-template-columns: 1fr; }
     }
   </style>
@@ -179,7 +209,7 @@
   <main>
     
 <header class="hero">
-  <p class="eyebrow">Learning Desk</p>
+  <p class="eyebrow">学习台</p>
   <h1>软考达人学习台</h1>
   <p class="lead">学习台负责“学什么、怎么练、沉淀成什么”。工作台负责记录和复习，学习台负责把资料变成当天可执行的课。</p>
   <div class="actions">
@@ -189,6 +219,26 @@
     <a class="button secondary" href="/">回工作台</a>
   </div>
 </header>
+<section>
+  <h2>战役导航</h2>
+  <div class="route-strip">
+    <div class="route-step">
+      <span>当前位置</span>
+      <strong>启动诊断</strong>
+      <p>第 1 天；D-116</p>
+    </div>
+    <div class="route-step">
+      <span>下一站</span>
+      <strong>诊断建模</strong>
+      <p>第 3-16 天</p>
+    </div>
+    <div class="route-step">
+      <span>终点</span>
+      <strong>2026-10-24</strong>
+      <p>系统架构设计师考试，然后继续进化架构能力。</p>
+    </div>
+  </div>
+</section>
 
 <section>
   <h2>芝士架构同步信号</h2>
@@ -255,7 +305,7 @@
   <h2>第一周学习路径</h2>
   <div class="timeline">
     <div class="day">
-  <div class="day-index">Day 1</div>
+  <div class="day-index">第 1 天</div>
   <div>
     <h3>核心破冰</h3>
     <p><strong>目标：</strong>建立质量属性与架构战术的第一层地图。</p>
@@ -265,7 +315,7 @@
     <p class="meta">沉淀：概念卡：四大质量属性；原则卡：场景先于方案。</p>
   </div>
 </div><div class="day">
-  <div class="day-index">Day 2</div>
+  <div class="day-index">第 2 天</div>
   <div>
     <h3>场景拆解</h3>
     <p><strong>目标：</strong>掌握质量属性场景六要素。</p>
@@ -275,7 +325,7 @@
     <p class="meta">沉淀：场景卡：双十一支付高可用；对比卡：响应 vs 响应度量。</p>
   </div>
 </div><div class="day">
-  <div class="day-index">Day 3</div>
+  <div class="day-index">第 3 天</div>
   <div>
     <h3>风格辨析</h3>
     <p><strong>目标：</strong>形成架构风格的分类、优缺点和适用场景。</p>
@@ -285,7 +335,7 @@
     <p class="meta">沉淀：对比卡：仓库风格 vs 黑板风格；表达卡：架构风格选择句式。</p>
   </div>
 </div><div class="day">
-  <div class="day-index">Day 4</div>
+  <div class="day-index">第 4 天</div>
   <div>
     <h3>评估方法</h3>
     <p><strong>目标：</strong>理解 ATAM/SAAM 的过程、产物和关键词。</p>
@@ -295,7 +345,7 @@
     <p class="meta">沉淀：概念卡：效用树；对比卡：敏感点 vs 权衡点。</p>
   </div>
 </div><div class="day">
-  <div class="day-index">Day 5</div>
+  <div class="day-index">第 5 天</div>
   <div>
     <h3>案例实战</h3>
     <p><strong>目标：</strong>完成一轮质量属性效用树真题型训练。</p>
@@ -305,7 +355,7 @@
     <p class="meta">沉淀：错因卡：误判属性；场景卡：安全审计与报警。</p>
   </div>
 </div><div class="day">
-  <div class="day-index">Day 6</div>
+  <div class="day-index">第 6 天</div>
   <div>
     <h3>论文寻根</h3>
     <p><strong>目标：</strong>打磨项目背景、摘要和技术方法说明。</p>
@@ -315,7 +365,7 @@
     <p class="meta">沉淀：表达卡：项目背景；表达卡：回应子题目。</p>
   </div>
 </div><div class="day">
-  <div class="day-index">Day 7</div>
+  <div class="day-index">第 7 天</div>
   <div>
     <h3>综合复盘</h3>
     <p><strong>目标：</strong>清空第一周错题和到期卡片，生成下周补强清单。</p>

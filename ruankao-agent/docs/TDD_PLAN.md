@@ -13,6 +13,7 @@
 - dashboard 生成。
 - NotebookLM 元数据表达。
 - CLI 冒烟流程。
+- browser-act 用户体验实测规约。
 
 ## Green：实现最小闭环
 
@@ -23,6 +24,7 @@
 - 生成静态 HTML。
 - 为 Obsidian 生成 Markdown 文件。
 - 单元测试不依赖实时 NotebookLM 网络。
+- 学习台、工作台或总图的 UX 改动必须先刷新静态页面，再用 browser-act 实际体验。
 
 ## Refactor：通过后再收紧
 
@@ -32,6 +34,7 @@
 - 收紧模块边界。
 - 只在行为不明显处添加 docstring。
 - 保持生成文件可预测、可重复。
+- 把 browser-act 实测发现写回文档、测试或优化日志，不能只留在聊天里。
 
 ## Agent 波次规则
 
