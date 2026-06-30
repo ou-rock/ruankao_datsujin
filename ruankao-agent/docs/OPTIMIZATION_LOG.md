@@ -1497,3 +1497,34 @@ note moves through the learning pyramid.
 
 - `python3 -m pytest tests/test_web_workbench.py -q`
 - Tests assert status radio values remain stable while labels render in Chinese.
+
+## 2026-06-30 Round 048 - Localized Daily Receipt Metadata
+
+### Learner Friction
+
+Daily receipts are meant to be read during review and nightly evolution, but the
+recent-material sections still used machine-style labels such as `status`,
+`type`, `grade`, `score`, and `duration`. The workbench had become more
+learner-facing, while receipts still exposed internal field names.
+
+### Change
+
+- Localized HTML-only receipt metadata for recent records, diagnostics, cards,
+  reviews, and practice sessions.
+- Localized count labels for source, card type, and exam front distributions.
+- Kept the JSON receipt payload unchanged so hooks, scripts, and exports can
+  keep reading stable enum values.
+- Rendered missing values as `未记录` and practice duration as `N分钟`.
+
+### UX Rule Captured
+
+Human receipts should read like study evidence, not raw telemetry. Preserve
+machine contracts in JSON, but make HTML receipts suitable for a learner's daily
+review loop.
+
+### Validation
+
+- `python3 -m pytest tests/test_daily_receipt.py -q`
+- Tests assert receipt HTML renders `评分=4`, `得分=7/10`, `耗时=18分钟`,
+  localized card/front labels, and no longer renders old `grade=` or `score=`
+  metadata.

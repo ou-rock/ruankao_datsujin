@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import date
 from html import escape
 from pathlib import Path
-from typing import Iterable
+from typing import Callable, Iterable
 
 from .loop import build_daily_loop_snapshot, status_line
 from .memory import MemoryDiagnostic, diagnose_memory
@@ -232,19 +232,19 @@ def render_daily_receipt(payload: dict[str, object]) -> str:
     </section>
     <section>
       <h2>三源分布</h2>
-      <div class="grid">{_count_cards(source_counts)}</div>
+      <div class="grid">{_count_cards(source_counts, labeler=_source_label)}</div>
     </section>
     <section>
       <h2>卡片类型</h2>
-      <div class="grid">{_count_cards(card_type_counts)}</div>
+      <div class="grid">{_count_cards(card_type_counts, labeler=_card_type_label)}</div>
     </section>
     <section>
       <h2>题型覆盖</h2>
-      <div class="grid">{_count_cards(front_counts)}</div>
+      <div class="grid">{_count_cards(front_counts, labeler=_front_label)}</div>
     </section>
     <section>
       <h2>练习题型</h2>
-      <div class="grid">{_count_cards(practice_front_counts)}</div>
+      <div class="grid">{_count_cards(practice_front_counts, labeler=_front_label)}</div>
     </section>
     <section>
       <h2>记忆诊断</h2>
@@ -400,10 +400,10 @@ def _metric(label: str, value: object) -> str:
     )
 
 
-def _count_cards(counts: dict[object, object]) -> str:
+def _count_cards(counts: dict[object, object], *, labeler: Callable[[object], str] = str) -> str:
     if not counts:
         return '<div class="item">暂无数据</div>'
-    return "".join(_metric(str(key), value) for key, value in counts.items())
+    return "".join(_metric(labeler(key), value) for key, value in counts.items())
 
 
 def _recent_records(records: list[object]) -> str:
@@ -414,9 +414,9 @@ def _recent_records(records: list[object]) -> str:
         assert isinstance(item, dict)
         items.append(
             f"""<div class="item">
-  <strong>#{escape(str(item["id"]))} {escape(str(item["source"]))}</strong>
+  <strong>#{escape(str(item["id"]))} {escape(_source_label(item["source"]))}</strong>
   <div>{escape(str(item["summary"]))}</div>
-  <div class="meta">status={escape(str(item["promotion_status"]))} | topics={escape(", ".join(str(topic) for topic in item["topics"]))}</div>
+  <div class="meta">状态={escape(_promotion_status_label(item["promotion_status"]))} | 主题={escape(_joined_text(item["topics"]))}</div>
 </div>"""
         )
     return "".join(items)
@@ -432,7 +432,7 @@ def _memory_diagnostics(diagnostics: list[object]) -> str:
             f"""<div class="item">
   <strong>#{escape(str(item["card_id"]))} {escape(str(item["title"]))}</strong>
   <div>{escape(str(item["action"]))}</div>
-  <div class="meta">status={escape(str(item["status"]))} | type={escape(str(item["card_type"]))} | low={escape(str(item["low_grade_reviews"]))} | last={escape(str(item["last_grade"]))} | avg={escape(str(item["average_grade"]))}</div>
+  <div class="meta">状态={escape(_memory_status_label(item["status"]))} | 类型={escape(_card_type_label(item["card_type"]))} | 低分={escape(str(item["low_grade_reviews"]))}次 | 最近={escape(_value_text(item["last_grade"]))} | 平均={escape(_value_text(item["average_grade"]))}</div>
 </div>"""
         )
     return "".join(items)
@@ -447,7 +447,7 @@ def _recent_cards(cards: list[object]) -> str:
         items.append(
             f"""<div class="item">
   <strong>#{escape(str(item["id"]))} {escape(str(item["title"]))}</strong>
-  <div class="meta">type={escape(str(item["card_type"]))} | fronts={escape(", ".join(str(front) for front in item["fronts"]))} | due={escape(str(item["next_due"]))} | reviews={escape(str(item["review_count"]))}</div>
+  <div class="meta">类型={escape(_card_type_label(item["card_type"]))} | 题型={escape(_fronts_label(item["fronts"]))} | 到期={escape(_value_text(item["next_due"]))} | 复习={escape(str(item["review_count"]))}次</div>
 </div>"""
         )
     return "".join(items)
@@ -461,8 +461,8 @@ def _recent_reviews(reviews: list[object]) -> str:
         assert isinstance(item, dict)
         items.append(
             f"""<div class="item">
-  <strong>review #{escape(str(item["id"]))} card #{escape(str(item["card_id"]))}</strong>
-  <div class="meta">date={escape(str(item["reviewed_on"]))} | grade={escape(str(item["grade"]))} | strength={escape(str(item["retrieval_strength"]))} | next={escape(str(item["next_due"]))}</div>
+  <strong>复习 #{escape(str(item["id"]))} 卡片 #{escape(str(item["card_id"]))}</strong>
+  <div class="meta">日期={escape(str(item["reviewed_on"]))} | 评分={escape(str(item["grade"]))} | 强度={escape(str(item["retrieval_strength"]))} | 下次={escape(str(item["next_due"]))}</div>
 </div>"""
         )
     return "".join(items)
@@ -477,10 +477,10 @@ def _recent_practice(sessions: list[object]) -> str:
         score = _score_text(item["score"], item["max_score"])
         items.append(
             f"""<div class="item">
-  <strong>#{escape(str(item["id"]))} {escape(str(item["front"]))} {escape(str(item["topic"]))}</strong>
+  <strong>#{escape(str(item["id"]))} {escape(_front_label(item["front"]))} {escape(str(item["topic"]))}</strong>
   <div>{escape(str(item["summary"]))}</div>
-  <div class="meta">score={escape(score)} | source={escape(str(item["source"]))} | duration={escape(str(item["duration_minutes"]))} | date={escape(str(item["created_on"]))}</div>
-  <div class="meta">mistakes={escape(str(item["mistakes"]))}</div>
+  <div class="meta">得分={escape(score)} | 来源={escape(_value_text(item["source"]))} | 耗时={escape(_duration_text(item["duration_minutes"]))} | 日期={escape(_value_text(item["created_on"]))}</div>
+  <div class="meta">错因={escape(_value_text(item["mistakes"]))}</div>
 </div>"""
         )
     return "".join(items)
@@ -488,10 +488,90 @@ def _recent_practice(sessions: list[object]) -> str:
 
 def _score_text(score: object, max_score: object) -> str:
     if score is None:
-        return "none"
+        return "未记录"
     if max_score is None:
-        return str(score)
-    return f"{score}/{max_score}"
+        return _number_text(score)
+    return f"{_number_text(score)}/{_number_text(max_score)}"
+
+
+def _number_text(value: object) -> str:
+    if isinstance(value, float):
+        return f"{value:g}"
+    return str(value)
+
+
+def _duration_text(duration_minutes: object) -> str:
+    if duration_minutes is None:
+        return "未记录"
+    return f"{duration_minutes}分钟"
+
+
+def _value_text(value: object) -> str:
+    if value is None or value == "":
+        return "未记录"
+    return str(value)
+
+
+def _joined_text(values: object) -> str:
+    if not isinstance(values, list):
+        return _value_text(values)
+    if not values:
+        return "未记录"
+    return "、".join(str(value) for value in values)
+
+
+def _source_label(value: object) -> str:
+    return {
+        "mein": "Mein",
+        "du": "Du",
+        "uns": "Uns",
+    }.get(str(value), str(value))
+
+
+def _promotion_status_label(value: object) -> str:
+    return {
+        "raw": "原始",
+        "extracted": "已提炼",
+        "tested": "已检验",
+        "promoted": "已升格",
+        "rejected": "已淘汰",
+    }.get(str(value), str(value))
+
+
+def _memory_status_label(value: object) -> str:
+    return {
+        "leech": "反复低分",
+        "unstable": "不稳定",
+        "due": "到期",
+        "untested": "未检验",
+        "stable": "稳定",
+    }.get(str(value), str(value))
+
+
+def _card_type_label(value: object) -> str:
+    return {
+        "principle": "原则卡",
+        "concept": "概念卡",
+        "comparison": "对比卡",
+        "scenario": "场景卡",
+        "expression": "表达卡",
+    }.get(str(value), str(value))
+
+
+def _front_label(value: object) -> str:
+    return {
+        "choice": "选择题",
+        "case": "案例题",
+        "essay": "论文题",
+    }.get(str(value), str(value))
+
+
+def _fronts_label(values: object) -> str:
+    if not isinstance(values, list):
+        return _front_label(values)
+    if not values:
+        return "未记录"
+    return "、".join(_front_label(value) for value in values)
 
 
 def _average_practice_score_ratio(sessions: list[PracticeSession]) -> float | None:
