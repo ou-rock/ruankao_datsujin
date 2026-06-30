@@ -2946,3 +2946,32 @@ progress well enough that a person can trust it and diagnose it later.
 
 - Daily-cycle script tests assert the numbered labels, completion banner, and
   command ordering.
+
+## 2026-06-30 Round 098 - Add Chinese Design Overview
+
+### Learner Friction
+
+`DESIGN.md` is the system constitution, but it was still written as the initial
+English engineering contract. The current product is learner-facing Chinese, so
+the design document should also open with a readable strategic summary.
+
+### Change
+
+- Added a `中文总览` section at the top of `DESIGN.md`.
+- Summarized the four-month battle plan and two-week reserve.
+- Reframed the total map around:
+  `我们在哪里`, `我们要到哪里`, and `今天做什么`.
+- Restated the roles of SQLite, Obsidian, HTML, NotebookLM, and Mein/Du/Uns.
+- Reaffirmed that night evolution defaults to staged drafts.
+- Kept the existing English contract intact for historical precision and tests.
+
+### UX Rule Captured
+
+Design documents guide future product choices. The top of the document should
+sound like the system the learner actually uses, not only the scaffold that
+created it.
+
+### Validation
+
+- Design-contract tests now assert the Chinese overview and key strategy phrases
+  while preserving the original non-negotiable English anchors.

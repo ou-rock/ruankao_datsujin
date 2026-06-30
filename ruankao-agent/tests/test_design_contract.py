@@ -18,6 +18,14 @@ def test_design_document_captures_non_negotiables() -> None:
         "Implementation wave, 3 agents",
         "Critical review wave, 3 agents",
         "Acceptance wave, 3 agents",
+        "中文总览",
+        "四个月主战和两周冗余",
+        "我们在哪里",
+        "我们要到哪里",
+        "今天做什么",
+        "HTML` 是总图和工作台",
+        "NotebookLM` 只作为精选外部研究员",
+        "夜间进化默认只生成暂存草案",
     ]
 
     for phrase in required_phrases:
