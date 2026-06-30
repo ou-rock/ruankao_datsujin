@@ -3027,3 +3027,30 @@ documentation lets future agents distinguish evidence from the latest contract.
 ### Validation
 
 - Process-doc tests assert the orchestration log has the current-context note.
+
+## 2026-06-30 Round 101 - Localize README Daily Entry
+
+### Learner Friction
+
+The repository README was still an English project description. Since it is the
+first screen a maintainer or learner sees, it should point directly to the
+current Chinese workbench and daily loop.
+
+### Change
+
+- Rewrote the README in Chinese.
+- Made the local workbench the primary daily entry.
+- Mentioned learning turns, three-source capture, Obsidian sync, and the
+  learning desk as browser workflows.
+- Kept all shell and Codex commands intact.
+- Clarified that night evolution only stages drafts by default.
+
+### UX Rule Captured
+
+The README is onboarding UI. It should tell the learner how to start today's
+work before it lists implementation components.
+
+### Validation
+
+- Process-doc tests assert the README starts from the workbench and daily loop,
+  and no longer uses the old English intro.

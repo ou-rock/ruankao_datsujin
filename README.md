@@ -1,34 +1,34 @@
 # ruankao datsujin
 
-Local-first Codex companion agent for the System Architecture Designer exam.
+本地优先的 Codex 陪伴式备考系统，目标是通过软考系统架构设计师考试，并沉淀真正的架构判断能力。
 
-The working implementation lives in `ruankao-agent/`.
+当前实现位于 `ruankao-agent/`。
 
-## What Is Included
+## 包含什么
 
-- high-level design document
-- TDD tests
-- local `architect-thinking` skill seed
-- local SQLite state layer
-- Obsidian vault generation
-- local web workbench
-- static HTML dashboard generation
-- NotebookLM source metadata wrapper
-- imported upstream skill references
+- 高层设计文档和中文总览。
+- TDD 测试与验收契约。
+- 本地 `architect-thinking` skill 种子。
+- SQLite 训练状态与排程。
+- Obsidian vault 生成与同步。
+- 本地网页工作台。
+- 学习台与静态 HTML 总图。
+- NotebookLM 外部研究源元数据。
+- 已搬入的上游 skill 参考。
 
-## Daily Use
+## 日常使用
 
-Open the local workbench:
+优先打开本地工作台：
 
 ```sh
 ./start-workbench.command
 ```
 
-Then use the browser page for daily capture, review, memory cards, principle links,
-the learning desk, and the Obsidian vault map. In Codex, `/ruankao-workbench`
-starts the same workbench.
+然后在浏览器里完成今日闭环、复习评分、练习记录、学习回合、三源材料、记忆卡、
+原则网络、学习台和 Obsidian vault 同步。在 Codex 里，`/ruankao-workbench`
+会启动同一个工作台。
 
-Daily close and night evolution can run from Codex:
+常用 Codex 命令：
 
 ```text
 /ruankao-daily-cycle 2026-06-29
@@ -38,29 +38,28 @@ Daily close and night evolution can run from Codex:
 /ruankao-study-mode <topic-or-front>
 ```
 
-The daily cycle command runs Cheko weak-area seeding, core principle seeding,
-daily receipt generation, route map generation, a stage-only night evolution
-plan, Obsidian vault sync for memory cards and raw Mein/Du/Uns material, and a
-local JSON state export.
-The study mode command runs a one-question-at-a-time dialogue and records each
-learner answer as Mein plus each Codex refinement as Du.
-The night evolution command does not directly mutate live skills or learning rules.
+每日闭环会依次运行 Cheko 弱点入队、核心原则入队、日结回执、三题型覆盖图、
+仅暂存夜间进化草案、记忆卡 Obsidian 同步、Mein/Du/Uns 三源材料同步，以及本地
+JSON 状态导出。
 
-For scheduled nightly runs, see `ruankao-agent/docs/AUTOMATION.md`.
+学习模式是一问一答的苏格拉底式对话：学习者答案进入 Mein，Codex 的复述、纠偏、
+结构化和追问进入 Du。夜间进化默认只生成暂存草案，不直接改 live skill 或学习规则。
 
-## What Is Not Committed
+定时夜间运行见 `ruankao-agent/docs/AUTOMATION.md`。
 
-The local `resources/` folder contains exam PDFs and generated study materials. It is ignored
-by git by default and should stay local unless explicitly reviewed before upload.
+## 不提交什么
 
-## Quick Check
+本地 `resources/` 目录用于存放考试 PDF 和生成资料。它默认被 git 忽略，除非明确审查，
+否则不上传。
+
+## 快速检查
 
 ```sh
 cd ruankao-agent
 python3 -m pytest
 ```
 
-## Demo Init
+## 演示初始化
 
 ```sh
 cd ruankao-agent

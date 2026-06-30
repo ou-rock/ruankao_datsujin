@@ -2,6 +2,7 @@ from pathlib import Path
 
 
 DOCS_ROOT = Path(__file__).resolve().parents[1] / "docs"
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_acceptance_criteria_are_learner_facing() -> None:
@@ -34,3 +35,14 @@ def test_agent_orchestration_log_has_current_context_note() -> None:
     assert "命令输出和风险文本保留" in text
     assert "判断当前行为时以测试" in text
     assert "工作台、日结回执和最新优化日志为准" in text
+
+
+def test_readme_starts_from_workbench_and_daily_loop() -> None:
+    text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+
+    assert "本地优先的 Codex 陪伴式备考系统" in text
+    assert "优先打开本地工作台" in text
+    assert "./start-workbench.command" in text
+    assert "学习回合" in text
+    assert "Mein/Du/Uns 三源材料同步" in text
+    assert "Local-first Codex companion agent" not in text
