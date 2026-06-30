@@ -3399,6 +3399,15 @@ and `storage`, but it must not handle HTTP, open SQLite, or write durable state.
 
 ### BrowserAct Evidence
 
+- Started a temporary workbench root at `http://127.0.0.1:8878/`.
+- Verified the homepage GET route and `/api/status` JSON route through
+  browser-act.
+- Submitted a real practice form through the page and verified the redirected
+  workbench showed `练习记录 #1 已保存。`, the case front turned green, and the
+  recent practice/RAG sections reflected the submitted record.
+
+### BrowserAct Evidence
+
 - Started the current workbench code on `http://127.0.0.1:8875/`.
 - Opened it with browser-act using the existing `github-act` Chrome browser.
 - Verified the rendered DOM still exposes the workbench title, three-front
@@ -3442,3 +3451,34 @@ open SQLite, render HTML, serve HTTP, or become a shared business service.
 - Verified the redirected page showed `练习记录 #1 已保存。`, marked the case
   front green, and surfaced the submitted practice session in the RAG control
   panel and recent practice list.
+
+## 2026-06-30 Round 114 - Split Workbench HTTP Handler
+
+### Learner Friction
+
+`web.py` still contained the nested `BaseHTTPRequestHandler` class, GET/POST
+route dispatch, redirect construction, file response logic, and path decoding.
+That kept HTTP transport mechanics mixed with workbench app orchestration.
+
+### Change
+
+- Added `ruankao_agent/web_handlers.py` for the local HTTP handler factory,
+  GET/POST dispatch, redirects, safe file response wrappers, and request path
+  decoding.
+- Kept `web.py` as the service-binding and workbench composition root.
+- Preserved the existing `_handler_for` and decoded-path imports through
+  `ruankao_agent.web` so current tests and commands remain stable.
+- Updated the architecture boundary contract so `web_handlers.py` is a
+  documented L5 adapter.
+
+### Architecture Rule Captured
+
+`web_handlers.py` may depend on `web_forms.py` for query/form parsing, but it
+must not depend on storage, learning intelligence, report generation, or
+rendering internals. It speaks HTTP and delegates every business action to the
+app object it receives.
+
+### Validation
+
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- `python3 -m pytest tests/test_architecture_boundaries.py -q`
