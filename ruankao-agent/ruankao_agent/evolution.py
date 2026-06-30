@@ -135,7 +135,7 @@ def render_night_evolution_plan(plan: dict[str, object]) -> str:
   <main>
     <header>
       <h1>夜间进化草案 {escape(str(plan["as_of"]))}</h1>
-      <p class="status">stage_only={escape(str(plan["stage_only"]).lower())} | receipt={escape(str(plan["receipt_json"]))}</p>
+      <p class="status">仅暂存：{escape(_yes_no(plan["stage_only"]))} | 来源日结：{escape(str(plan["receipt_json"]))}</p>
     </header>
     <section>
       <h2>明晚前只做这些</h2>
@@ -276,7 +276,19 @@ def _action_items(actions: list[object]) -> str:
             f"""<div class="item">
   <strong>{escape(str(action["title"]))}</strong>
   <div>{escape(str(action["detail"]))}</div>
-  <div class="meta">id={escape(str(action["id"]))} | priority={escape(str(action["priority"]))}</div>
+  <div class="meta">优先级={escape(_priority_label(action["priority"]))}</div>
 </div>"""
         )
     return "".join(items)
+
+
+def _yes_no(value: object) -> str:
+    return "是" if bool(value) else "否"
+
+
+def _priority_label(value: object) -> str:
+    return {
+        "high": "高",
+        "medium": "中",
+        "low": "低",
+    }.get(str(value), str(value))

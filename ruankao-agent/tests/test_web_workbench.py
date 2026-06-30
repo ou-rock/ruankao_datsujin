@@ -410,7 +410,8 @@ def test_workbench_can_write_and_serve_night_evolution_plan(tmp_path) -> None:
     assert result.as_of == date(2026, 6, 29)
     assert result.stage_only is True
     assert "夜间进化草案 2026-06-29" in html
-    assert "write-tomorrow-plan" in html
+    assert "写明日三动作" in html
+    assert "write-tomorrow-plan" not in html
     assert 'href="/reports/nightly/2026-06-29.html"' in home
 
 

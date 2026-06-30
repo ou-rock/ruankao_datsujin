@@ -1807,3 +1807,31 @@ speaks the campaign's language.
 - `python3 -m pytest tests/test_cli.py -q`
 - Tests assert the dashboard renders localized map headings, risk labels, due
   card evidence, and navigation links.
+
+## 2026-06-30 Round 058 - Localized Night Evolution Metadata
+
+### Learner Friction
+
+Night evolution reports still exposed raw staging and action metadata:
+`stage_only=true` and `id=... | priority=...`. The JSON plan needs those fields,
+but the HTML report should read like tomorrow's operating instructions.
+
+### Change
+
+- Changed the visible staging marker to `仅暂存：是/否`.
+- Changed action priority metadata to `优先级=高/中/低`.
+- Removed visible action IDs from the HTML report while keeping them in JSON.
+- Kept CLI output and staged JSON unchanged.
+
+### UX Rule Captured
+
+Night reports should show decisions, not implementation identifiers. Keep action
+IDs in machine-readable plans; make the HTML useful for a tired learner scanning
+tomorrow's moves.
+
+### Validation
+
+- `python3 -m pytest tests/test_evolution.py -q`
+- `python3 -m pytest tests/test_web_workbench.py -q`
+- Tests assert night reports render localized staging and priority labels and no
+  longer expose raw action IDs or `priority=`.

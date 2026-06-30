@@ -43,8 +43,12 @@ def test_night_evolution_plan_stages_actions_from_daily_receipt(tmp_path) -> Non
 
     html = result.html_path.read_text(encoding="utf-8")
     assert "夜间进化草案 2026-06-29" in html
-    assert "stage_only=true" in html
+    assert "仅暂存：是" in html
     assert "修复薄弱记忆卡" in html
+    assert "优先级=高" in html
+    assert "stage_only=true" not in html
+    assert "id=repair-memory" not in html
+    assert "priority=high" not in html
 
 
 def test_cli_night_evolve_prints_staged_plan_paths(tmp_path) -> None:
